@@ -154,7 +154,7 @@ export default function App() {
 useEffect(() => {
   const fetchAllData = async () => {
     try {
-      const [hist, live, heatmap, annual, stats, liveStats] = await Promise.all([
+  const [hist, live, heatmap, annual, stats, liveStats] = await Promise.all([
         fetch('/data/equity-historical.json').then(r => r.json()),
         fetch('/data/equity-live.json').then(r => r.json()),
         fetch('/data/heatmap-data.json').then(r => r.json()),
