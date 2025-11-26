@@ -383,7 +383,7 @@ useEffect(() => {
           {/* BACKGROUND LAYER - LOCKED TO GRID WAVE (GRAY) */}
           <GridWaveBackground height={580} />
 
-          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 pb-20 relative z-10">
+          <div className="max-w-[1584px] mx-auto px-4 sm:px-6 py-8 pb-20 relative z-10"> 
             
             {/* ================== TAB CONTENT: HOME ================== */}
             {activeTab === 'home' && (
