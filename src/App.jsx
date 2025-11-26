@@ -188,74 +188,18 @@ useEffect(() => {
   // --- ACTIVE TAB STATE ---
   const [activeTab, setActiveTab] = useState('home'); // Default changed to 'home'
 
-  // --- DYNAMIC STATS CALCULATION ---
-  const stats = useMemo(() => {
-    if (!filteredChartData || filteredChartData.length === 0) return {
-        totalReturn: 0, maxDrawdown: 0, cagr: 0, apr: 0, expectedValue: 0, volatility: 0, sharpe: 0, sortino: 0
-    };
-
-    const startVal = filteredChartData[0].value;
-    const endVal = filteredChartData[filteredChartData.length - 1].value;
-    
-    // Total Return
-    const totalReturn = ((endVal - startVal) / startVal) * 100;
-
-    // Max Drawdown (lowest value in 'drawdown' field)
-    const maxDrawdown = Math.min(...filteredChartData.map(d => d.drawdown));
-
-    // Calculate Daily Returns
-    const dailyReturns = [];
-    for (let i = 1; i < filteredChartData.length; i++) {
-        const r = (filteredChartData[i].value - filteredChartData[i-1].value) / filteredChartData[i-1].value;
-        dailyReturns.push(r);
-    }
-
-    // Annualized Metrics
-    const tradingDays = 252;
-    const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
-    const annualizedReturn = meanDailyReturn * tradingDays;
-    
-    // CAGR
-    const startDate = new Date(filteredChartData[0].date);
-    const endDate = new Date(filteredChartData[filteredChartData.length - 1].date);
-    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.01); // Avoid zero div
-    const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
-
-    // APR (Annual Percentage Rate - Simple)
-    const apr = annualizedReturn * 100;
-
-    // Expected Value (Mean daily return as percentage)
-    const expectedValue = meanDailyReturn * 100;
-
-    // Volatility (Standard Deviation * sqrt(252))
-    const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDailyReturn, 2), 0) / (dailyReturns.length - 1);
-    const stdDev = Math.sqrt(variance);
-    const volatility = stdDev * Math.sqrt(tradingDays) * 100;
-
-    // Downside Deviation for Sortino
-    const downsideReturns = dailyReturns.filter(r => r < 0);
-    const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length; 
-    const downsideDev = Math.sqrt(downsideVariance);
-    const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
-
-    // Sharpe Ratio (Assume Rf = 0)
-    const sharpe = (volatility !== 0) ? (apr / volatility) : 0;
-
-    // Sortino Ratio (Assume Rf = 0)
-    const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
-
-    return {
-        totalReturn,
-        maxDrawdown,
-        cagr,
-        apr,
-        expectedValue,
-        volatility,
-        sharpe,
-        sortino
-    };
-  }, [filteredChartData]);
-
+ // Use stats from JSON instead of dynamic calculation
+const stats = {
+  totalReturn: statsData?.totalReturn || 0,
+  maxDrawdown: statsData?.maxDrawdown || 0,
+  cagr: statsData?.cagr || 0,
+  apr: statsData?.apr || 0,
+  expectedValue: statsData?.expectedValue || 0,
+  volatility: statsData?.volatility || 0,
+  sharpe: statsData?.sharpe || 0,
+  sortino: statsData?.sortino || 0
+};
+  
   // Helper for formatting stats
   const fmt = (val, suffix = '') => val ? `${val > 0 && suffix === '%' ? '+' : ''}${val.toLocaleString(undefined, {maximumFractionDigits: 2})} ${suffix}` : '-';
   const colorClass = (val) => val >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]';
