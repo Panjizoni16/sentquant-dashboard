@@ -189,16 +189,54 @@ useEffect(() => {
   const [activeTab, setActiveTab] = useState('home'); // Default changed to 'home'
 
  // Use stats from JSON instead of dynamic calculation
-const stats = {
-  totalReturn: statsData?.totalReturn || 0,
-  maxDrawdown: statsData?.maxDrawdown || 0,
-  cagr: statsData?.cagr || 0,
-  apr: statsData?.apr || 0,
-  expectedValue: statsData?.expectedValue || 0,
-  volatility: statsData?.volatility || 0,
-  sharpe: statsData?.sharpe || 0,
-  sortino: statsData?.sortino || 0
-};
+const stats = useMemo(() => {
+  if (filteredChartData.length === 0) return null;
+  
+  const startValue = filteredChartData[0].value;
+  const endValue = filteredChartData[filteredChartData.length - 1].value;
+  const totalReturn = ((endValue - startValue) / startValue) * 100;
+  
+  let maxDrawdown = 0;
+  filteredChartData.forEach(point => {
+    if (point.drawdown < maxDrawdown) maxDrawdown = point.drawdown;
+  });
+  
+  const firstDate = new Date(filteredChartData[0].date);
+  const lastDate = new Date(filteredChartData[filteredChartData.length - 1].date);
+  const years = (lastDate - firstDate) / (365.25 * 24 * 60 * 60 * 1000);
+  
+  const cagr = years > 0 ? (Math.pow(endValue / startValue, 1 / years) - 1) * 100 : 0;
+  
+  const returns = [];
+  for (let i = 1; i < filteredChartData.length; i++) {
+    const dailyReturn = ((filteredChartData[i].value - filteredChartData[i-1].value) / filteredChartData[i-1].value) * 100;
+    returns.push(dailyReturn);
+  }
+  
+  const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+  const variance = returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length;
+  const volatility = Math.sqrt(variance) * Math.sqrt(252);
+  
+  const downside = returns.filter(r => r < 0);
+  const downsideVariance = downside.length > 0 
+    ? downside.reduce((sum, r) => sum + Math.pow(r, 2), 0) / downside.length 
+    : 0;
+  const downsideDeviation = Math.sqrt(downsideVariance) * Math.sqrt(252);
+  
+  const sharpe = volatility > 0 ? (cagr / volatility) : 0;
+  const sortino = downsideDeviation > 0 ? (cagr / downsideDeviation) : 0;
+  
+  return {
+    totalReturn: totalReturn,
+    maxDrawdown: maxDrawdown,
+    cagr: cagr,
+    apr: cagr,
+    expectedValue: avgReturn,
+    volatility: volatility,
+    sharpe: sharpe,
+    sortino: sortino
+  };
+}, [filteredChartData]);
   
   // Helper for formatting stats
   const fmt = (val, suffix = '') => val ? `${val > 0 && suffix === '%' ? '+' : ''}${val.toLocaleString(undefined, {maximumFractionDigits: 2})} ${suffix}` : '-';
