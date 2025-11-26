@@ -1,1 +1,10 @@
-{"sharpe": 3.18, "sortino": 4.22, "maxDrawdown": -12.45, "winRate": 68.5}
+{
+  "totalReturn": 72545.98,
+  "cagr": 36.85,
+  "apr": 36.85,
+  "maxDrawdown": -33.47,
+  "expectedValue": 0.15,
+  "volatility": 35.31,
+  "sharpe": 1.04,
+  "sortino": 1.18
+}
