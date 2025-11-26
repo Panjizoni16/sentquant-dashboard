@@ -122,120 +122,10 @@ const GridWaveBackground = ({ height = 580 }) => {
 };
 
 // --- DATA LOGIC ---
-const RAW_CSV_DATA_SNIPPET = [
-  { d: "2005-01-20", p: -0.97 }, { d: "2005-01-25", p: 0.66 }, { d: "2005-01-27", p: -0.94 }, { d: "2005-01-31", p: -1.36 },
-  { d: "2005-02-10", p: 1.2 }, { d: "2005-02-16", p: 0.89 }, { d: "2005-02-17", p: -0.54 }, { d: "2005-02-21", p: 0.41 },
-  { d: "2005-02-24", p: 0.45 }, { d: "2005-03-01", p: 0.23 }, { d: "2005-03-02", p: 0.59 }, { d: "2005-03-03", p: -0.19 },
-  { d: "2025-10-08", p: -0.02 }, { d: "2025-10-09", p: -0.68 }, { d: "2025-10-10", p: -2.36 }, 
-  { d: "2025-10-11", p: 7.05 }, 
-  { d: "2025-10-13", p: -3.97 }, 
-  { d: "2025-10-14", p: 1.34 }, { d: "2025-10-15", p: -0.84 }, { d: "2025-10-16", p: -2.41 }, { d: "2025-10-17", p: -1.29 }
-];
-
-const generateProductionData = () => {
-  const data = [];
-  let value = 10000; 
-  let peak = 10000;
-  
-  // Create a continuous daily timeline from 2005 to 2025
-  const startDate = new Date('2005-01-20');
-  const endDate = new Date('2025-10-17');
-  
-  // Map known points for precision
-  const knownPoints = new Map();
-  RAW_CSV_DATA_SNIPPET.forEach(item => knownPoints.set(item.d, item.p));
-
-  let currentDate = new Date(startDate);
-  
-  while (currentDate <= endDate) {
-      if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
-        currentDate.setDate(currentDate.getDate() + 1);
-        continue; // Skip weekend
-      }
-      
-      const dateStr = currentDate.toISOString().slice(0,10);
-      const year = dateStr.split('-')[0];
-      
-      let pnlPercent = 0;
-      
-      if (knownPoints.has(dateStr)) {
-          pnlPercent = knownPoints.get(dateStr);
-      } else {
-          // Fill gap with statistical noise matching the strategy profile
-          // Bias slightly positive to match the long term growth
-          const volatility = 1.2; 
-          pnlPercent = (Math.random() * volatility * 2) - volatility + 0.05; 
-      }
-
-      value = value * (1 + pnlPercent/100);
-      if (value > peak) peak = value;
-      const dd = ((value - peak) / peak) * 100;
-
-      data.push({
-          date: dateStr,
-          year: year,
-          value: parseFloat(value.toFixed(2)),
-          drawdown: parseFloat(dd.toFixed(2))
-      });
-      
-      currentDate.setDate(currentDate.getDate() + 1);
-  }
-  return data;
-};
-
-// --- NEW FUNCTION: Generate 1 Year Live Data WITH DRAWDOWN ---
-const generateLiveData = () => {
-  const data = [];
-  let value = 10000; // Start value for Live chart
-  let peak = 10000; // Track peak for drawdown
-  
-  // Create timeline for the last 1 year (365 days)
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(endDate.getDate() - 365);
-  
-  let currentDate = new Date(startDate);
-  
-  while (currentDate <= endDate) {
-      if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
-        currentDate.setDate(currentDate.getDate() + 1);
-        continue;
-      }
-      
-      const dateStr = currentDate.toISOString().slice(0,10);
-      
-      // slightly more volatile for "Live" simulation
-      const volatility = 1.5; 
-      const pnlPercent = (Math.random() * volatility * 2) - volatility + 0.08; 
-      
-      value = value * (1 + pnlPercent/100);
-
-      // Drawdown calculation
-      if (value > peak) peak = value;
-      const dd = ((value - peak) / peak) * 100;
-
-      data.push({
-          date: dateStr,
-          value: parseFloat(value.toFixed(2)),
-          drawdown: parseFloat(dd.toFixed(2))
-      });
-      
-      currentDate.setDate(currentDate.getDate() + 1);
-  }
-  return data;
-};
-
+// ✅ TULIS INI DI LINE 122:
 
 // Generate list tahun dinamis dari data
 const yearsList = ['ALL', ...Array.from({length: 21}, (_, i) => (2025 - i).toString())];
-
-const heatmapData = [
-  { year: 2025, months: [1.2, -0.5, 2.1, 3.2, -1.5, 0.8, 4.1, 2.2, -1.1, 0.5, null, null] },
-  { year: 2024, months: [-1.5, 2.3, 0.4, -2.1, 1.8, 3.2, -0.8, 1.1, -1.2, 0.5, 2.8, -0.4] },
-  { year: 2023, months: [0.8, -1.1, 1.5, 2.0, -0.5, -1.2, 2.4, -0.3, 1.9, -2.5, 3.1, 1.2] },
-  { year: 2022, months: [2.1, 1.4, -2.8, 0.5, -1.9, 0.2, -1.5, 2.2, -0.9, 1.1, -0.8, 0.3] },
-  { year: 2021, months: [-0.5, 3.5, 1.2, -1.1, 0.9, -0.4, 1.8, -2.1, 2.5, 0.7, -1.3, 1.6] },
-];
 
 const annualReturnsData = [
   { year: '2021', value: 25.4 },
@@ -245,13 +135,53 @@ const annualReturnsData = [
   { year: '2025', value: 8.5 },
 ];
 
+// ✅ GANTI JADI INI:
 export default function App() {
-  const [fullData] = useState(() => generateProductionData());
-  const [liveData] = useState(() => generateLiveData()); 
+  // State untuk data dari JSON
+  const [fullData, setFullData] = useState([]);
+  const [liveData, setLiveData] = useState([]);
+  const [heatmapData, setHeatmapData] = useState([]);
+  const [annualReturnsData, setAnnualReturnsData] = useState([]);
+  const [statsData, setStatsData] = useState(null);
+  const [liveStatsData, setLiveStatsData] = useState(null);
+  const [loading, setLoading] = useState(true);
   
   const [selectedYear, setSelectedYear] = useState('ALL');
   const [filteredChartData, setFilteredChartData] = useState(fullData);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+
+  // ✅ TAMBAH INI DI LINE 250 (setelah state, sebelum selectedYear):
+
+// Fetch semua data dari JSON files
+useEffect(() => {
+  const fetchAllData = async () => {
+    try {
+      const [hist, live, heatmap, annual, stats, liveStats] = await Promise.all([
+        fetch('/data/equity-historical.json').then(r => r.json()),
+        fetch('/data/equity-live.json').then(r => r.json()),
+        fetch('/data/heatmap-data.json').then(r => r.json()),
+        fetch('/data/annual-returns.json').then(r => r.json()),
+        fetch('/data/stats-data.json').then(r => r.json()),
+        fetch('/data/live-stats-data.json').then(r => r.json()),
+      ]);
+      
+      setFullData(hist);
+      setFilteredChartData(hist);
+      setLiveData(live);
+      setHeatmapData(heatmap);
+      setAnnualReturnsData(annual);
+      setStatsData(stats);
+      setLiveStatsData(liveStats);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setLoading(false);
+    }
+  };
+  
+  fetchAllData();
+}, []);
   
   // --- ACTIVE TAB STATE ---
   const [activeTab, setActiveTab] = useState('home'); // Default changed to 'home'
