@@ -484,13 +484,12 @@ const stats = useMemo(() => {
                             </defs>
                             <XAxis dataKey="date" hide />
                             <YAxis 
+<YAxis 
   orientation="right" 
-  scale="log" 
-  domain={[50, 'auto']} 
+  domain={['auto', 'auto']} 
   tick={{fill: '#a1a1aa', fontSize: 11}} 
   axisLine={false} 
   tickLine={false}
-  tickFormatter={(value) => `${((value - 100)).toFixed(0)}%`}
 />
                             <Tooltip 
                                 contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} 
