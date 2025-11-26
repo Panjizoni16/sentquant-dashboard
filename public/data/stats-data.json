@@ -1,0 +1,10 @@
+{
+  "totalReturn": 25516.42,
+  "cagr": 30.22,
+  "apr": 30.22,
+  "maxDrawdown": -29.2,
+  "expectedValue": 0.15,
+  "volatility": 35.31,
+  "sharpe": 1.04,
+  "sortino": 1.18
+}
