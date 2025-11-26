@@ -66,7 +66,7 @@ const GridWaveBackground = ({ height = 580 }) => {
       frame += speed;
 
       // CHANGED TO GRAY
-      ctx.strokeStyle = 'rgba(120, 120, 120, 0.15)'; 
+      ctx.strokeStyle = 'rgba(120, 120, 120, 0.3)'; 
       ctx.lineWidth = 1;
 
       // Vertical lines
