@@ -501,11 +501,19 @@ useEffect(() => {
                               </linearGradient>
                             </defs>
                             <XAxis dataKey="date" hide />
-                            <YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
+                            <YAxis 
+  orientation="right" 
+  scale="log" 
+  domain={[50, 'auto']} 
+  tick={{fill: '#a1a1aa', fontSize: 11}} 
+  axisLine={false} 
+  tickLine={false}
+  tickFormatter={(value) => `${((value - 100)).toFixed(0)}%`}
+/>
                             <Tooltip 
                                 contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} 
                                 itemStyle={{color: '#22ab94'}} 
-                                formatter={(value) => [`$${value.toLocaleString()}`, 'Equity']}
+                               formatter={(value) => [`${((value - 100)).toFixed(2)}%`, 'Return']}
                                 labelStyle={{color: '#fff', fontFamily: 'Inter'}}
                             />
                             <Area 
