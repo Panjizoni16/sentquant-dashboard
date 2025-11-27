@@ -4,9 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Search, Menu, Settings, Camera, Maximize, 
-  ChevronRight, ChevronDown, 
-  BarChart2, MoreHorizontal, ArrowRight, ThumbsUp, MessageCircle, Share2, Twitter, Facebook, Instagram, Youtube, Linkedin, TrendingDown, TrendingUp, Clock, Activity, AlertTriangle, BarChart, Filter, Layers
+  Menu, ChevronDown, Filter, ArrowUpRight, Circle
 } from 'lucide-react';
 
 // --- COMPONENT: CUSTOM Q LOGO (SVG REPLICA) ---
@@ -36,7 +34,7 @@ const SentquantLogo = ({ size = 120 }) => (
   </svg>
 );
 
-// --- COMPONENT: GRID WAVE BACKGROUND (LOCKED & GRAY) ---
+// --- COMPONENT: GRID WAVE BACKGROUND (LOCKED & GRAY) - Used for other tabs ---
 const GridWaveBackground = ({ height = 580 }) => {
   const canvasRef = useRef(null);
 
@@ -55,24 +53,23 @@ const GridWaveBackground = ({ height = 580 }) => {
     };
 
     const animate = () => {
+      if(!ctx) return;
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, w, h);
 
-      const perspective = 300;
       const stripWidth = 40;
       const speed = 0.5;
       
       frame += speed;
 
-      // CHANGED TO GRAY
       ctx.strokeStyle = 'rgba(120, 120, 120, 0.3)'; 
       ctx.lineWidth = 1;
 
       // Vertical lines
       for (let x = -w; x < w * 2; x += stripWidth) {
         ctx.beginPath();
-        ctx.moveTo(x + (w/2 - x) * 0.5, 0); // Converge towards top center
+        ctx.moveTo(x + (w/2 - x) * 0.5, 0); 
         ctx.lineTo(x, h);
         ctx.stroke();
       }
@@ -81,12 +78,8 @@ const GridWaveBackground = ({ height = 580 }) => {
       const totalLines = 30;
       for(let i = 0; i < totalLines; i++) {
         let y = ((frame + i * 20) % h);
-        // Perspective scaling for y
         let relativeY = y / h;
-        let drawY = y; 
-        
-        // Simple exponential density to fake perspective
-        drawY = Math.pow(relativeY, 1.5) * h;
+        let drawY = Math.pow(relativeY, 1.5) * h;
 
         ctx.beginPath();
         ctx.moveTo(0, drawY);
@@ -94,7 +87,6 @@ const GridWaveBackground = ({ height = 580 }) => {
         ctx.stroke();
       }
       
-      // Add a vignette
       const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w);
       grad.addColorStop(0, 'rgba(0,0,0,0)');
       grad.addColorStop(1, 'rgba(0,0,0,0.8)');
@@ -121,23 +113,135 @@ const GridWaveBackground = ({ height = 580 }) => {
   );
 };
 
-// --- DATA LOGIC ---
-// ✅ TULIS INI DI LINE 122:
+// --- COMPONENT: SMOKE BACKGROUND (NEW ANIMATED FOG) ---
+const SmokeBackground = () => {
+  const canvasRef = useRef(null);
 
-// Generate list tahun dinamis dari data
-const yearsList = ['ALL', ...Array.from({length: 21}, (_, i) => (2025 - i).toString())];
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h;
+    let animationFrameId;
+    let particles = [];
 
-const annualReturnsData = [
-  { year: '2021', value: 25.4 },
-  { year: '2022', value: -5.2 },
-  { year: '2023', value: 18.7 },
-  { year: '2024', value: 12.1 },
-  { year: '2025', value: 8.5 },
+    const resize = () => {
+      if(!canvas) return;
+      const parent = canvas.parentElement;
+      w = canvas.width = parent ? parent.clientWidth : window.innerWidth;
+      h = canvas.height = parent ? parent.clientHeight : window.innerHeight;
+    };
+    
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Particle factory
+    const createParticle = () => ({
+        x: Math.random() * w,
+        y: h + Math.random() * 100, // Start slightly below screen
+        vx: (Math.random() - 0.5) * 0.8, // Slow horizontal drift
+        vy: -0.3 - Math.random() * 0.5, // Slow upward drift
+        size: 100 + Math.random() * 150, // Large, puffy particles
+        life: 0,
+        maxLife: 300 + Math.random() * 200,
+        alphaMax: 0.03 + Math.random() * 0.04 // Very subtle opacity
+    });
+
+    // Initialize some particles
+    for(let i = 0; i < 50; i++) {
+        particles.push({
+            ...createParticle(),
+            y: h - Math.random() * (h * 0.4), // Pre-populate bottom area
+            life: Math.random() * 200
+        });
+    }
+
+    const draw = () => {
+      if (!ctx) return;
+      
+      // Background: Solid Black
+      ctx.fillStyle = '#000000'; 
+      ctx.fillRect(0, 0, w, h);
+      
+      // Add new particles occasionally to keep density
+      if (particles.length < 80) {
+          particles.push(createParticle());
+      }
+
+      // Update and draw particles
+      for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life++;
+
+          // Calculate opacity based on life cycle (fade in -> hold -> fade out)
+          let alpha = p.alphaMax;
+          if (p.life < 100) alpha = p.alphaMax * (p.life / 100); // Fade in
+          else if (p.life > p.maxLife - 100) alpha = p.alphaMax * ((p.maxLife - p.life) / 100); // Fade out
+
+          // Remove dead particles
+          if (p.life >= p.maxLife || alpha <= 0) {
+              particles[i] = createParticle();
+              continue;
+          }
+
+          // Draw Smoke Puff (Radial Gradient)
+          const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+          gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`); // White center
+          gradient.addColorStop(0.4, `rgba(220, 220, 230, ${alpha * 0.5})`); // Grayish mid
+          gradient.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Transparent edge
+
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+      }
+
+      animationFrameId = requestAnimationFrame(draw);
+    };
+    
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0" />;
+};
+
+// --- MOCK DATA FOR FALLBACK ---
+const MOCK_HISTORICAL = Array.from({ length: 100 }, (_, i) => ({
+    date: `2024-01-${i + 1}`,
+    year: '2024',
+    value: 1000 + Math.random() * 500 + i * 10,
+    drawdown: -(Math.random() * 10)
+}));
+const MOCK_LIVE = Array.from({ length: 50 }, (_, i) => ({
+    date: `2025-01-${i + 1}`,
+    value: 1500 + Math.random() * 200 + i * 5,
+    drawdown: -(Math.random() * 5)
+}));
+const MOCK_HEATMAP = [
+    { year: '2024', months: [5.2, -1.2, 3.4, 2.1, -0.5, 1.8, 4.2, 2.1, -3.2, 1.5, 4.2, 2.1] },
+    { year: '2023', months: [2.1, 1.5, -2.2, 4.5, 1.2, -0.8, 3.5, 1.1, 0.5, -1.2, 3.8, 1.9] }
 ];
+const MOCK_ANNUAL = [
+    { year: '2021', value: 25.4 },
+    { year: '2022', value: -5.2 },
+    { year: '2023', value: 18.7 },
+    { year: '2024', value: 12.1 },
+    { year: '2025', value: 8.5 },
+];
+const MOCK_STATS = { sharpe: 3.18, sortino: 4.22, maxDD: -12.45, winRate: 68.5 };
+const MOCK_LIVE_STATS = { totalReturn: 14.5, maxDrawdown: -8.24, sharpe: 2.14, sortino: 3.05, winRate: 62.4 };
 
-// ✅ GANTI JADI INI:
+// --- MAIN APPLICATION ---
+
 export default function App() {
-  // State untuk data dari JSON
+  // State for data
   const [fullData, setFullData] = useState([]);
   const [liveData, setLiveData] = useState([]);
   const [heatmapData, setHeatmapData] = useState([]);
@@ -146,47 +250,60 @@ export default function App() {
   const [liveStatsData, setLiveStatsData] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  const [selectedYear, setSelectedYear] = useState('ALL');
-  const [filteredChartData, setFilteredChartData] = useState(fullData);
+  const [selectedYear, setSelectedYear] = useState('5Y');
+  const [filteredChartData, setFilteredChartData] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  const yearsList = ['ALL', ...Array.from({length: 26}, (_, i) => (2025 - i).toString())];
+  const manualRanges = ['2020-2024', '2015-2019', '2010-2014', '2005-2009'];
 
-  // ✅ TAMBAH INI DI LINE 250 (setelah state, sebelum selectedYear):
+  useEffect(() => {
+    const fetchOrFallback = async (url, fallback) => {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Status ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            return fallback;
+        }
+    };
 
-// Fetch semua data dari JSON files
-useEffect(() => {
-  const fetchAllData = async () => {
-    try {
-      const [hist, live, heatmap, annual, stats, liveStats] = await Promise.all([
-        fetch('/data/equity-historical.json').then(r => r.json()),
-        fetch('/data/equity-live.json').then(r => r.json()),
-        fetch('/data/heatmap-data.json').then(r => r.json()),
-        fetch('/data/annual-returns.json').then(r => r.json()),
-        fetch('/data/stats-data.json').then(r => r.json()),
-        fetch('/data/live-stats-data.json').then(r => r.json()),
-      ]);
-      
-      setFullData(hist);
-      setFilteredChartData(hist);
-      setLiveData(live);
-      setHeatmapData(heatmap);
-      setAnnualReturnsData(annual);
-      setStatsData(stats);
-      setLiveStatsData(liveStats);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setLoading(false);
-    }
-  };
+    const fetchAllData = async () => {
+      try {
+        const [hist, live, heatmap, annual, stats, liveStats] = await Promise.all([
+            fetchOrFallback('/data/equity-historical.json', MOCK_HISTORICAL),
+            fetchOrFallback('/data/equity-live.json', MOCK_LIVE),
+            fetchOrFallback('/data/heatmap-data.json', MOCK_HEATMAP),
+            fetchOrFallback('/data/annual-returns.json', MOCK_ANNUAL),
+            fetchOrFallback('/data/stats-data.json', MOCK_STATS),
+            fetchOrFallback('/data/live-stats-data.json', MOCK_LIVE_STATS),
+        ]);
+        
+        setFullData(hist);
+        const currentYear = 2025;
+        const initialFiltered = hist.filter(d => {
+            const y = parseInt(d.year);
+            return y > (currentYear - 5) && y <= currentYear;
+        });
+        setFilteredChartData(initialFiltered);
+
+        setLiveData(live);
+        setHeatmapData(heatmap);
+        setAnnualReturnsData(annual);
+        setStatsData(stats);
+        setLiveStatsData(liveStats);
+        setLoading(false);
+      } catch (error) {
+        console.error('Critical error in data loading:', error);
+        setLoading(false);
+      }
+    };
+    
+    fetchAllData();
+  }, []);
   
-  fetchAllData();
-}, []);
-  
-  // --- ACTIVE TAB STATE ---
-  const [activeTab, setActiveTab] = useState('home'); // Default changed to 'home'
+  const [activeTab, setActiveTab] = useState('home');
 
-  // --- DYNAMIC STATS CALCULATION ---
   const stats = useMemo(() => {
     if (!filteredChartData || filteredChartData.length === 0) return {
         totalReturn: 0, maxDrawdown: 0, cagr: 0, apr: 0, expectedValue: 0, volatility: 0, sharpe: 0, sortino: 0
@@ -194,82 +311,67 @@ useEffect(() => {
 
     const startVal = filteredChartData[0].value;
     const endVal = filteredChartData[filteredChartData.length - 1].value;
-    
-    // Total Return
     const totalReturn = ((endVal - startVal) / startVal) * 100;
-
-    // Max Drawdown (lowest value in 'drawdown' field)
     const maxDrawdown = Math.min(...filteredChartData.map(d => d.drawdown));
 
-    // Calculate Daily Returns
     const dailyReturns = [];
     for (let i = 1; i < filteredChartData.length; i++) {
         const r = (filteredChartData[i].value - filteredChartData[i-1].value) / filteredChartData[i-1].value;
         dailyReturns.push(r);
     }
 
-    // Annualized Metrics
     const tradingDays = 252;
     const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
     const annualizedReturn = meanDailyReturn * tradingDays;
     
-    // CAGR
     const startDate = new Date(filteredChartData[0].date);
     const endDate = new Date(filteredChartData[filteredChartData.length - 1].date);
-    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.01); // Avoid zero div
+    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.01);
     const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
-
-    // APR (Annual Percentage Rate - Simple)
     const apr = annualizedReturn * 100;
-
-    // Expected Value (Mean daily return as percentage)
     const expectedValue = meanDailyReturn * 100;
 
-    // Volatility (Standard Deviation * sqrt(252))
     const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDailyReturn, 2), 0) / (dailyReturns.length - 1);
     const stdDev = Math.sqrt(variance);
     const volatility = stdDev * Math.sqrt(tradingDays) * 100;
 
-    // Downside Deviation for Sortino
     const downsideReturns = dailyReturns.filter(r => r < 0);
     const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length; 
     const downsideDev = Math.sqrt(downsideVariance);
     const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
 
-    // Sharpe Ratio (Assume Rf = 0)
     const sharpe = (volatility !== 0) ? (apr / volatility) : 0;
-
-    // Sortino Ratio (Assume Rf = 0)
     const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
 
-    return {
-        totalReturn,
-        maxDrawdown,
-        cagr,
-        apr,
-        expectedValue,
-        volatility,
-        sharpe,
-        sortino
-    };
+    return { totalReturn, maxDrawdown, cagr, apr, expectedValue, volatility, sharpe, sortino };
   }, [filteredChartData]);
 
-  // Helper for formatting stats
   const fmt = (val, suffix = '') => val ? `${val > 0 && suffix === '%' ? '+' : ''}${val.toLocaleString(undefined, {maximumFractionDigits: 2})} ${suffix}` : '-';
   const colorClass = (val) => val >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]';
 
-
-  // --- FILTER LOGIC ---
   useEffect(() => {
     if (selectedYear === 'ALL') {
         setFilteredChartData(fullData);
+    } else if (selectedYear === '5Y') {
+        const currentYear = 2025;
+        const filtered = fullData.filter(d => {
+            const y = parseInt(d.year);
+            return y > (currentYear - 5) && y <= currentYear;
+        });
+        setFilteredChartData(filtered);
+    } else if (selectedYear.includes('-')) {
+        const [start, end] = selectedYear.split('-').map(Number);
+        const filtered = fullData.filter(d => {
+            const y = parseInt(d.year);
+            return y >= start && y <= end;
+        });
+        setFilteredChartData(filtered);
     } else {
         const filtered = fullData.filter(d => d.year === selectedYear);
         setFilteredChartData(filtered);
     }
   }, [selectedYear, fullData]);
 
-  // --- SPLASH SCREEN STATE ---
   const [showSplash, setShowSplash] = useState(true);
   const [fadeOutSplash, setFadeOutSplash] = useState(false);
   const [slideInTitle, setSlideInTitle] = useState(false);
@@ -281,53 +383,24 @@ useEffect(() => {
     return () => { clearTimeout(timerSlide); clearTimeout(timerFade); clearTimeout(timerRemove); };
   }, []);
 
+  if (loading && !showSplash) return <div className="h-screen bg-black text-white flex items-center justify-center">Loading Data...</div>;
+
   return (
     <div className="flex flex-col h-screen text-[#d1d4dc] font-sans overflow-hidden relative bg-black">
       
-      {/* Injecting Fonts: Inter for general text, Montserrat for Brand */}
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap');
-          
-          /* "Sentquant" brand font */
-          .font-eth {
-             font-family: 'Montserrat', sans-serif;
-          }
-          
-          /* Default font for everything else (Numbers, Text) */
-          body, .font-sans {
-             font-family: 'Inter', sans-serif;
-          }
-
-          /* Ensure splash screen uses brand font */
-          .splash-title {
-             font-family: 'Montserrat', sans-serif;
-          }
-          /* Hide Scrollbar for Year Filter */
-          .no-scrollbar::-webkit-scrollbar {
-              display: none;
-          }
-          .no-scrollbar {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-          }
-          .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2); 
-          }
-          .animate-fade-in-up {
-            animation: fadeInUp 0.8s ease-out forwards;
-          }
+          .font-eth { font-family: 'Montserrat', sans-serif; }
+          body, .font-sans { font-family: 'Inter', sans-serif; }
+          .splash-title { font-family: 'Montserrat', sans-serif; }
+          .no-scrollbar::-webkit-scrollbar { display: none; }
+          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+          .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+          .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
           @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -335,7 +408,6 @@ useEffect(() => {
         `}
       </style>
 
-      {/* --- SPLASH SCREEN --- */}
       {showSplash && (
         <div className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-1000 ease-in-out ${fadeOutSplash ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="text-center overflow-hidden h-48 flex items-center justify-center">
@@ -380,27 +452,30 @@ useEffect(() => {
       <div className="flex flex-1 overflow-hidden relative z-10">
         <main className="flex-1 overflow-y-auto custom-scrollbar relative">
           
-          {/* BACKGROUND LAYER - LOCKED TO GRID WAVE (GRAY) */}
-          <GridWaveBackground height={580} />
+          {/* DYNAMIC BACKGROUND LAYER */}
+          {activeTab === 'about' ? (
+             <SmokeBackground />
+          ) : (
+             <GridWaveBackground height={580} />
+          )}
 
-          <div className="max-w-[1584px] mx-auto px-4 sm:px-6 py-8 pb-20 relative z-10"> 
+          <div className={`max-w-[1584px] mx-auto px-4 sm:px-6 py-8 pb-20 relative z-10 ${activeTab === 'about' ? 'h-[calc(100vh-60px)]' : ''}`}> 
             
             {/* ================== TAB CONTENT: HOME ================== */}
             {activeTab === 'home' && (
               <div className="animate-fade-in-up flex flex-col items-center justify-center h-[70vh]">
-                 <h1 className="text-7xl md:text-9xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl mb-6">
-                   Sentquant
-                 </h1>
-                 <p className="text-gray-400 text-sm md:text-base font-light tracking-wide text-center max-w-lg">
-                   if CoinMarketCap track asset , then Sentquant track strategy performance
-                 </p>
+                  <h1 className="text-7xl md:text-9xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl mb-6">
+                    Sentquant
+                  </h1>
+                  <p className="text-gray-400 text-sm md:text-base font-light tracking-wide text-center max-w-lg">
+                    The era of fake trading gurus ends here.
+                  </p>
               </div>
             )}
 
             {/* ================== TAB CONTENT: HISTORICAL ================== */}
             {activeTab === 'historical' && (
               <>
-                {/* --- HEADER SECTION (Like Live Tab) --- */}
                 <div className="mb-10 animate-fade-in-up">
                   <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
                     <div className="flex items-center gap-4">
@@ -409,25 +484,31 @@ useEffect(() => {
                       </h3>
                     </div>
 
-                    {/* TIME TRAVEL BAR */}
                     <div className="relative flex gap-2 items-center">
-                       <button onClick={() => { setSelectedYear('ALL'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === 'ALL' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>ALL</button>
-                       <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${selectedYear !== 'ALL' ? 'bg-gray-600 text-white shadow-[0_0_15px_rgba(75,85,99,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>
-                          {selectedYear !== 'ALL' ? selectedYear : 'FILTER'} <ChevronDown size={14} className={`transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
-                       </button>
-                       {isFilterOpen && (
-                          <div className="absolute top-full right-0 mt-2 w-32 max-h-60 overflow-y-auto bg-[#0a0a0a] rounded-xl shadow-xl z-50 p-2 custom-scrollbar backdrop-blur-md">
+                        <button onClick={() => { setSelectedYear('5Y'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === '5Y' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>5Y</button>
+                        <button onClick={() => { setSelectedYear('ALL'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === 'ALL' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>ALL</button>
+                        
+                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${selectedYear !== 'ALL' && selectedYear !== '5Y' ? 'bg-gray-600 text-white shadow-[0_0_15px_rgba(75,85,99,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>
+                          {selectedYear !== 'ALL' && selectedYear !== '5Y' ? selectedYear : 'FILTER'} <ChevronDown size={14} className={`transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {isFilterOpen && (
+                          <div className="absolute top-full right-0 mt-2 w-40 max-h-60 overflow-y-auto bg-[#0a0a0a] rounded-xl shadow-xl z-50 p-2 custom-scrollbar backdrop-blur-md">
+                              <div className="mb-2 pb-2 border-b border-white/10">
+                                {manualRanges.map(range => (
+                                    <button key={range} onClick={() => { setSelectedYear(range); setIsFilterOpen(false); }} className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors mb-1 ${selectedYear === range ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-300 hover:bg-white/10'}`}>
+                                        {range}
+                                    </button>
+                                ))}
+                              </div>
                               {yearsList.map((year) => (
                                   <button key={year} onClick={() => { setSelectedYear(year); setIsFilterOpen(false); }} className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors mb-1 ${selectedYear === year ? 'bg-white/20 text-white' : 'text-gray-300 hover:bg-white/10'}`}>{year}</button>
                               ))}
                           </div>
-                       )}
+                        )}
                     </div>
                   </div>
 
-                  {/* --- 2 BOX STATISTICS (UPDATED: FULLY TRANSPARENT) --- */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                    {/* BOX 1: Returns & Risk */}
                     <div className="p-4 flex flex-col justify-center transition-colors"> 
                        <div className="grid grid-cols-2 gap-y-6 gap-x-8">
                           <div>
@@ -449,7 +530,6 @@ useEffect(() => {
                        </div>
                     </div>
 
-                    {/* BOX 2: Stats & Ratios */}
                     <div className="p-4 flex flex-col justify-center transition-colors">
                        <div className="grid grid-cols-2 gap-y-6 gap-x-8">
                           <div>
@@ -472,9 +552,7 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  {/* --- CHARTS SECTION --- */}
                   <div className="flex flex-col space-y-2">
-                      {/* Main Equity Chart - FIXED TO MATCH LIVE (GLASSMORPHISM) */}
                       <div className="h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={filteredChartData} margin={{top:10, left:0, right:0, bottom:0}}>
@@ -509,7 +587,6 @@ useEffect(() => {
                         </div>
                       </div>
 
-                      {/* Underwater Chart - FIXED TO MATCH LIVE (GLASSMORPHISM) */}
                       <div className="h-[180px] rounded-b-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={filteredChartData} margin={{top:5, left:0, right:0, bottom:0}}>
@@ -548,7 +625,6 @@ useEffect(() => {
             {/* ================== TAB CONTENT: LIVE ================== */}
             {activeTab === 'live' && (
               <div className="animate-fade-in-up">
-                {/* --- LIVE HEADER --- */}
                 <div className="mb-10">
                   <div className="flex items-center gap-4 mb-4">
                     <h3 className="text-xl font-bold flex items-center gap-2 text-white font-eth drop-shadow-md">
@@ -560,31 +636,28 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  {/* --- 2 BOX STATISTICS (LIVE) --- */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                      {/* BOX 1: Live Returns & Risk */}
                       <div className="p-4 flex flex-col justify-center transition-colors backdrop-blur-sm rounded-xl bg-black/10"> 
                           <div className="grid grid-cols-2 gap-y-6 gap-x-8">
                               <div>
                                   <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Total Return (1Y)</div>
-                                  <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">+14.5 %</div>
+                                  <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.totalReturn, '%')}</div>
                               </div>
                               <div>
                                   <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Max Drawdown</div>
-                                  <div className="text-lg font-bold text-[#f23645] drop-shadow-sm">-8.24 %</div>
+                                  <div className="text-lg font-bold text-[#f23645] drop-shadow-sm">{fmt(liveStatsData?.maxDrawdown, '%')}</div>
                               </div>
                               <div>
                                   <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">CAGR (1Y)</div>
-                                  <div className="text-lg font-bold text-white drop-shadow-sm">+14.5 %</div>
+                                  <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.totalReturn, '%')}</div>
                               </div>
                               <div>
                                   <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Win Rate</div>
-                                  <div className="text-lg font-bold text-white drop-shadow-sm">62.4 %</div>
+                                  <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.winRate, '%')}</div>
                               </div>
                           </div>
                       </div>
 
-                      {/* BOX 2: Live Stats & Ratios */}
                       <div className="p-4 flex flex-col justify-center transition-colors backdrop-blur-sm rounded-xl bg-black/10">
                           <div className="grid grid-cols-2 gap-y-6 gap-x-8">
                               <div>
@@ -597,20 +670,18 @@ useEffect(() => {
                               </div>
                               <div>
                                   <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sharpe Ratio</div>
-                                  <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">2.14</div>
+                                  <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.sharpe)}</div>
                               </div>
                               <div>
                                   <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sortino Ratio</div>
-                                  <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">3.05</div>
+                                  <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.sortino)}</div>
                               </div>
                           </div>
                       </div>
                   </div>
 
-                  {/* Live Charts Container */}
                   <div className="flex flex-col space-y-2">
-                     {/* Live Equity Chart */}
-                     <div className="h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
+                      <div className="h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={liveData} margin={{top:10, left:0, right:0, bottom:0}}>
                             <defs>
@@ -643,7 +714,6 @@ useEffect(() => {
                         </div>
                       </div>
 
-                      {/* Live Underwater Chart */}
                       <div className="h-[180px] rounded-b-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={liveData} margin={{top:5, left:0, right:0, bottom:0}}>
@@ -687,14 +757,14 @@ useEffect(() => {
               <div className="animate-fade-in-up">
                 <div className="mb-10">
                   <div className="flex items-center justify-between mb-6">
-                     <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Monthly Returns Heatmap</h3>
-                     <div className="flex gap-2">
+                      <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Monthly Returns Heatmap</h3>
+                      <div className="flex gap-2">
                         <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> Positif</span>
                         <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> Negatif</span>
-                     </div>
+                      </div>
                   </div>
                   <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2">
-                     <table className="w-full text-sm border-collapse min-w-[800px]">
+                      <table className="w-full text-sm border-collapse min-w-[800px]">
                         <thead>
                            <tr>
                               <th className="text-left text-gray-400 font-medium py-3 px-2">Tahun</th>
@@ -723,16 +793,16 @@ useEffect(() => {
                               </tr>
                            ))}
                         </tbody>
-                     </table>
+                      </table>
                   </div>
                 </div>
 
                 <div className="mb-10">
                   <div className="flex items-center justify-between mb-6">
-                     <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Annual Returns</h3>
+                      <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Annual Returns</h3>
                   </div>
                   <div className="h-[300px] rounded-xl bg-black/20 backdrop-blur-sm p-4 relative">
-                     <ResponsiveContainer width="100%" height="100%">
+                      <ResponsiveContainer width="100%" height="100%">
                         <RechartsBarChart data={annualReturnsData}>
                            <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(5px)', fontFamily: 'Inter'}} itemStyle={{color: '#fff'}} />
                            <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#a1a1aa', fontSize: 12}} dy={10} />
@@ -743,7 +813,7 @@ useEffect(() => {
                               ))}
                            </Bar>
                         </RechartsBarChart>
-                     </ResponsiveContainer>
+                      </ResponsiveContainer>
                   </div>
                 </div>
 
@@ -755,10 +825,10 @@ useEffect(() => {
                         </div>
                         <div className="p-2">
                             {[
-                                { l: 'Sharpe Ratio', v: '3.18', good: true },
-                                { l: 'Sortino Ratio', v: '4.22', good: true },
-                                { l: 'Max Drawdown', v: '-12.45 %', good: false },
-                                { l: 'Win Rate', v: '68.5 %', good: true },
+                                { l: 'Sharpe Ratio', v: statsData?.sharpe || '3.18', good: true },
+                                { l: 'Sortino Ratio', v: statsData?.sortino || '4.22', good: true },
+                                { l: 'Max Drawdown', v: statsData?.maxDD || '-12.45 %', good: false },
+                                { l: 'Win Rate', v: statsData?.winRate || '68.5 %', good: true },
                                 { l: 'Profit Factor', v: '2.15', good: true },
                                 { l: 'Avg Turnover', v: '0.03 %', good: null },
                                 { l: 'Total Trades', v: '456', good: null },
@@ -787,7 +857,7 @@ useEffect(() => {
                                 { l: 'CAGR', s: '+45.2 %', b1: '+8.5 %', b2: '+6.2 %', sg: true },
                                 { l: 'Volatility', s: '18.5 %', b1: '12.2 %', b2: '14.1 %', sg: null },
                                 { l: 'Sharpe', s: '3.18', b1: '0.65', b2: '0.44', sg: true },
-                                { l: 'Max DD', s: '-12.5 %', b1: '-35.6 %', b2: '-42.1 %', sg: true }, 
+                                { l: 'Max Drawdown', s: '-12.5 %', b1: '-35.6 %', b2: '-42.1 %', sg: true }, 
                                 { l: 'Correlation', s: '0.12', b1: '1.00', b2: '0.89', sg: null },
                             ].map((row, i) => (
                                 <div key={i} className="grid grid-cols-4 gap-4 px-4 py-3 hover:bg-white/5 transition-colors items-center rounded-lg">
@@ -805,33 +875,102 @@ useEffect(() => {
               </div>
             )}
 
-            {/* ================== TAB CONTENT: ABOUT ================== */}
+            {/* ================== TAB CONTENT: ABOUT (UPDATED) ================== */}
             {activeTab === 'about' && (
-              <div className="animate-fade-in-up flex items-center justify-center h-[60vh]">
-                 <div className="text-center">
-                    <h2 className="text-4xl font-bold text-white font-eth mb-4">About Sentquant</h2>
-                    <p className="text-gray-400 max-w-lg mx-auto leading-relaxed">
-                       Sentquant adalah platform analitik kuantitatif yang menyediakan data performa strategi trading secara transparan dan akurat. Kami percaya bahwa data historis dan live monitoring adalah kunci kepercayaan dalam dunia trading algoritmik.
-                    </p>
-                 </div>
+              <div className="animate-fade-in-up flex flex-col items-start justify-start h-full relative z-10 px-4 pt-4 md:pt-8 pl-8 md:pl-20">
+                  <div className="max-w-3xl text-left">
+                    {/* 1. Medium Gray Title */}
+                    <h2 className="text-2xl md:text-3xl font-medium text-gray-400 font-eth mb-4">
+                        The trading industry is broken.
+                    </h2>
+
+                    {/* 2. Small White Text Block */}
+                    <div className="text-sm md:text-base text-white font-light leading-relaxed space-y-4 max-w-xl">
+                        <p>
+                            Fake gurus sell dreams.
+                        </p>
+                        <p>
+                            Performance can’t be verified.
+                        </p>
+                        <p>
+                            Retail traders are misled by empty claims.
+                        </p>
+                        <p>
+                            Everyone talks.<br/>
+                            No data.
+                        </p>
+                    </div>
+
+                    {/* 3. "If CoinMarketCap..." block styled like the Title (Medium Gray) */}
+                    <div className="text-2xl md:text-3xl font-medium text-gray-400 font-eth leading-tight space-y-2 mt-12 max-w-2xl">
+                        <p>
+                            If CoinMarketCap tracks assets,
+                        </p>
+                        <p>
+                            SentQuant tracks strategy performance.
+                        </p>
+                        <p>
+                            Because performance can’t lie people can.
+                        </p>
+                    </div>
+
+                    {/* Context for other parts */}
+                    <div className="mt-12 space-y-12">
+                        {/* 4. Sentquant doesn't sell... block - FULLY LEFT ALIGNED */}
+                        <div className="flex flex-col space-y-3 text-white text-sm md:text-base font-light leading-relaxed max-w-xl text-left">
+                            <div>Sentquant doesn't sell courses.</div>
+                            <div>Sentquant doesn’t sell signals.</div>
+                            <div>Sentquant doesn’t sell promises.</div>
+                            <div className="text-white mt-4 leading-relaxed">
+                                Sentquant is the arena where every claim is tested.
+                            </div>
+                        </div>
+                        
+                        {/* 5. Bottom block - LEFT ALIGNED */}
+                        <div className="flex flex-col items-start text-left w-full max-w-4xl pt-4">
+                            <div className="py-2">
+                                <span className="text-white font-bold text-xl block">This is the end of the fake trading mentor era.</span>
+                            </div>
+
+                            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 border-t border-b border-white/10 py-4 my-4">
+                                <div className="flex gap-8 text-[10px] font-mono text-blue-400 tracking-widest">
+                                    <span>EVERY TRADER</span>
+                                    <span>EVERY STRATEGY</span>
+                                    <span>EVERY CLAIM</span>
+                                    <span>PROVEN ON-CHAIN</span>
+                                </div>
+                                
+                                <button className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full text-sm md:text-base font-bold transition-colors backdrop-blur-md flex items-center gap-2 group border border-white/5">
+                                    Join Movement
+                                    <ArrowUpRight size={20} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"/>
+                                </button>
+                            </div>
+                            
+                            {/* Risk Warning REMOVED */}
+                        </div>
+                    </div>
+
+                  </div>
               </div>
             )}
 
-            {/* --- FOOTER (Shown on all tabs or just About? Let's keep it on all for structure) --- */}
-            <footer className="pt-12 pb-8 bg-black/20 backdrop-blur-md rounded-xl mt-10 border-t border-white/5">
-               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12 text-sm text-gray-400 px-6">
-                  <div className="col-span-2 lg:col-span-2 pr-8">
-                      <div className="flex items-center gap-2 mb-4">
-                         <span className="text-xl font-bold text-white font-eth">Sentquant</span>
-                      </div>
-                      <p className="mb-4">Look first / Then leap.</p>
-                  </div>
-               </div>
-               <div className="pt-8 text-xs text-gray-500 flex flex-col md:flex-row justify-between items-center px-6">
-                  <p>Pilih data pasar disediakan oleh ICE Data Services.</p>
-                  <p className="mt-2 md:mt-0">© 2024 Sentquant, Inc.</p>
-               </div>
-            </footer>
+            {/* --- FOOTER (Hidden on About Page for cleaner look) --- */}
+            {activeTab !== 'about' && (
+                <footer className="pt-12 pb-8 bg-black/20 backdrop-blur-md rounded-xl mt-10 border-t border-white/5">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12 text-sm text-gray-400 px-6">
+                    <div className="col-span-2 lg:col-span-2 pr-8">
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className="text-xl font-bold text-white font-eth">Sentquant</span>
+                        </div>
+                        <p className="mb-4">Look first / Then leap.</p>
+                    </div>
+                </div>
+                <div className="pt-8 text-xs text-gray-500 flex flex-col md:flex-row justify-between items-center px-6">
+                    <p>Pilih data pasar disediakan oleh ICE Data Services.</p>
+                    <p className="mt-2 md:mt-0">© 2024 Sentquant, Inc.</p>
+                </div>
+                </footer>
+            )}
 
           </div>
         </main>
