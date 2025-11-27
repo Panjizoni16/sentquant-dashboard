@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, ChevronDown, Filter, ArrowUpRight, Circle
+  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock
 } from 'lucide-react';
 
 // --- COMPONENT: CUSTOM Q LOGO (SVG REPLICA) ---
@@ -209,7 +209,7 @@ const SmokeBackground = () => {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0" />;
+  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
 };
 
 // --- MOCK DATA FOR FALLBACK ---
@@ -253,9 +253,20 @@ export default function App() {
   const [selectedYear, setSelectedYear] = useState('5Y');
   const [filteredChartData, setFilteredChartData] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
+  // STATE FOR MOBILE MENU
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const yearsList = ['ALL', ...Array.from({length: 26}, (_, i) => (2025 - i).toString())];
   const manualRanges = ['2020-2024', '2015-2019', '2010-2014', '2005-2009'];
+  
+  const navItems = [
+    { id: 'home', label: 'Home' },
+    { id: 'historical', label: 'Historical' },
+    { id: 'live', label: 'Live' },
+    { id: 'stats', label: 'Stats' },
+    { id: 'about', label: 'About' }
+  ];
 
   useEffect(() => {
     const fetchOrFallback = async (url, fallback) => {
@@ -303,6 +314,11 @@ export default function App() {
   }, []);
   
   const [activeTab, setActiveTab] = useState('home');
+
+  const handleTabChange = (tabId) => {
+      setActiveTab(tabId);
+      setIsMenuOpen(false); // Close menu on mobile when a tab is selected
+  };
 
   const stats = useMemo(() => {
     if (!filteredChartData || filteredChartData.length === 0) return {
@@ -423,16 +439,10 @@ export default function App() {
         <div className="flex items-center gap-6">
           <div className="hidden md:block">
              <nav className="flex items-center gap-8 text-sm font-semibold text-[#d1d4dc]">
-              {[
-                { id: 'home', label: 'Home' },
-                { id: 'historical', label: 'Historical' },
-                { id: 'live', label: 'Live' },
-                { id: 'stats', label: 'Stats' },
-                { id: 'about', label: 'About' }
-              ].map(item => (
+              {navItems.map(item => (
                 <button 
                   key={item.id} 
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => handleTabChange(item.id)}
                   className={`hover:text-white transition-colors drop-shadow-sm ${activeTab === item.id ? 'text-white' : 'text-[#d1d4dc]/60'}`}
                 >
                   {item.label}
@@ -443,10 +453,37 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-4 ml-auto">
-          <button className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors backdrop-blur-md">Join</button>
-          <button className="hover:bg-white/10 p-2 rounded-full md:hidden transition-colors"><Menu size={24} /></button>
+          {/* NAVBAR BUTTON - WITH LOCK */}
+          <button className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors backdrop-blur-md flex items-center gap-2">
+            Join <Lock size={14} />
+          </button>
+          {/* MOBILE MENU TOGGLE */}
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="hover:bg-white/10 p-2 rounded-full md:hidden transition-colors text-white z-50"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </header>
+
+      {/* MOBILE MENU OVERLAY */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl pt-24 px-6 md:hidden flex flex-col gap-6 animate-fade-in-up">
+            {navItems.map(item => (
+                <button 
+                  key={item.id} 
+                  onClick={() => handleTabChange(item.id)}
+                  className={`text-2xl font-bold text-left py-2 border-b border-white/10 ${activeTab === item.id ? 'text-white' : 'text-gray-500'}`}
+                >
+                  {item.label}
+                </button>
+            ))}
+            <div className="mt-auto pb-10">
+                <p className="text-gray-500 text-sm">© 2024 Sentquant, Inc.</p>
+            </div>
+        </div>
+      )}
 
       {/* 2. MAIN SCROLLABLE CONTENT */}
       <div className="flex flex-1 overflow-hidden relative z-10">
@@ -553,7 +590,8 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-col space-y-2">
-                      <div className="h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
+                      {/* Responsive Charts */}
+                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={filteredChartData} margin={{top:10, left:0, right:0, bottom:0}}>
                             <defs>
@@ -681,7 +719,7 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-col space-y-2">
-                      <div className="h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
+                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={liveData} margin={{top:10, left:0, right:0, bottom:0}}>
                             <defs>
@@ -877,7 +915,7 @@ export default function App() {
 
             {/* ================== TAB CONTENT: ABOUT (UPDATED) ================== */}
             {activeTab === 'about' && (
-              <div className="animate-fade-in-up flex flex-col items-start justify-start h-full relative z-10 px-4 pt-4 md:pt-8 pl-8 md:pl-20">
+              <div className="animate-fade-in-up flex flex-col items-start justify-start h-full relative z-10 px-4 pt-0 md:pt-8 pl-4 md:pl-20">
                   <div className="max-w-3xl text-left">
                     {/* 1. Medium Gray Title */}
                     <h2 className="text-2xl md:text-3xl font-medium text-gray-400 font-eth mb-4">
@@ -907,15 +945,15 @@ export default function App() {
                             If CoinMarketCap tracks assets,
                         </p>
                         <p>
-                            SentQuant tracks strategy performance.
+                            Sentquant tracks strategy performance.
                         </p>
                         <p>
-                            Because performance can’t lie people can.
+                            Because performance can’t lie, people can.
                         </p>
                     </div>
 
                     {/* Context for other parts */}
-                    <div className="mt-12 space-y-12">
+                    <div className="mt-12 space-y-12 pb-20">
                         {/* 4. Sentquant doesn't sell... block - FULLY LEFT ALIGNED */}
                         <div className="flex flex-col space-y-3 text-white text-sm md:text-base font-light leading-relaxed max-w-xl text-left">
                             <div>Sentquant doesn't sell courses.</div>
@@ -932,21 +970,20 @@ export default function App() {
                                 <span className="text-white font-bold text-xl block">This is the end of the fake trading mentor era.</span>
                             </div>
 
-                            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 border-t border-b border-white/10 py-4 my-4">
-                                <div className="flex gap-8 text-[10px] font-mono text-blue-400 tracking-widest">
+                            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 border-t border-b border-white/10 py-6 my-8">
+                                <div className="flex flex-wrap justify-start gap-3 md:gap-6 text-[11px] md:text-[13px] font-mono text-blue-400 tracking-widest">
                                     <span>EVERY TRADER</span>
                                     <span>EVERY STRATEGY</span>
                                     <span>EVERY CLAIM</span>
-                                    <span>PROVEN ON-CHAIN</span>
+                                    <span className="whitespace-nowrap">PROVEN ON-CHAIN</span>
                                 </div>
                                 
+                                {/* JOIN MOVEMENT BUTTON WITH LOCK */}
                                 <button className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full text-sm md:text-base font-bold transition-colors backdrop-blur-md flex items-center gap-2 group border border-white/5">
                                     Join Movement
-                                    <ArrowUpRight size={20} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"/>
+                                    <Lock size={18} />
                                 </button>
                             </div>
-                            
-                            {/* Risk Warning REMOVED */}
                         </div>
                     </div>
 
