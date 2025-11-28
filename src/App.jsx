@@ -34,6 +34,102 @@ const SentquantLogo = ({ size = 120 }) => (
   </svg>
 );
 
+// --- COMPONENT: MONTHLY HEATMAP (REUSABLE & FILTERABLE) ---
+const MonthlyHeatmap = ({ data, enableFilter = false }) => {
+  // State untuk rentang tahun yang dipilih (Default: 2020-2025)
+  const [selectedRange, setSelectedRange] = useState('2020-2025');
+  
+  // Daftar rentang filter
+  const filterRanges = ['2020-2025', '2015-2019', '2010-2014', '2005-2009'];
+
+  // Logika Filter Data
+  const filteredData = useMemo(() => {
+    // Jika filter dimatikan (misal di page Live), tampilkan semua data atau batasi sesuai kebutuhan
+    if (!enableFilter) return data;
+
+    const [start, end] = selectedRange.split('-').map(Number);
+    
+    return data.filter(row => {
+      const year = parseInt(row.year);
+      return year >= start && year <= end;
+    });
+  }, [data, enableFilter, selectedRange]);
+
+  return (
+    <div className="mb-10 animate-fade-in-up mt-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+          <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Monthly Returns Heatmap</h3>
+          
+          {/* FITUR FILTER KHUSUS HISTORICAL */}
+          {enableFilter ? (
+            <div className="flex flex-wrap gap-2">
+              {filterRanges.map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setSelectedRange(range)}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all border border-white/10 
+                    ${selectedRange === range 
+                      ? 'bg-[#22ab94] text-black shadow-[0_0_10px_rgba(34,171,148,0.4)] border-transparent' 
+                      : 'bg-black/40 text-gray-400 hover:text-white hover:bg-white/10'
+                    }`}
+                >
+                  {range}
+                </button>
+              ))}
+            </div>
+          ) : (
+            // Indikator Legenda (Hanya muncul jika filter mati / default)
+            <div className="flex gap-2">
+              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> Positif</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> Negatif</span>
+            </div>
+          )}
+      </div>
+
+      <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2">
+          <table className="w-full text-sm border-collapse min-w-[800px]">
+            <thead>
+                <tr>
+                  <th className="text-left text-gray-400 font-medium py-3 px-2">Tahun</th>
+                  {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
+                      <th key={m} className="text-center text-gray-400 font-medium py-3 px-2">{m}</th>
+                  ))}
+                  <th className="text-center text-gray-400 font-medium py-3 px-2">Tahunan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {filteredData.length > 0 ? (
+                  filteredData.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-white/5 transition-colors rounded-lg">
+                        <td className="text-left font-bold text-white py-4 px-2">{row.year}</td>
+                        {row.months.map((val, i) => (
+                          <td key={i} className="text-center py-4 px-2">
+                              {val !== null ? (
+                                <span className={`px-2 py-1 rounded font-medium backdrop-blur-md ${val >= 0 ? 'text-[#22ab94] bg-[#22ab94]/20' : 'text-[#f23645] bg-[#f23645]/20'}`}>
+                                      {val > 0 ? '+' : ''}{val}%
+                                </span>
+                              ) : <span className="text-gray-600">-</span>}
+                          </td>
+                        ))}
+                        <td className="text-center py-4 px-2 font-bold text-white">
+                          {row.months.reduce((acc, curr) => acc + (curr || 0), 0).toFixed(1)}%
+                        </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="14" className="text-center py-8 text-gray-500 italic">
+                      Data tidak tersedia untuk periode {selectedRange}
+                    </td>
+                  </tr>
+                )}
+            </tbody>
+          </table>
+      </div>
+    </div>
+  );
+};
+
 // --- COMPONENT: GRID WAVE BACKGROUND (LOCKED & GRAY) - Used for other tabs ---
 const GridWaveBackground = ({ height = 580 }) => {
   const canvasRef = useRef(null);
@@ -212,7 +308,7 @@ const SmokeBackground = () => {
   return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
 };
 
-// --- MOCK DATA FOR FALLBACK ---
+// --- MOCK DATA FOR FALLBACK (EXTENDED FOR HEATMAP FILTERING) ---
 const MOCK_HISTORICAL = Array.from({ length: 100 }, (_, i) => ({
     date: `2024-01-${i + 1}`,
     year: '2024',
@@ -224,10 +320,29 @@ const MOCK_LIVE = Array.from({ length: 50 }, (_, i) => ({
     value: 1500 + Math.random() * 200 + i * 5,
     drawdown: -(Math.random() * 5)
 }));
-const MOCK_HEATMAP = [
-    { year: '2024', months: [5.2, -1.2, 3.4, 2.1, -0.5, 1.8, 4.2, 2.1, -3.2, 1.5, 4.2, 2.1] },
-    { year: '2023', months: [2.1, 1.5, -2.2, 4.5, 1.2, -0.8, 3.5, 1.1, 0.5, -1.2, 3.8, 1.9] }
+
+// Generates fake monthly data for a range of years to test the filter
+const generateMockHeatmap = () => {
+  const years = [];
+  for (let y = 2024; y >= 2005; y--) {
+    const months = Array.from({length: 12}, () => (Math.random() * 10 - 4).toFixed(1)).map(Number);
+    years.push({ year: y.toString(), months });
+  }
+  return years;
+};
+const MOCK_HEATMAP = generateMockHeatmap();
+
+// --- MOCK DATA KHUSUS LIVE (2025-2029) ---
+const MOCK_LIVE_HEATMAP = [
+  { year: '2029', months: Array(12).fill(null) }, // Masa depan (kosong)
+  { year: '2028', months: Array(12).fill(null) }, // Masa depan (kosong)
+  { year: '2027', months: Array(12).fill(null) }, // Masa depan (kosong)
+  { year: '2026', months: Array(12).fill(null) }, // Masa depan (kosong)
+  // Tahun 2025 sebagian terisi sebagai simulasi "Live running"
+  { year: '2025', months: [4.2, 1.5, -2.1, 3.8, 2.5, 1.2, 0.5, 3.1, 1.9, 4.2, 2.1, null] } 
 ];
+
+
 const MOCK_ANNUAL = [
     { year: '2021', value: 25.4 },
     { year: '2022', value: -5.2 },
@@ -245,6 +360,7 @@ export default function App() {
   const [fullData, setFullData] = useState([]);
   const [liveData, setLiveData] = useState([]);
   const [heatmapData, setHeatmapData] = useState([]);
+  const [liveHeatmapData, setLiveHeatmapData] = useState([]); // STATE BARU UNTUK LIVE HEATMAP
   const [annualReturnsData, setAnnualReturnsData] = useState([]);
   const [statsData, setStatsData] = useState(null);
   const [liveStatsData, setLiveStatsData] = useState(null);
@@ -281,13 +397,14 @@ export default function App() {
 
     const fetchAllData = async () => {
       try {
-        const [hist, live, heatmap, annual, stats, liveStats] = await Promise.all([
+        const [hist, live, heatmap, annual, stats, liveStats, liveHeatmap] = await Promise.all([
             fetchOrFallback('/data/equity-historical.json', MOCK_HISTORICAL),
             fetchOrFallback('/data/equity-live.json', MOCK_LIVE),
             fetchOrFallback('/data/heatmap-data.json', MOCK_HEATMAP),
             fetchOrFallback('/data/annual-returns.json', MOCK_ANNUAL),
             fetchOrFallback('/data/stats-data.json', MOCK_STATS),
             fetchOrFallback('/data/live-stats-data.json', MOCK_LIVE_STATS),
+            fetchOrFallback('/data/live-heatmap-data.json', MOCK_LIVE_HEATMAP), // Load data live heatmap
         ]);
         
         setFullData(hist);
@@ -300,6 +417,7 @@ export default function App() {
 
         setLiveData(live);
         setHeatmapData(heatmap);
+        setLiveHeatmapData(liveHeatmap); // Set state live heatmap
         setAnnualReturnsData(annual);
         setStatsData(stats);
         setLiveStatsData(liveStats);
@@ -656,6 +774,9 @@ export default function App() {
                         </ResponsiveContainer>
                       </div>
                   </div>
+
+                  {/* INSERTED HEATMAP IN HISTORICAL WITH FILTER ENABLED */}
+                  <MonthlyHeatmap data={heatmapData} enableFilter={true} />
                 </div>
               </>
             )}
@@ -786,6 +907,9 @@ export default function App() {
                         </div>
                       </div>
                   </div>
+
+                  {/* INSERTED HEATMAP IN LIVE - USING NEW LIVE DATA */}
+                  <MonthlyHeatmap data={liveHeatmapData} enableFilter={false} />
                 </div>
               </div>
             )}
@@ -793,47 +917,8 @@ export default function App() {
             {/* ================== TAB CONTENT: STATS ================== */}
             {activeTab === 'stats' && (
               <div className="animate-fade-in-up">
-                <div className="mb-10">
-                  <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Monthly Returns Heatmap</h3>
-                      <div className="flex gap-2">
-                        <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> Positif</span>
-                        <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> Negatif</span>
-                      </div>
-                  </div>
-                  <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2">
-                      <table className="w-full text-sm border-collapse min-w-[800px]">
-                        <thead>
-                           <tr>
-                              <th className="text-left text-gray-400 font-medium py-3 px-2">Tahun</th>
-                              {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
-                                 <th key={m} className="text-center text-gray-400 font-medium py-3 px-2">{m}</th>
-                              ))}
-                              <th className="text-center text-gray-400 font-medium py-3 px-2">Tahunan</th>
-                           </tr>
-                        </thead>
-                        <tbody>
-                           {heatmapData.map((row, idx) => (
-                              <tr key={idx} className="hover:bg-white/5 transition-colors rounded-lg">
-                                 <td className="text-left font-bold text-white py-4 px-2">{row.year}</td>
-                                 {row.months.map((val, i) => (
-                                    <td key={i} className="text-center py-4 px-2">
-                                       {val !== null ? (
-                                          <span className={`px-2 py-1 rounded font-medium backdrop-blur-md ${val >= 0 ? 'text-[#22ab94] bg-[#22ab94]/20' : 'text-[#f23645] bg-[#f23645]/20'}`}>
-                                               {val > 0 ? '+' : ''}{val}%
-                                          </span>
-                                       ) : <span className="text-gray-600">-</span>}
-                                    </td>
-                                 ))}
-                                 <td className="text-center py-4 px-2 font-bold text-white">
-                                    {row.months.reduce((acc, curr) => acc + (curr || 0), 0).toFixed(1)}%
-                                 </td>
-                              </tr>
-                           ))}
-                        </tbody>
-                      </table>
-                  </div>
-                </div>
+                
+                {/* HEATMAP REMOVED FROM HERE */}
 
                 <div className="mb-10">
                   <div className="flex items-center justify-between mb-6">
@@ -913,7 +998,7 @@ export default function App() {
               </div>
             )}
 
-            {/* ================== TAB CONTENT: ABOUT (UPDATED) ================== */}
+            {/* ... ABOUT PAGE ... */}
             {activeTab === 'about' && (
               <div className="animate-fade-in-up flex flex-col items-start justify-start h-full relative z-10 px-4 pt-0 md:pt-8 pl-4 md:pl-20">
                   <div className="max-w-3xl text-left">
