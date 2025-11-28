@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock
+  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star
 } from 'lucide-react';
 
 // --- COMPONENT: CUSTOM Q LOGO (SVG REPLICA) ---
@@ -129,6 +129,234 @@ const MonthlyHeatmap = ({ data, enableFilter = false }) => {
     </div>
   );
 };
+
+// --- COMPONENT: TOP 5 DRAWDOWNS TABLE ---
+const TopDrawdownsTable = ({ data }) => (
+  <div className="mb-10 animate-fade-in-up mt-8">
+    <div className="flex items-center justify-between mb-6">
+      <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Top 5 Drawdowns</h3>
+    </div>
+    <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2">
+      <table className="w-full text-sm border-collapse min-w-[800px]">
+        <thead>
+          <tr className="text-left text-gray-400 font-medium border-b border-white/5">
+            <th className="py-3 px-4">Rank</th>
+            <th className="py-3 px-4">Start Date</th>
+            <th className="py-3 px-4">End Date</th>
+            <th className="py-3 px-4 text-right">Depth</th>
+            <th className="py-3 px-4 text-right">Duration (Days)</th>
+            <th className="py-3 px-4 text-right">Recovery (Days)</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-white/5">
+          {data.map((row) => (
+            <tr key={row.rank} className="hover:bg-white/5 transition-colors">
+              <td className="py-3 px-4 font-bold text-white">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white/10 text-xs">
+                  {row.rank}
+                </div>
+              </td>
+              <td className="py-3 px-4 text-gray-300 font-mono text-xs">{row.startDate}</td>
+              <td className="py-3 px-4 text-gray-300 font-mono text-xs">{row.endDate}</td>
+              <td className="py-3 px-4 text-right font-bold text-[#f23645]">{row.depth.toFixed(2)}%</td>
+              <td className="py-3 px-4 text-right text-white font-mono">{row.duration}</td>
+              <td className="py-3 px-4 text-right text-[#22ab94] font-mono">{row.recovery}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+
+// --- DATA: NEW COMPREHENSIVE STATISTICS STRUCTURE (CLEANED & REMOVED DRAWDOWNS) ---
+const EXECUTIVE_SUMMARY_DATA = {
+  grade: "A+",
+  title: "Elite Institutional Quality",
+  metrics: [
+    { label: "CAGR", value: "30.50%", grade: "Exceptional" },
+    { label: "Total Return", value: "25,516%", grade: "Outstanding" },
+    { label: "Max Drawdown", value: "-29.20%", grade: "Very Good" },
+    { label: "Sharpe Ratio", value: "1.44", grade: "Very Good" },
+    { label: "Sortino Ratio", value: "2.35", grade: "Excellent" }
+  ]
+};
+
+const DETAILED_STATS_SECTIONS = [
+  {
+    title: "RETURN METRICS",
+    metrics: [
+      { l: "Total Return", v: "25,516.42%" },
+      { l: "CAGR (Annualized)", v: "30.50%" },
+      { l: "APR (Simple Annual)", v: "1,224.85%" },
+      { l: "Annualized Volatility", v: "17.16%" },
+      { l: "Daily Return (Mean)", v: "0.1100%" },
+      { l: "Daily Return (Median)", v: "-0.0800%" },
+      { l: "Years Analyzed", v: "20.83" }
+    ]
+  },
+  {
+    title: "DRAWDOWN METRICS",
+    metrics: [
+      { l: "Max Drawdown", v: "-29.20%" },
+      { l: "Average Drawdown", v: "-1.82%" },
+      { l: "Max DD Duration", v: "563 days" },
+      { l: "Average DD Duration", v: "12 days" },
+      { l: "Number of Drawdowns", v: "361" },
+      { l: "Drawdown Frequency", v: "6.77%" },
+      { l: "Ulcer Index", v: "5.33%" }
+    ]
+    // REMOVED "extras" (Top 5 Worst Drawdowns) from here
+  },
+  {
+    title: "RISK-ADJUSTED RETURN METRICS",
+    metrics: [
+      { l: "Sharpe Ratio", v: "1.44" },
+      { l: "Sortino Ratio", v: "2.35" },
+      { l: "Calmar Ratio", v: "1.04" },
+      { l: "MAR Ratio", v: "1.04" },
+      { l: "Sterling Ratio", v: "16.74" },
+      { l: "Burke Ratio", v: "0.47" }
+    ]
+  },
+  {
+    title: "VOLATILITY & RISK METRICS",
+    metrics: [
+      { l: "Daily Std Deviation", v: "1.0808%" },
+      { l: "Daily Variance", v: "1.168221" },
+      { l: "Annual Volatility", v: "17.16%" },
+      { l: "Downside Deviation", v: "0.6631%" },
+      { l: "Upside Deviation", v: "1.0759%" },
+      { l: "Semi-Variance", v: "0.439702" },
+      { l: "VaR (95%)", v: "-1.06%" },
+      { l: "CVaR (Expected Shortfall)", v: "-1.77%" },
+      { l: "Max Daily Loss", v: "-23.42%" },
+      { l: "Max Daily Gain", v: "10.44%" }
+    ]
+  },
+  {
+    title: "DISTRIBUTION METRICS",
+    metrics: [
+      { l: "Skewness", v: "-0.0399" },
+      { l: "Kurtosis (Excess)", v: "54.4915" },
+      { l: "Kurtosis (Raw)", v: "57.4915" },
+      { l: "5th Percentile", v: "-1.06%" },
+      { l: "95th Percentile", v: "1.83%" },
+      { l: "25th Percentile (Q1)", v: "-0.34%" },
+      { l: "75th Percentile (Q3)", v: "0.39%" },
+      { l: "IQR", v: "0.7275%" },
+      { l: "Jarque-Bera Statistic", v: "659,315.33" },
+      { l: "Jarque-Bera p-value", v: "0.000000" },
+      { l: "Normal Distribution?", v: "No" }
+    ]
+  },
+  {
+    title: "WIN/LOSS METRICS",
+    metrics: [
+      { l: "Win Rate (Daily)", v: "42.84%" },
+      { l: "Loss Rate (Daily)", v: "56.60%" },
+      { l: "Winning Days", v: "2,283" },
+      { l: "Losing Days", v: "3,016" },
+      { l: "Neutral Days", v: "30" },
+      { l: "Average Win", v: "0.8606%" },
+      { l: "Average Loss", v: "-0.4571%" },
+      { l: "Largest Win", v: "10.44%" },
+      { l: "Largest Loss", v: "-23.42%" },
+      { l: "Win/Loss Ratio", v: "1.88" },
+      { l: "Profit Factor", v: "1.43" },
+      { l: "Expectancy", v: "0.1100%" },
+      { l: "Gross Profit", v: "1,964.74%" },
+      { l: "Gross Loss", v: "1,378.65%" }
+    ]
+  },
+  {
+    title: "CONSISTENCY METRICS",
+    metrics: [
+      { l: "Max Consecutive Wins", v: "8" },
+      { l: "Max Consecutive Losses", v: "18" },
+      { l: "Positive Months", v: "174" },
+      { l: "Negative Months", v: "77" },
+      { l: "Monthly Win Rate", v: "69.32%" },
+      { l: "Recovery Factor", v: "873.93" },
+      { l: "R-Squared (Stability)", v: "0.6848" },
+      { l: "Avg Positive Months/Year", v: "8.4" }
+    ]
+  }
+];
+
+// --- COMPONENT: EXECUTIVE SUMMARY CARD ---
+const ExecutiveSummaryCard = ({ data }) => (
+  <div className="mb-8 rounded-xl bg-gradient-to-br from-[#2962ff]/20 to-black border border-[#2962ff]/30 overflow-hidden relative group">
+    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+      <Star size={100} fill="white" stroke="none" />
+    </div>
+    <div className="p-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-white/10 pb-4">
+        <div>
+          <h2 className="text-3xl font-bold text-white font-eth tracking-tight flex items-center gap-3">
+            EXECUTIVE SUMMARY
+          </h2>
+          <p className="text-[#2962ff] font-bold tracking-widest text-sm mt-1 uppercase">
+            Overall Grade: <span className="text-white text-lg">{data.grade}</span> ({data.title})
+          </p>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {data.metrics.map((item, idx) => (
+          <div key={idx} className="bg-black/40 backdrop-blur-md p-4 rounded-lg border border-white/5 hover:border-white/20 transition-colors">
+            <div className="text-gray-400 text-xs uppercase tracking-wider font-semibold mb-1">{item.label}</div>
+            <div className="flex justify-between items-baseline">
+              <span className="text-2xl font-bold text-white">{item.value}</span>
+            </div>
+            <div className="text-[#22ab94] text-xs font-medium mt-2">{item.grade}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// --- COMPONENT: DETAILED STAT CARD ---
+const DetailedStatCard = ({ section }) => (
+  <div className="rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden border border-white/5 h-full flex flex-col">
+    <div className="bg-[#2962ff]/10 px-5 py-4 border-b border-white/5">
+      <h3 className="font-bold text-white font-eth text-xl">{section.title}</h3>
+    </div>
+    
+    <div className="p-0 overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="bg-white/5 text-gray-400 text-xs uppercase tracking-wider">
+            <th className="px-5 py-3 font-semibold">Metric</th>
+            <th className="px-5 py-3 font-semibold text-right">Value</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-white/5">
+          {section.metrics.map((item, idx) => (
+            <tr key={idx} className="hover:bg-white/5 transition-colors">
+              <td className="px-5 py-3 font-medium text-gray-300">{item.l}</td>
+              <td className="px-5 py-3 text-right text-white font-bold">{item.v}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {section.extras && (
+        <div className="p-5 bg-white/[0.02] border-t border-white/5 flex-grow">
+          <h4 className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">{section.extras.title}</h4>
+          <ul className="space-y-1">
+            {section.extras.items.map((item, i) => (
+              <li key={i} className="text-gray-400 text-xs font-mono bg-black/40 px-2 py-1 rounded border-l-2 border-blue-500/50">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+    )}
+  </div>
+);
 
 // --- COMPONENT: GRID WAVE BACKGROUND (LOCKED & GRAY) - Used for other tabs ---
 const GridWaveBackground = ({ height = 580 }) => {
@@ -342,7 +570,6 @@ const MOCK_LIVE_HEATMAP = [
   { year: '2025', months: [4.2, 1.5, -2.1, 3.8, 2.5, 1.2, 0.5, 3.1, 1.9, 4.2, 2.1, null] } 
 ];
 
-
 const MOCK_ANNUAL = [
     { year: '2021', value: 25.4 },
     { year: '2022', value: -5.2 },
@@ -352,6 +579,15 @@ const MOCK_ANNUAL = [
 ];
 const MOCK_STATS = { sharpe: 3.18, sortino: 4.22, maxDD: -12.45, winRate: 68.5 };
 const MOCK_LIVE_STATS = { totalReturn: 14.5, maxDrawdown: -8.24, sharpe: 2.14, sortino: 3.05, winRate: 62.4 };
+
+// --- MOCK DATA: TOP 5 DRAWDOWNS ---
+const MOCK_TOP_DRAWDOWNS = [
+  { rank: 1, startDate: '2022-01-05', endDate: '2022-06-15', depth: -12.45, duration: 161, recovery: 45 },
+  { rank: 2, startDate: '2021-09-10', endDate: '2021-10-05', depth: -8.32, duration: 25, recovery: 12 },
+  { rank: 3, startDate: '2023-03-12', endDate: '2023-04-18', depth: -6.15, duration: 37, recovery: 15 },
+  { rank: 4, startDate: '2020-11-02', endDate: '2020-11-20', depth: -4.80, duration: 18, recovery: 8 },
+  { rank: 5, startDate: '2024-08-01', endDate: '2024-08-15', depth: -3.20, duration: 14, recovery: 5 },
+];
 
 // --- MAIN APPLICATION ---
 
@@ -777,6 +1013,9 @@ export default function App() {
 
                   {/* INSERTED HEATMAP IN HISTORICAL WITH FILTER ENABLED */}
                   <MonthlyHeatmap data={heatmapData} enableFilter={true} />
+
+                  {/* INSERTED TOP 5 DRAWDOWNS TABLE */}
+                  <TopDrawdownsTable data={MOCK_TOP_DRAWDOWNS} />
                 </div>
               </>
             )}
@@ -918,8 +1157,6 @@ export default function App() {
             {activeTab === 'stats' && (
               <div className="animate-fade-in-up">
                 
-                {/* HEATMAP REMOVED FROM HERE */}
-
                 <div className="mb-10">
                   <div className="flex items-center justify-between mb-6">
                       <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Annual Returns</h3>
@@ -940,60 +1177,14 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="mb-20 flex flex-col lg:flex-row gap-8 items-start">
-                    <div className="w-full lg:w-1/2 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden">
-                        <div className="bg-[#2962ff]/10 px-4 py-3 flex justify-between items-center backdrop-blur-md">
-                              <h3 className="font-bold text-white font-eth">Global Statistic</h3>
-                              <span className="text-xs text-[#2962ff] uppercase tracking-widest font-bold">Value</span>
-                        </div>
-                        <div className="p-2">
-                            {[
-                                { l: 'Sharpe Ratio', v: statsData?.sharpe || '3.18', good: true },
-                                { l: 'Sortino Ratio', v: statsData?.sortino || '4.22', good: true },
-                                { l: 'Max Drawdown', v: statsData?.maxDD || '-12.45 %', good: false },
-                                { l: 'Win Rate', v: statsData?.winRate || '68.5 %', good: true },
-                                { l: 'Profit Factor', v: '2.15', good: true },
-                                { l: 'Avg Turnover', v: '0.03 %', good: null },
-                                { l: 'Total Trades', v: '456', good: null },
-                                { l: 'Holding Time', v: '14 Days', good: null },
-                            ].map((row, i) => (
-                                <div key={i} className="flex justify-between items-center px-4 py-3 hover:bg-white/5 transition-colors rounded-lg">
-                                    <span className="text-gray-300 text-sm font-medium">{row.l}</span>
-                                    <span className={`font-bold ${row.good === true ? 'text-[#22ab94]' : row.good === false ? 'text-[#f23645]' : 'text-white'}`}>
-                                        {row.v}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                {/* EXECUTIVE SUMMARY */}
+                <ExecutiveSummaryCard data={EXECUTIVE_SUMMARY_DATA} />
 
-                    <div className="w-full lg:w-1/2 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden">
-                        <div className="bg-[#2962ff]/10 px-4 py-3 grid grid-cols-4 gap-4 backdrop-blur-md">
-                              <h3 className="font-bold text-white font-eth col-span-1">Metric</h3>
-                              <h3 className="font-bold text-white font-eth text-center">Strategy</h3>
-                              <h3 className="font-bold text-gray-400 font-eth text-center">IHSG</h3>
-                              <h3 className="font-bold text-gray-400 font-eth text-center">LQ45</h3>
-                        </div>
-                        <div className="p-2">
-                            {[
-                                { l: 'Total Return', s: '+4327 %', b1: '+140 %', b2: '+95 %', sg: true },
-                                { l: 'CAGR', s: '+45.2 %', b1: '+8.5 %', b2: '+6.2 %', sg: true },
-                                { l: 'Volatility', s: '18.5 %', b1: '12.2 %', b2: '14.1 %', sg: null },
-                                { l: 'Sharpe', s: '3.18', b1: '0.65', b2: '0.44', sg: true },
-                                { l: 'Max Drawdown', s: '-12.5 %', b1: '-35.6 %', b2: '-42.1 %', sg: true }, 
-                                { l: 'Correlation', s: '0.12', b1: '1.00', b2: '0.89', sg: null },
-                            ].map((row, i) => (
-                                <div key={i} className="grid grid-cols-4 gap-4 px-4 py-3 hover:bg-white/5 transition-colors items-center rounded-lg">
-                                    <span className="text-gray-300 text-sm font-medium col-span-1">{row.l}</span>
-                                    <div className={`text-center font-bold py-1 rounded ${row.sg ? 'text-[#22ab94]' : 'text-white'}`}>
-                                        {row.s}
-                                    </div>
-                                    <span className="text-center text-gray-400 text-sm">{row.b1}</span>
-                                    <span className="text-center text-gray-400 text-sm">{row.b2}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                {/* DETAILED STATS SECTIONS */}
+                <div className="mb-20 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {DETAILED_STATS_SECTIONS.map((section, idx) => (
+                      <DetailedStatCard key={idx} section={section} />
+                    ))}
                 </div>
               </div>
             )}
