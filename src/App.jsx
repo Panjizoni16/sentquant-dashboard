@@ -4,17 +4,17 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star, Zap, Grid, Code, Wind, Settings
+  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star, Zap, Grid, Code, Wind, Settings, ArrowUp
 } from 'lucide-react';
 
-// --- LOGO DATA (UPDATED: EXACTLY AS REQUESTED) ---
+// --- LOGO DATA ---
 const LOGO_PATHS = [
   "M490 333.1c-60.3 7.7-116.7 49.2-142.8 104.9-5.7 12.2-11.3 29.4-14.3 44-2.2 10.3-2.4 14-2.3 35.5 0 13.2.5 25 1 26.3.9 2.1 1.8 1.3 13.9-12.5 7.2-8.1 19.1-21.5 26.5-29.8 7.5-8.2 27.6-31 44.6-50.5 17.1-19.5 38-43.2 46.5-52.6s25.1-27.7 36.9-40.8 21.7-24.2 21.8-24.7c.4-1.1-22.9-1-31.8.2",
   "M540.8 334.9c-.3.9-22.7 26.6-28.7 33.1-5.7 6.1-22.1 24.8-22.1 25.2 0 .3 2.4.1 5.3-.4 8.1-1.4 31.4-1.4 39.7.1 54.3 9.5 96.5 52.3 103.6 105.1 1.8 13.6 1.8 21.8-.2 34.9-3.5 24.3-15.6 50.7-31.2 68.1l-4.8 5.3-6.2-6.8-6.3-6.9-36.2.3c-19.9.1-36.3.3-36.4.4 0 .1 24.9 25.5 55.5 56.5l55.7 56.3 35.9-.1h35.9l-4.3-4.7c-3.8-4.2-11.2-11.9-44.3-46l-8-8.1 8.4-9.4c22.9-25.7 39.1-59.3 45-93.3 2.8-16.3 3-40.6.5-56.5-11.9-75.6-68.5-135.1-144.6-152.1-9.7-2.1-11.7-2.3-12.2-1",
   "M385 511.5c-2.5 2.9-12.8 14.5-23 25.9-10.2 11.5-20 22.6-21.9 24.8l-3.3 3.9 3.2 9.2c9.5 27.6 24.6 51.3 46.1 72.3 39.2 38.2 90.2 56.8 144.1 52.6 19.7-1.6 42.2-6.3 54.9-11.5l3.1-1.2-23.3-23.9-23.4-23.8-6.5 1.3c-9.1 1.7-30.7 1.5-40.5-.5-27.7-5.7-48.1-16.3-66.5-34.6-25.2-24.9-36.2-50-37.9-86.5l-.6-13.1z"
 ];
 
-// --- COMPONENT: CUSTOM Q LOGO (SVG REPLICA - USING SHARED PATHS) ---
+// --- COMPONENT: CUSTOM Q LOGO ---
 const SentquantLogo = ({ size = 120 }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -29,7 +29,7 @@ const SentquantLogo = ({ size = 120 }) => (
   </svg>
 );
 
-// --- COMPONENT: MONTHLY HEATMAP (REUSABLE & FILTERABLE) ---
+// --- COMPONENT: MONTHLY HEATMAP ---
 const MonthlyHeatmap = ({ data, enableFilter = false }) => {
   const [selectedRange, setSelectedRange] = useState('2020-2025');
   const filterRanges = ['2020-2025', '2015-2019', '2010-2014', '2005-2009'];
@@ -65,8 +65,8 @@ const MonthlyHeatmap = ({ data, enableFilter = false }) => {
             </div>
           ) : (
             <div className="flex gap-2">
-              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> Positif</span>
-              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> Negatif</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> Positive</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> Negative</span>
             </div>
           )}
       </div>
@@ -75,11 +75,11 @@ const MonthlyHeatmap = ({ data, enableFilter = false }) => {
           <table className="w-full text-sm border-collapse min-w-[800px]">
             <thead>
                 <tr>
-                  <th className="text-left text-gray-400 font-medium py-3 px-2">Tahun</th>
+                  <th className="text-left text-gray-400 font-medium py-3 px-2">Year</th>
                   {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
                       <th key={m} className="text-center text-gray-400 font-medium py-3 px-2">{m}</th>
                   ))}
-                  <th className="text-center text-gray-400 font-medium py-3 px-2">Tahunan</th>
+                  <th className="text-center text-gray-400 font-medium py-3 px-2">Annual</th>
                 </tr>
             </thead>
             <tbody>
@@ -104,7 +104,7 @@ const MonthlyHeatmap = ({ data, enableFilter = false }) => {
                 ) : (
                   <tr>
                     <td colSpan="14" className="text-center py-8 text-gray-500 italic">
-                      Data tidak tersedia untuk periode {selectedRange}
+                      Data not available for period {selectedRange}
                     </td>
                   </tr>
                 )}
@@ -329,7 +329,7 @@ const DetailedStatCard = ({ section }) => (
   </div>
 );
 
-// --- COMPONENT: WARP/STARFIELD BACKGROUND (SPEED/FUTURE THEME) ---
+// --- COMPONENT: WARP/STARFIELD BACKGROUND ---
 const WarpBackground = () => {
   const canvasRef = useRef(null);
 
@@ -344,7 +344,6 @@ const WarpBackground = () => {
     const numStars = 200;
     const speed = 2; // Warp speed
 
-    // FIXED: Check for window.innerWidth change to avoid unnecessary resize on mobile scroll
     let lastWidth = window.innerWidth;
 
     const resize = () => {
@@ -354,8 +353,6 @@ const WarpBackground = () => {
         h = canvas.height = window.innerHeight;
         lastWidth = window.innerWidth;
       } else {
-        // Ensure height is always updated but don't reset stars/logic aggressively if not needed
-        // For WarpBackground specifically, full reset on resize is safer for star positions
         w = canvas.width = window.innerWidth;
         h = canvas.height = window.innerHeight;
       }
@@ -479,6 +476,33 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   
+  // Scroll to top logic
+  const mainScrollRef = useRef(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (mainScrollRef.current) {
+        setShowScrollTop(mainScrollRef.current.scrollTop > 400);
+      }
+    };
+
+    const scrollContainer = mainScrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
   const yearsList = ['ALL', ...Array.from({length: 26}, (_, i) => (2025 - i).toString())];
   const manualRanges = ['2020-2024', '2015-2019', '2010-2014', '2005-2009'];
   
@@ -536,22 +560,17 @@ export default function App() {
     fetchAllData();
   }, []);
 
-  // --- DYNAMIC FAVICON LOGIC (UPDATED WITH CANVAS RENDERER) ---
   useEffect(() => {
     const updateFavicons = async () => {
-      // SVG string to be drawn on canvas
-      // INCREASED SCALE TO 1.5 TO FILL MORE OF THE CIRCLE
       const svgString = `
         <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
           <circle cx="512" cy="512" r="512" fill="black"/>
-          <!-- Centering adjustment: Logo scaled to 1.5 to fit nicely inside circle -->
           <g transform="translate(512, 512) scale(1.5) translate(-512, -512)"> 
             ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
           </g>
         </svg>
       `;
 
-      // Helper to generate PNG Blob from SVG string
       const generatePngIcon = (size) => {
         return new Promise((resolve) => {
           const canvas = document.createElement('canvas');
@@ -559,47 +578,43 @@ export default function App() {
           canvas.height = size;
           const ctx = canvas.getContext('2d');
           const img = new Image();
-          // Use encoded SVG as source
           img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
           
           img.onload = () => {
             ctx.drawImage(img, 0, 0, size, size);
             resolve(canvas.toDataURL('image/png'));
           };
+          img.onerror = () => {
+             // Fallback for iframe environments that block data URL images
+             resolve('');
+          }
         });
       };
 
-      // 1. Set standard SVG Favicon (Best for Desktop Tabs)
-      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
-      let linkIcon = document.querySelector("link[rel~='icon']");
-      if (!linkIcon) {
-        linkIcon = document.createElement('link');
-        linkIcon.rel = 'icon';
-        document.head.appendChild(linkIcon);
-      }
-      linkIcon.href = svgUrl;
+      try {
+        const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+        let linkIcon = document.querySelector("link[rel~='icon']");
+        if (!linkIcon) {
+            linkIcon = document.createElement('link');
+            linkIcon.rel = 'icon';
+            document.head.appendChild(linkIcon);
+        }
+        linkIcon.href = svgUrl;
 
-      // 2. Generate High-Res PNG for iOS (Apple Touch Icon) - 180x180
-      const appleTouchIconUrl = await generatePngIcon(180);
-      let linkApple = document.querySelector("link[rel='apple-touch-icon']");
-      if (!linkApple) {
-        linkApple = document.createElement('link');
-        linkApple.rel = 'apple-touch-icon';
-        document.head.appendChild(linkApple);
+        // Note: These might not render in all sandboxed environments but the code is preserved
+        const appleTouchIconUrl = await generatePngIcon(180);
+        if(appleTouchIconUrl) {
+            let linkApple = document.querySelector("link[rel='apple-touch-icon']");
+            if (!linkApple) {
+                linkApple = document.createElement('link');
+                linkApple.rel = 'apple-touch-icon';
+                document.head.appendChild(linkApple);
+            }
+            linkApple.href = appleTouchIconUrl;
+        }
+      } catch (e) {
+          console.log("Favicon generation skipped due to environment restrictions");
       }
-      linkApple.href = appleTouchIconUrl;
-
-      // 3. Generate High-Res PNG for Android - 192x192
-      const androidIconUrl = await generatePngIcon(192);
-      // Sometimes Android looks for icon with specific sizes attribute
-      let linkAndroid = document.querySelector("link[sizes='192x192']");
-      if (!linkAndroid) {
-        linkAndroid = document.createElement('link');
-        linkAndroid.rel = 'icon';
-        linkAndroid.setAttribute('sizes', '192x192');
-        document.head.appendChild(linkAndroid);
-      }
-      linkAndroid.href = androidIconUrl;
     };
 
     updateFavicons();
@@ -684,7 +699,6 @@ export default function App() {
   if (loading && !showSplash) return <div className="h-screen bg-black text-white flex items-center justify-center">Loading Data...</div>;
 
   return (
-    // FIX: Use 100dvh to stabilize viewport on mobile browsers (hiding address bar glitches)
     <div className="flex flex-col h-[100dvh] text-[#d1d4dc] font-sans overflow-hidden relative bg-black">
       <style>
         {`
@@ -696,8 +710,8 @@ export default function App() {
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
           .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 4px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.6); }
           .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
           @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
@@ -726,21 +740,20 @@ export default function App() {
       {showSplash && (
         <div className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-1000 ease-in-out ${fadeOutSplash ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className={`text-center overflow-hidden flex items-center justify-center transition-all duration-1000 ease-out transform ${slideInTitle ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
-             <SentquantLogo size={360} /> {/* Increased from 240 to 360 */}
+             <SentquantLogo size={360} />
           </div>
         </div>
       )}
 
       {/* HEADER */}
-      {/* FIX: Added transform-gpu / translateZ to force hardware acceleration and prevent flicker */}
       <header 
         className="h-[60px] flex-none flex items-center justify-between px-4 bg-transparent z-50 relative"
         style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
       >
         <div className="flex items-center gap-6">
-          {/* MOBILE LOGO (NEW) */}
+          {/* MOBILE LOGO */}
           <div className="flex items-center gap-2 md:hidden">
-             <SentquantLogo size={80} /> {/* Increased from 58 to 80 */}
+             <SentquantLogo size={80} />
           </div>
 
           <div className="hidden md:block">
@@ -766,7 +779,7 @@ export default function App() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="block md:hidden hover:bg-white/10 p-2 rounded-full transition-colors text-white z-[60] relative"
             aria-label="Toggle Menu"
-            style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }} // Extra safety for the button itself
+            style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -784,15 +797,13 @@ export default function App() {
 
       {/* MAIN CONTENT AREA */}
       <div className="flex flex-1 overflow-hidden relative z-10">
-        {/* FIXED: Added fixed inset-0 z-[-10] bg-black layer behind everything to prevent white gaps */}
         <div className="fixed inset-0 z-[-10] bg-black pointer-events-none"></div>
 
-        <main className="flex-1 overflow-y-auto custom-scrollbar relative">
+        <main ref={mainScrollRef} className="flex-1 overflow-y-auto custom-scrollbar relative">
           
           <WarpBackground />
 
           <div className={`max-w-[1584px] mx-auto px-4 sm:px-6 py-8 pb-20 relative z-10 ${activeTab === 'about' ? 'h-[calc(100vh-60px)]' : ''}`}> 
-             {/* Content remains same as before, truncated for brevity but fully preserved in logic */}
             
             {/* HOME */}
             {activeTab === 'home' && (
@@ -816,7 +827,6 @@ export default function App() {
                           Historical Performance
                       </h3>
                     </div>
-                    {/* ... (Year Filter Logic) ... */}
                     <div className="relative flex gap-2 items-center">
                         <button onClick={() => { setSelectedYear('5Y'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === '5Y' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>5Y</button>
                         <button onClick={() => { setSelectedYear('ALL'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === 'ALL' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>ALL</button>
@@ -1062,7 +1072,7 @@ export default function App() {
                     </div>
                 </div>
                 <div className="pt-8 text-xs text-gray-500 flex flex-col md:flex-row justify-between items-center px-6">
-                    <p>Pilih data pasar disediakan oleh ICE Data Services.</p>
+                    <p>Market data provided by ICE Data Services.</p>
                     <p className="mt-2 md:mt-0">© 2024 Sentquant, Inc.</p>
                 </div>
                 </footer>
@@ -1070,6 +1080,15 @@ export default function App() {
 
           </div>
         </main>
+        
+        {/* SCROLL TO TOP BUTTON */}
+        <button
+          onClick={scrollToTop}
+          className={`fixed bottom-8 right-8 z-50 p-3 rounded-full bg-gray-500/80 hover:bg-gray-600 text-white shadow-lg backdrop-blur-sm transition-all duration-500 transform ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+          aria-label="Scroll to top"
+        >
+          <ArrowUp size={24} />
+        </button>
       </div>
     </div>
   );
