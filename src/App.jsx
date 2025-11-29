@@ -722,18 +722,18 @@ main.custom-scrollbar {
 main.custom-scrollbar::-webkit-scrollbar {
   -webkit-appearance: none;
   width: 10px !important;
-  background-color: rgba(255, 255, 255, 0.05);
+ background-color: rgba(0, 0, 0, 0.3);
 }
 
 main.custom-scrollbar::-webkit-scrollbar-thumb {
   border-radius: 5px;
-  background-color: rgba(255, 255, 255, 0.5);
-  border: 2px solid transparent;
-  background-clip: content-box;
+  background-color: rgba(128, 128, 128, 0.8);
+ border: 2px solid rgba(0, 0, 0, 0.2);
+  background-clip: padding-box;
 }
 
 main.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(128, 128, 128, 1);
 }
 
 /* For Firefox */
