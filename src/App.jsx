@@ -350,9 +350,8 @@ const WarpBackground = () => {
     const speed = 2; // Warp speed
 
     const resize = () => {
-      const parent = canvas.parentElement;
-      w = canvas.width = parent ? parent.clientWidth : window.innerWidth;
-      h = canvas.height = parent ? parent.clientHeight : window.innerHeight;
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
     };
     window.addEventListener('resize', resize);
     resize();
