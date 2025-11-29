@@ -4,10 +4,10 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star, Zap, Grid, Code, Wind, Settings
+  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star
 } from 'lucide-react';
 
-// --- COMPONENT: CUSTOM Q LOGO (SVG REPLICA) ---
+// --- COMPONENT: CUSTOM Q LOGO (SVG REPLICA - UPDATED 3 PATHS) ---
 const SentquantLogo = ({ size = 120 }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -627,6 +627,22 @@ export default function App() {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
           }
+          
+          /* FIX: FORCE BLACK BACKGROUND AND DISABLE OVERSCROLL BOUNCE */
+          html, body {
+            background-color: #000000 !important;
+            margin: 0;
+            padding: 0;
+            overscroll-behavior: none; /* Prevents pull-to-refresh white space */
+            overscroll-behavior-y: none;
+            height: 100%;
+            width: 100%;
+          }
+          #root {
+            height: 100%;
+            width: 100%;
+            background-color: #000000;
+          }
         `}
       </style>
 
@@ -692,6 +708,9 @@ export default function App() {
 
       {/* MAIN CONTENT AREA */}
       <div className="flex flex-1 overflow-hidden relative z-10">
+        {/* FIXED: Added fixed inset-0 z-[-10] bg-black layer behind everything to prevent white gaps */}
+        <div className="fixed inset-0 z-[-10] bg-black pointer-events-none"></div>
+
         <main className="flex-1 overflow-y-auto custom-scrollbar relative">
           
           <WarpBackground />
