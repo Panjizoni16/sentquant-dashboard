@@ -708,7 +708,7 @@ export default function App() {
           .splash-title { font-family: 'Montserrat', sans-serif; }
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-/* Force scrollbar to always be visible */
+/* Force scrollbar to always be visible - EXTREME VERSION */
 main.custom-scrollbar {
   overflow-y: scroll !important;
   height: 100% !important;
@@ -716,21 +716,28 @@ main.custom-scrollbar {
 }
 
 main.custom-scrollbar::-webkit-scrollbar {
-  width: 10px !important;
+  width: 20px !important;
   display: block !important;
+  background: #FF0000 !important; /* MERAH biar keliatan jelas */
 }
 
 main.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(50, 50, 50, 0.3) !important;
+  background: #333333 !important;
 }
 
 main.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.6) !important;
-  border-radius: 5px !important;
+  background: #00FF00 !important; /* HIJAU biar keliatan jelas */
+  border-radius: 0px !important;
+  min-height: 50px !important;
 }
 
 main.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.9) !important;
+  background: #FFFF00 !important; /* KUNING saat hover */
+}
+
+main.custom-scrollbar {
+  scrollbar-width: auto !important;
+  scrollbar-color: #00FF00 #333333 !important;
 }
        .custom-scrollbar {
   scrollbar-width: thin;
