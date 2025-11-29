@@ -799,7 +799,7 @@ export default function App() {
       <div className="flex flex-1 overflow-hidden relative z-10">
         <div className="fixed inset-0 z-[-10] bg-black pointer-events-none"></div>
 
-        <main ref={mainScrollRef} className="flex-1 overflow-y-auto custom-scrollbar relative">
+       <main ref={mainScrollRef} className="flex-1 overflow-y-scroll custom-scrollbar relative">
           
           <WarpBackground />
 
