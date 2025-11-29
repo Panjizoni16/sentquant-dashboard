@@ -711,25 +711,55 @@ export default function App() {
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           
-          /* CUSTOM SCROLLBAR - CLEAN VERSION */
+          /* SCROLLBAR - WINDOWS OPTIMIZED - SUPER EXTREME VERSION */
+          main {
+            overflow-y: scroll !important;
+          }
+
+          main::-webkit-scrollbar {
+            width: 16px !important;
+            background-color: #000000 !important;
+          }
+
+          main::-webkit-scrollbar-track {
+            background: #1a1a1a !important;
+            border-left: 2px solid #333333 !important;
+          }
+
+          main::-webkit-scrollbar-thumb {
+            background: #666666 !important;
+            border: 3px solid #1a1a1a !important;
+            min-height: 40px !important;
+          }
+
+          main::-webkit-scrollbar-thumb:hover {
+            background: #999999 !important;
+          }
+
+          main::-webkit-scrollbar-button {
+            display: block !important;
+            height: 16px !important;
+            background: #333333 !important;
+          }
+          
           .custom-scrollbar::-webkit-scrollbar {
-            width: 12px;
-            background: #1a1a1a;
+            width: 12px !important;
+            background: #1a1a1a !important;
           }
 
           .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #666666;
-            border-radius: 6px;
-            border: 2px solid #1a1a1a;
+            background: #666666 !important;
+            border-radius: 6px !important;
+            border: 2px solid #1a1a1a !important;
           }
 
           .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #888888;
+            background: #888888 !important;
           }
 
           .custom-scrollbar {
-            scrollbar-width: thin;
-            scrollbar-color: #666666 #1a1a1a;
+            scrollbar-width: thin !important;
+            scrollbar-color: #666666 #1a1a1a !important;
           }
           
           .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
@@ -813,7 +843,7 @@ export default function App() {
       <div className="flex flex-1 overflow-hidden relative z-10">
         <div className="fixed inset-0 z-[-10] bg-black pointer-events-none"></div>
 
-        <main ref={mainScrollRef} className="flex-1 overflow-y-scroll custom-scrollbar relative">
+        <main ref={mainScrollRef} className="flex-1 relative">
           
           <WarpBackground />
 
