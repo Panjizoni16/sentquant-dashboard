@@ -12,25 +12,40 @@ const SentquantLogo = ({ size = 120 }) => (
   <svg 
     width={size} 
     height={size} 
-    viewBox="0 0 100 100" 
-    fill="none" 
+    viewBox="0 0 200 200" 
     xmlns="http://www.w3.org/2000/svg"
     className="animate-fade-in-up drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]"
   >
-    <defs>
-      <mask id="cut-mask">
-        <rect width="100" height="100" fill="white" />
-        <path d="M18 18 L40 40" stroke="black" strokeWidth="8" strokeLinecap="square" />
-        <path d="M60 60 L90 90" stroke="black" strokeWidth="0" /> 
-      </mask>
-    </defs>
+    {/* Shadow */}
+    <ellipse cx="100" cy="190" rx="50" ry="6" fill="rgba(0,0,0,0.1)"/>
     
-    <g mask="url(#cut-mask)">
-      <circle cx="50" cy="50" r="30" stroke="white" strokeWidth="15" />
+    {/* Main Q shape */}
+    <g fill="white">
+      {/* Outer ring of Q */}
+      <path d="M 100 25
+               A 55 55 0 0 1 155 80
+               A 55 55 0 0 1 155 120
+               A 55 55 0 0 1 100 175
+               A 55 55 0 0 1 45 120
+               A 55 55 0 0 1 45 80
+               A 55 55 0 0 1 100 25
+               Z
+               M 100 55
+               A 25 25 0 0 0 75 80
+               A 25 25 0 0 0 75 120
+               A 25 25 0 0 0 100 145
+               A 25 25 0 0 0 125 120
+               A 25 25 0 0 0 125 80
+               A 25 25 0 0 0 100 55
+               Z"/>
+      
+      {/* Tail of Q (diagonal line) */}
+      <path d="M 115 125
+               L 150 160
+               L 160 150
+               L 125 115
+               Z"/>
     </g>
-    
-    <path d="M62 62 L78 78 L90 90 L95 85 L70 55 L62 62Z" fill="white" />
-    <path d="M58 68 L85 95 L70 95 L52 75 L58 68" fill="white" />
   </svg>
 );
 
