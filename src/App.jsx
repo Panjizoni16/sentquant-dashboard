@@ -169,19 +169,39 @@ const TopDrawdownsTable = ({ data }) => (
   </div>
 );
 
-// --- DATA: NEW COMPREHENSIVE STATISTICS STRUCTURE (CLEANED & REMOVED DRAWDOWNS) ---
-const EXECUTIVE_SUMMARY_DATA = {
-  grade: "A+",
-  title: "Elite Institutional Quality",
-  metrics: [
-    { label: "CAGR", value: "30.50%", grade: "Exceptional" },
-    { label: "Total Return", value: "25,516%", grade: "Outstanding" },
-    { label: "Max Drawdown", value: "-29.20%", grade: "Very Good" },
-    { label: "Sharpe Ratio", value: "1.44", grade: "Very Good" },
-    { label: "Sortino Ratio", value: "2.35", grade: "Excellent" }
-  ]
-};
+// --- COMPONENT: ABOUT MODELS CARD (REPLACES EXECUTIVE SUMMARY) ---
+const AboutModelsCard = () => (
+  <div className="mb-8 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden flex flex-col">
+    <div className="bg-[#2962ff]/10 px-5 py-4">
+      <h3 className="font-bold text-white font-eth text-xl">ABOUT THE MODELS</h3>
+    </div>
+    
+    <div className="p-5 md:p-6 space-y-4 text-white text-sm font-medium leading-relaxed font-sans">
+      <p>
+        The Framework is for exploiting structural inefficiencies in commodity and cryptocurrency markets.
+      </p>
+      <p>
+        We run O-U mean reversion on commodities and microstructure on crypto. two strategies, zero overlap, naturally uncorrelated.
+      </p>
+      <p>
+        Regimes shift? No problem. We use 3 state HMM dynamically reallocates risk so the model always adapts.
+      </p>
+      <p>
+        IN SAMPLE/OUT OF SAMPLE backtest , with 30%+ CAGR , 1.44 Sharpe , 27.77% APR in 21 years, Kurtosis 54.5 yeah, it’s fat-tail territory but chill we tame the tails with EVT + CVaR hedging.
+      </p>
+      <p className="pt-2">
+        Infrastructure use : Python, C++, Wolfram
+      </p>
+      
+      <div className="mt-6 pt-6 opacity-100 font-sans">
+        <p>But enough with the nerd stuff.</p>
+        <p>If it has edge, you’ll see it. If it doesn’t, you’ll see that too.</p>
+      </div>
+    </div>
+  </div>
+);
 
+// --- DATA: DETAILED STATS STRUCTURE ---
 const DETAILED_STATS_SECTIONS = [
   {
     title: "RETURN METRICS",
@@ -206,7 +226,6 @@ const DETAILED_STATS_SECTIONS = [
       { l: "Drawdown Frequency", v: "6.77%" },
       { l: "Ulcer Index", v: "5.33%" }
     ]
-    // REMOVED "extras" (Top 5 Worst Drawdowns) from here
   },
   {
     title: "RISK-ADJUSTED RETURN METRICS",
@@ -284,43 +303,10 @@ const DETAILED_STATS_SECTIONS = [
   }
 ];
 
-// --- COMPONENT: EXECUTIVE SUMMARY CARD ---
-const ExecutiveSummaryCard = ({ data }) => (
-  <div className="mb-8 rounded-xl bg-gradient-to-br from-[#2962ff]/20 to-black border border-[#2962ff]/30 overflow-hidden relative group">
-    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-      <Star size={100} fill="white" stroke="none" />
-    </div>
-    <div className="p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-white/10 pb-4">
-        <div>
-          <h2 className="text-3xl font-bold text-white font-eth tracking-tight flex items-center gap-3">
-            EXECUTIVE SUMMARY
-          </h2>
-          <p className="text-[#2962ff] font-bold tracking-widest text-sm mt-1 uppercase">
-            Overall Grade: <span className="text-white text-lg">{data.grade}</span> ({data.title})
-          </p>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {data.metrics.map((item, idx) => (
-          <div key={idx} className="bg-black/40 backdrop-blur-md p-4 rounded-lg border border-white/5 hover:border-white/20 transition-colors">
-            <div className="text-gray-400 text-xs uppercase tracking-wider font-semibold mb-1">{item.label}</div>
-            <div className="flex justify-between items-baseline">
-              <span className="text-2xl font-bold text-white">{item.value}</span>
-            </div>
-            <div className="text-[#22ab94] text-xs font-medium mt-2">{item.grade}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
 // --- COMPONENT: DETAILED STAT CARD ---
 const DetailedStatCard = ({ section }) => (
-  <div className="rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden border border-white/5 h-full flex flex-col">
-    <div className="bg-[#2962ff]/10 px-5 py-4 border-b border-white/5">
+  <div className="rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden h-full flex flex-col">
+    <div className="bg-[#2962ff]/10 px-5 py-4">
       <h3 className="font-bold text-white font-eth text-xl">{section.title}</h3>
     </div>
     
@@ -332,7 +318,7 @@ const DetailedStatCard = ({ section }) => (
             <th className="px-5 py-3 font-semibold text-right">Value</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/5">
+        <tbody>
           {section.metrics.map((item, idx) => (
             <tr key={idx} className="hover:bg-white/5 transition-colors">
               <td className="px-5 py-3 font-medium text-gray-300">{item.l}</td>
@@ -344,7 +330,7 @@ const DetailedStatCard = ({ section }) => (
     </div>
 
     {section.extras && (
-        <div className="p-5 bg-white/[0.02] border-t border-white/5 flex-grow">
+        <div className="p-5 bg-white/[0.02] flex-grow">
           <h4 className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">{section.extras.title}</h4>
           <ul className="space-y-1">
             {section.extras.items.map((item, i) => (
@@ -1178,7 +1164,7 @@ export default function App() {
                 </div>
 
                 {/* EXECUTIVE SUMMARY */}
-                <ExecutiveSummaryCard data={EXECUTIVE_SUMMARY_DATA} />
+                <AboutModelsCard />
 
                 {/* DETAILED STATS SECTIONS */}
                 <div className="mb-20 grid grid-cols-1 lg:grid-cols-2 gap-8">
