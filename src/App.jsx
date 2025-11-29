@@ -172,7 +172,7 @@ const AboutModelsCard = () => (
         Regimes shift? No problem. We use 3 state HMM dynamically reallocates risk so the model always adapts.
       </p>
       <p>
-        IN SAMPLE/OUT OF SAMPLE backtest , with 30%+ CAGR , 1.44 Sharpe , 27.77% APR in 21 years, Kurtosis 54.5 yeah, it’s fat-tail territory but chill we tame the tails with EVT + CVaR hedging.
+        IN SAMPLE/OUT OF SAMPLE backtest , with 30%+ CAGR , 1.44 Sharpe , 27.77% APR in 21 years, Kurtosis 54.5 yeah, it's fat-tail territory but chill we tame the tails with EVT + CVaR hedging.
       </p>
       <p className="pt-2">
         Infrastructure use : Python, C++, Wolfram
@@ -180,7 +180,7 @@ const AboutModelsCard = () => (
       
       <div className="mt-6 pt-6 opacity-100 font-sans">
         <p>But enough with the nerd stuff.</p>
-        <p>If it has edge, you’ll see it. If it doesn’t, you’ll see that too.</p>
+        <p>If it has edge, you'll see it. If it doesn't, you'll see that too.</p>
       </div>
     </div>
   </div>
@@ -342,12 +342,11 @@ const WarpBackground = () => {
     
     let stars = [];
     const numStars = 200;
-    const speed = 2; // Warp speed
+    const speed = 2;
 
     let lastWidth = window.innerWidth;
 
     const resize = () => {
-      // Only resize if width changes (orientation change), ignore height changes (address bar)
       if (window.innerWidth !== lastWidth) {
         w = canvas.width = window.innerWidth;
         h = canvas.height = window.innerHeight;
@@ -357,13 +356,12 @@ const WarpBackground = () => {
         h = canvas.height = window.innerHeight;
       }
     };
-    // Initial size
+    
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
     
     window.addEventListener('resize', resize);
 
-    // Initialize stars
     for(let i=0; i<numStars; i++){
       stars.push({
         x: Math.random() * w - w/2,
@@ -391,7 +389,6 @@ const WarpBackground = () => {
         const x = (star.x / star.z) * w + cx;
         const y = (star.y / star.z) * h + cy;
         
-        // Corrected size calculation to prevent negative values
         const size = Math.max(0, (1 - star.z / w) * 3);
         const alpha = Math.max(0, Math.min(1, (1 - star.z / w)));
 
@@ -476,7 +473,6 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   
-  // Scroll to top logic
   const mainScrollRef = useRef(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -585,7 +581,6 @@ export default function App() {
             resolve(canvas.toDataURL('image/png'));
           };
           img.onerror = () => {
-             // Fallback for iframe environments that block data URL images
              resolve('');
           }
         });
@@ -601,7 +596,6 @@ export default function App() {
         }
         linkIcon.href = svgUrl;
 
-        // Note: These might not render in all sandboxed environments but the code is preserved
         const appleTouchIconUrl = await generatePngIcon(180);
         if(appleTouchIconUrl) {
             let linkApple = document.querySelector("link[rel='apple-touch-icon']");
@@ -620,7 +614,6 @@ export default function App() {
     updateFavicons();
   }, []);
 
-  // Force scrollbar visibility
   useEffect(() => {
     const mainEl = mainScrollRef.current;
     if (mainEl) {
@@ -629,7 +622,6 @@ export default function App() {
     }
   }, []);
 
-  const handleTabChange = (tabId) => {
   const handleTabChange = (tabId) => {
       setActiveTab(tabId);
       setIsMenuOpen(false);
@@ -718,83 +710,39 @@ export default function App() {
           .splash-title { font-family: 'Montserrat', sans-serif; }
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-/* Force scrollbar to always be visible - EXTREME VERSION */
-main.custom-scrollbar {
-  overflow-y: scroll !important;
-  height: calc(100vh - 60px) !important;
-  max-height: calc(100vh - 60px) !important;
-  min-height: calc(100vh - 60px) !important;
-}
+          
+          /* CUSTOM SCROLLBAR - CLEAN VERSION */
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 12px;
+            background: #1a1a1a;
+          }
 
-main.custom-scrollbar::-webkit-scrollbar {
-  width: 20px !important;
-  display: block !important;
-  background: #FF0000 !important; /* MERAH biar keliatan jelas */
-}
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #666666;
+            border-radius: 6px;
+            border: 2px solid #1a1a1a;
+          }
 
-main.custom-scrollbar::-webkit-scrollbar-track {
-  background: #333333 !important;
-}
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #888888;
+          }
 
-main.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #00FF00 !important; /* HIJAU biar keliatan jelas */
-  border-radius: 0px !important;
-  min-height: 50px !important;
-}
-
-main.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #FFFF00 !important; /* KUNING saat hover */
-}
-
-main.custom-scrollbar {
-  scrollbar-width: auto !important;
-  scrollbar-color: #00FF00 #333333 !important;
-}
-       .custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.4) transparent;
-}
-/* Force scrollbar to always show */
-main.custom-scrollbar {
-  overflow-y: scroll !important;
-  scrollbar-gutter: stable;
-}
-
-/* For Webkit browsers (Chrome, Safari, Edge) */
-main.custom-scrollbar::-webkit-scrollbar {
-  -webkit-appearance: none;
-  width: 10px !important;
- background-color: rgba(0, 0, 0, 0.3);
-}
-
-main.custom-scrollbar::-webkit-scrollbar-thumb {
-  border-radius: 5px;
-  background-color: rgba(128, 128, 128, 0.8);
- border: 2px solid rgba(0, 0, 0, 0.2);
-  background-clip: padding-box;
-}
-
-main.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(128, 128, 128, 1);
-}
-
-/* For Firefox */
-main.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.05);
-}
+          .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #666666 #1a1a1a;
+          }
+          
           .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
           @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
           }
           
-          /* FIX: FORCE BLACK BACKGROUND AND DISABLE OVERSCROLL BOUNCE */
           html, body {
             background-color: #000000 !important;
             margin: 0;
             padding: 0;
-            overscroll-behavior: none; /* Prevents pull-to-refresh white space */
+            overscroll-behavior: none;
             overscroll-behavior-y: none;
             height: 100%;
             width: 100%;
@@ -807,7 +755,6 @@ main.custom-scrollbar {
         `}
       </style>
 
-      {/* SPLASH SCREEN */}
       {showSplash && (
         <div className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-1000 ease-in-out ${fadeOutSplash ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className={`text-center overflow-hidden flex items-center justify-center transition-all duration-1000 ease-out transform ${slideInTitle ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
@@ -816,13 +763,11 @@ main.custom-scrollbar {
         </div>
       )}
 
-      {/* HEADER */}
       <header 
         className="h-[60px] flex-none flex items-center justify-between px-4 bg-transparent z-50 relative"
         style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
       >
         <div className="flex items-center gap-6">
-          {/* MOBILE LOGO */}
           <div className="flex items-center gap-2 md:hidden">
              <SentquantLogo size={80} />
           </div>
@@ -845,7 +790,6 @@ main.custom-scrollbar {
           <button className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors backdrop-blur-md flex items-center gap-2">
             Join <Lock size={14} />
           </button>
-          {/* MOBILE MENU TOGGLE */}
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="block md:hidden hover:bg-white/10 p-2 rounded-full transition-colors text-white z-[60] relative"
@@ -866,17 +810,15 @@ main.custom-scrollbar {
         </div>
       )}
 
-      {/* MAIN CONTENT AREA */}
       <div className="flex flex-1 overflow-hidden relative z-10">
         <div className="fixed inset-0 z-[-10] bg-black pointer-events-none"></div>
 
-      <main ref={mainScrollRef} className="flex-1 overflow-y-scroll custom-scrollbar relative" style={{overflowY: 'scroll'}}>
+        <main ref={mainScrollRef} className="flex-1 overflow-y-scroll custom-scrollbar relative">
           
           <WarpBackground />
 
           <div className={`max-w-[1584px] mx-auto px-4 sm:px-6 py-8 pb-20 relative z-10 ${activeTab === 'about' ? 'h-[calc(100vh-60px)]' : ''}`}> 
             
-            {/* HOME */}
             {activeTab === 'home' && (
               <div className="animate-fade-in-up flex flex-col items-center justify-center h-[70vh]">
                   <h1 className="text-7xl md:text-9xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl mb-6">
@@ -888,7 +830,6 @@ main.custom-scrollbar {
               </div>
             )}
 
-            {/* HISTORICAL */}
             {activeTab === 'historical' && (
               <>
                 <div className="mb-10 animate-fade-in-up">
@@ -1004,7 +945,6 @@ main.custom-scrollbar {
               </>
             )}
 
-            {/* LIVE */}
             {activeTab === 'live' && (
               <div className="animate-fade-in-up">
                 <div className="mb-10">
@@ -1060,7 +1000,6 @@ main.custom-scrollbar {
               </div>
             )}
 
-            {/* STATS */}
             {activeTab === 'stats' && (
               <div className="animate-fade-in-up">
                 <div className="mb-10">
@@ -1091,27 +1030,26 @@ main.custom-scrollbar {
               </div>
             )}
 
-            {/* ABOUT */}
             {activeTab === 'about' && (
               <div className="animate-fade-in-up flex flex-col items-start justify-start h-full relative z-10 px-4 pt-0 md:pt-8 pl-4 md:pl-20">
                   <div className="max-w-3xl text-left">
                     <h2 className="text-2xl md:text-3xl font-medium text-gray-400 font-eth mb-4">The trading industry is broken.</h2>
                     <div className="text-sm md:text-base text-white font-light leading-relaxed space-y-4 max-w-xl">
                         <p>Fake gurus sell dreams.</p>
-                        <p>Performance can’t be verified.</p>
+                        <p>Performance can't be verified.</p>
                         <p>Retail traders are misled by empty claims.</p>
                         <p>Everyone talks.<br/>No data.</p>
                     </div>
                     <div className="text-2xl md:text-3xl font-medium text-gray-400 font-eth leading-tight space-y-2 mt-12 max-w-2xl">
                         <p>If CoinMarketCap tracks assets,</p>
                         <p>Sentquant tracks strategy performance.</p>
-                        <p>Because performance can’t lie, people can.</p>
+                        <p>Because performance can't lie, people can.</p>
                     </div>
                     <div className="mt-12 space-y-12 pb-20">
                         <div className="flex flex-col space-y-3 text-white text-sm md:text-base font-light leading-relaxed max-w-xl text-left">
                             <div>Sentquant doesn't sell courses.</div>
-                            <div>Sentquant doesn’t sell signals.</div>
-                            <div>Sentquant doesn’t sell promises.</div>
+                            <div>Sentquant doesn't sell signals.</div>
+                            <div>Sentquant doesn't sell promises.</div>
                             <div className="text-white mt-4 leading-relaxed">Sentquant is the arena where every claim is tested.</div>
                         </div>
                         <div className="flex flex-col items-start text-left w-full max-w-4xl pt-4">
@@ -1133,7 +1071,6 @@ main.custom-scrollbar {
               </div>
             )}
 
-            {/* FOOTER */}
             {activeTab !== 'about' && (
                 <footer className="pt-12 pb-8 bg-black/20 backdrop-blur-md rounded-xl mt-10 border-t border-white/5">
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12 text-sm text-gray-400 px-6">
@@ -1152,7 +1089,6 @@ main.custom-scrollbar {
           </div>
         </main>
         
-        {/* SCROLL TO TOP BUTTON */}
         <button
           onClick={scrollToTop}
           className={`fixed bottom-8 right-8 z-50 p-3 rounded-full bg-gray-500/80 hover:bg-gray-600 text-white shadow-lg backdrop-blur-sm transition-all duration-500 transform ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
