@@ -711,8 +711,9 @@ export default function App() {
 /* Force scrollbar to always be visible - EXTREME VERSION */
 main.custom-scrollbar {
   overflow-y: scroll !important;
-  height: 100% !important;
-  min-height: 0 !important;
+  height: calc(100vh - 60px) !important;
+  max-height: calc(100vh - 60px) !important;
+  min-height: calc(100vh - 60px) !important;
 }
 
 main.custom-scrollbar::-webkit-scrollbar {
