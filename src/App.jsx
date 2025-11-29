@@ -740,7 +740,7 @@ export default function App() {
       {showSplash && (
         <div className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-1000 ease-in-out ${fadeOutSplash ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className={`text-center overflow-hidden flex items-center justify-center transition-all duration-1000 ease-out transform ${slideInTitle ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
-             <SentquantLogo size={480} />
+             <SentquantLogo size={600} />
           </div>
         </div>
       )}
