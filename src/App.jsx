@@ -634,10 +634,9 @@ export default function App() {
       {/* SPLASH SCREEN */}
       {showSplash && (
         <div className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-1000 ease-in-out ${fadeOutSplash ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div className="text-center overflow-hidden h-48 flex items-center justify-center">
-             <h1 className={`text-6xl md:text-9xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl transition-all duration-1000 ease-out transform ${slideInTitle ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
-               Sentquant
-             </h1>
+          <div className={`text-center overflow-hidden flex items-center justify-center transition-all duration-1000 ease-out transform ${slideInTitle ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+             {/* GANTI TEKS DENGAN LOGO */}
+             <SentquantLogo size={180} />
           </div>
         </div>
       )}
@@ -651,8 +650,7 @@ export default function App() {
         <div className="flex items-center gap-6">
           {/* MOBILE LOGO (NEW) */}
           <div className="flex items-center gap-2 md:hidden">
-             <SentquantLogo size={28} />
-             <span className="font-bold text-white font-eth text-lg tracking-tight">Sentquant</span>
+             <SentquantLogo size={42} />
           </div>
 
           <div className="hidden md:block">
