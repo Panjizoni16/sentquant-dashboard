@@ -538,11 +538,13 @@ export default function App() {
 
   // --- DYNAMIC FAVICON LOGIC ---
   useEffect(() => {
-    // UPDATED FAVICON WITH BACKGROUND CIRCLE FOR VISIBILITY
+    // UPDATED FAVICON WITH BACKGROUND CIRCLE AND SCALED LOGO
     const svgString = `
       <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 1024 1024">
         <circle cx="512" cy="512" r="512" fill="black"/>
-        ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
+        <g transform="scale(1.5) translate(-170, -170)">
+          ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
+        </g>
       </svg>
     `;
     const encodedSVG = encodeURIComponent(svgString);
