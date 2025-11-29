@@ -7,7 +7,7 @@ import {
   Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star, Zap, Grid, Code, Wind, Settings
 } from 'lucide-react';
 
-// --- LOGO DATA (UPDATED: 3 PATHS FROM USER) ---
+// --- LOGO DATA (UPDATED: EXACTLY AS REQUESTED) ---
 const LOGO_PATHS = [
   "M490 333.1c-60.3 7.7-116.7 49.2-142.8 104.9-5.7 12.2-11.3 29.4-14.3 44-2.2 10.3-2.4 14-2.3 35.5 0 13.2.5 25 1 26.3.9 2.1 1.8 1.3 13.9-12.5 7.2-8.1 19.1-21.5 26.5-29.8 7.5-8.2 27.6-31 44.6-50.5 17.1-19.5 38-43.2 46.5-52.6s25.1-27.7 36.9-40.8 21.7-24.2 21.8-24.7c.4-1.1-22.9-1-31.8.2",
   "M540.8 334.9c-.3.9-22.7 26.6-28.7 33.1-5.7 6.1-22.1 24.8-22.1 25.2 0 .3 2.4.1 5.3-.4 8.1-1.4 31.4-1.4 39.7.1 54.3 9.5 96.5 52.3 103.6 105.1 1.8 13.6 1.8 21.8-.2 34.9-3.5 24.3-15.6 50.7-31.2 68.1l-4.8 5.3-6.2-6.8-6.3-6.9-36.2.3c-19.9.1-36.3.3-36.4.4 0 .1 24.9 25.5 55.5 56.5l55.7 56.3 35.9-.1h35.9l-4.3-4.7c-3.8-4.2-11.2-11.9-44.3-46l-8-8.1 8.4-9.4c22.9-25.7 39.1-59.3 45-93.3 2.8-16.3 3-40.6.5-56.5-11.9-75.6-68.5-135.1-144.6-152.1-9.7-2.1-11.7-2.3-12.2-1",
@@ -536,27 +536,72 @@ export default function App() {
     fetchAllData();
   }, []);
 
-  // --- DYNAMIC FAVICON LOGIC ---
+  // --- DYNAMIC FAVICON LOGIC (UPDATED WITH CANVAS RENDERER) ---
   useEffect(() => {
-    // UPDATED FAVICON WITH BACKGROUND CIRCLE AND SCALED LOGO
-    const svgString = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 1024 1024">
-        <circle cx="512" cy="512" r="512" fill="black"/>
-        <g transform="scale(1.5) translate(-170, -170)">
-          ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
-        </g>
-      </svg>
-    `;
-    const encodedSVG = encodeURIComponent(svgString);
-    const dataURI = `data:image/svg+xml,${encodedSVG}`;
-    
-    let link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
-    }
-    link.href = dataURI;
+    const updateFavicons = async () => {
+      // SVG string to be drawn on canvas
+      const svgString = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+          <circle cx="512" cy="512" r="512" fill="black"/>
+          <!-- Centering adjustment: Logo scaled to 85% to fit nicely inside circle -->
+          <g transform="translate(512, 512) scale(0.85) translate(-512, -512)"> 
+            ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
+          </g>
+        </svg>
+      `;
+
+      // Helper to generate PNG Blob from SVG string
+      const generatePngIcon = (size) => {
+        return new Promise((resolve) => {
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          // Use encoded SVG as source
+          img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+          
+          img.onload = () => {
+            ctx.drawImage(img, 0, 0, size, size);
+            resolve(canvas.toDataURL('image/png'));
+          };
+        });
+      };
+
+      // 1. Set standard SVG Favicon (Best for Desktop Tabs)
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+      let linkIcon = document.querySelector("link[rel~='icon']");
+      if (!linkIcon) {
+        linkIcon = document.createElement('link');
+        linkIcon.rel = 'icon';
+        document.head.appendChild(linkIcon);
+      }
+      linkIcon.href = svgUrl;
+
+      // 2. Generate High-Res PNG for iOS (Apple Touch Icon) - 180x180
+      const appleTouchIconUrl = await generatePngIcon(180);
+      let linkApple = document.querySelector("link[rel='apple-touch-icon']");
+      if (!linkApple) {
+        linkApple = document.createElement('link');
+        linkApple.rel = 'apple-touch-icon';
+        document.head.appendChild(linkApple);
+      }
+      linkApple.href = appleTouchIconUrl;
+
+      // 3. Generate High-Res PNG for Android - 192x192
+      const androidIconUrl = await generatePngIcon(192);
+      // Sometimes Android looks for icon with specific sizes attribute
+      let linkAndroid = document.querySelector("link[sizes='192x192']");
+      if (!linkAndroid) {
+        linkAndroid = document.createElement('link');
+        linkAndroid.rel = 'icon';
+        linkAndroid.setAttribute('sizes', '192x192');
+        document.head.appendChild(linkAndroid);
+      }
+      linkAndroid.href = androidIconUrl;
+    };
+
+    updateFavicons();
   }, []);
 
   const handleTabChange = (tabId) => {
