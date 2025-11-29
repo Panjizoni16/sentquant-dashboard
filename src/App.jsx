@@ -708,6 +708,30 @@ export default function App() {
           .splash-title { font-family: 'Montserrat', sans-serif; }
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+/* Force scrollbar to always be visible */
+main.custom-scrollbar {
+  overflow-y: scroll !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+main.custom-scrollbar::-webkit-scrollbar {
+  width: 10px !important;
+  display: block !important;
+}
+
+main.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(50, 50, 50, 0.3) !important;
+}
+
+main.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.6) !important;
+  border-radius: 5px !important;
+}
+
+main.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.9) !important;
+}
        .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.4) transparent;
@@ -828,7 +852,7 @@ main.custom-scrollbar {
       <div className="flex flex-1 overflow-hidden relative z-10">
         <div className="fixed inset-0 z-[-10] bg-black pointer-events-none"></div>
 
-       <main ref={mainScrollRef} className="flex-1 overflow-y-scroll custom-scrollbar relative">
+      <main ref={mainScrollRef} className="flex-1 overflow-y-scroll custom-scrollbar relative" style={{overflowY: 'scroll'}}>
           
           <WarpBackground />
 
