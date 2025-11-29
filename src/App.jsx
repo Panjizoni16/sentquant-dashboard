@@ -540,11 +540,12 @@ export default function App() {
   useEffect(() => {
     const updateFavicons = async () => {
       // SVG string to be drawn on canvas
+      // INCREASED SCALE TO 1.3 TO FILL MORE OF THE CIRCLE
       const svgString = `
         <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
           <circle cx="512" cy="512" r="512" fill="black"/>
-          <!-- Centering adjustment: Logo scaled to 95% to fit nicely inside circle -->
-          <g transform="translate(512, 512) scale(0.95) translate(-512, -512)"> 
+          <!-- Centering adjustment: Logo scaled to 1.3 to fit nicely inside circle -->
+          <g transform="translate(512, 512) scale(1.3) translate(-512, -512)"> 
             ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
           </g>
         </svg>
