@@ -640,6 +640,12 @@ export default function App() {
       {/* HEADER */}
       <header className="h-[60px] flex-none flex items-center justify-between px-4 bg-transparent z-50 relative">
         <div className="flex items-center gap-6">
+          {/* MOBILE LOGO (NEW) */}
+          <div className="flex items-center gap-2 md:hidden">
+             <SentquantLogo size={28} />
+             <span className="font-bold text-white font-eth text-lg tracking-tight">Sentquant</span>
+          </div>
+
           <div className="hidden md:block">
              <nav className="flex items-center gap-8 text-sm font-semibold text-[#d1d4dc]">
               {navItems.map(item => (
@@ -658,14 +664,19 @@ export default function App() {
           <button className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors backdrop-blur-md flex items-center gap-2">
             Join <Lock size={14} />
           </button>
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="hover:bg-white/10 p-2 rounded-full md:hidden transition-colors text-white z-50">
+          {/* MOBILE MENU TOGGLE */}
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="block md:hidden hover:bg-white/10 p-2 rounded-full transition-colors text-white z-[60] relative"
+            aria-label="Toggle Menu"
+          >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </header>
 
       {isMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl pt-24 px-6 md:hidden flex flex-col gap-6 animate-fade-in-up">
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl pt-24 px-6 md:hidden flex flex-col gap-6 animate-fade-in-up">
             {navItems.map(item => (
                 <button key={item.id} onClick={() => handleTabChange(item.id)} className={`text-2xl font-bold text-left py-2 border-b border-white/10 ${activeTab === item.id ? 'text-white' : 'text-gray-500'}`}>{item.label}</button>
             ))}
