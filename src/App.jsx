@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star
+  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star, Zap, Grid, Code, Wind, Settings
 } from 'lucide-react';
 
 // --- COMPONENT: CUSTOM Q LOGO (SVG REPLICA) ---
@@ -36,19 +36,12 @@ const SentquantLogo = ({ size = 120 }) => (
 
 // --- COMPONENT: MONTHLY HEATMAP (REUSABLE & FILTERABLE) ---
 const MonthlyHeatmap = ({ data, enableFilter = false }) => {
-  // State untuk rentang tahun yang dipilih (Default: 2020-2025)
   const [selectedRange, setSelectedRange] = useState('2020-2025');
-  
-  // Daftar rentang filter
   const filterRanges = ['2020-2025', '2015-2019', '2010-2014', '2005-2009'];
 
-  // Logika Filter Data
   const filteredData = useMemo(() => {
-    // Jika filter dimatikan (misal di page Live), tampilkan semua data atau batasi sesuai kebutuhan
     if (!enableFilter) return data;
-
     const [start, end] = selectedRange.split('-').map(Number);
-    
     return data.filter(row => {
       const year = parseInt(row.year);
       return year >= start && year <= end;
@@ -59,8 +52,6 @@ const MonthlyHeatmap = ({ data, enableFilter = false }) => {
     <div className="mb-10 animate-fade-in-up mt-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Monthly Returns Heatmap</h3>
-          
-          {/* FITUR FILTER KHUSUS HISTORICAL */}
           {enableFilter ? (
             <div className="flex flex-wrap gap-2">
               {filterRanges.map((range) => (
@@ -78,7 +69,6 @@ const MonthlyHeatmap = ({ data, enableFilter = false }) => {
               ))}
             </div>
           ) : (
-            // Indikator Legenda (Hanya muncul jika filter mati / default)
             <div className="flex gap-2">
               <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> Positif</span>
               <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> Negatif</span>
@@ -169,7 +159,7 @@ const TopDrawdownsTable = ({ data }) => (
   </div>
 );
 
-// --- COMPONENT: ABOUT MODELS CARD (REPLACES EXECUTIVE SUMMARY) ---
+// --- COMPONENT: ABOUT MODELS CARD ---
 const AboutModelsCard = () => (
   <div className="mb-8 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden flex flex-col">
     <div className="bg-[#2962ff]/10 px-5 py-4">
@@ -344,86 +334,7 @@ const DetailedStatCard = ({ section }) => (
   </div>
 );
 
-// --- COMPONENT: GRID WAVE BACKGROUND (LOCKED & GRAY) - Used for other tabs ---
-const GridWaveBackground = ({ height = 580 }) => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let animationFrameId;
-    let w, h;
-    let frame = 0;
-
-    const resize = () => {
-      if(!canvas) return;
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = height;
-    };
-
-    const animate = () => {
-      if(!ctx) return;
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, w, h);
-
-      const stripWidth = 40;
-      const speed = 0.5;
-      
-      frame += speed;
-
-      ctx.strokeStyle = 'rgba(120, 120, 120, 0.3)'; 
-      ctx.lineWidth = 1;
-
-      // Vertical lines
-      for (let x = -w; x < w * 2; x += stripWidth) {
-        ctx.beginPath();
-        ctx.moveTo(x + (w/2 - x) * 0.5, 0); 
-        ctx.lineTo(x, h);
-        ctx.stroke();
-      }
-
-      // Horizontal lines (moving)
-      const totalLines = 30;
-      for(let i = 0; i < totalLines; i++) {
-        let y = ((frame + i * 20) % h);
-        let relativeY = y / h;
-        let drawY = Math.pow(relativeY, 1.5) * h;
-
-        ctx.beginPath();
-        ctx.moveTo(0, drawY);
-        ctx.lineTo(w, drawY);
-        ctx.stroke();
-      }
-      
-      const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w);
-      grad.addColorStop(0, 'rgba(0,0,0,0)');
-      grad.addColorStop(1, 'rgba(0,0,0,0.8)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0,0,w,h);
-
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    window.addEventListener('resize', resize);
-    resize();
-    animate();
-    return () => {
-        window.removeEventListener('resize', resize);
-        cancelAnimationFrame(animationFrameId);
-    };
-  }, [height]);
-
-  return (
-    <div className="absolute top-0 left-0 w-full z-0 pointer-events-none" style={{ height: height }}>
-        <canvas ref={canvasRef} className="w-full h-full" />
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-b from-transparent to-black"></div>
-    </div>
-  );
-};
-
-// --- COMPONENT: SMOKE BACKGROUND (NEW ANIMATED FOG) ---
+// --- COMPONENT: SMOKE BACKGROUND (ORIGINAL) ---
 const SmokeBackground = () => {
   const canvasRef = useRef(null);
 
@@ -522,7 +433,209 @@ const SmokeBackground = () => {
   return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
 };
 
-// --- MOCK DATA FOR FALLBACK (EXTENDED FOR HEATMAP FILTERING) ---
+// --- NEW COMPONENT: NEURAL NETWORK BACKGROUND (QUANT/AI THEME) ---
+const NeuralBackground = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h;
+    let animationFrameId;
+    let particles = [];
+    
+    const resize = () => {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Create particles
+    const particleCount = 60;
+    for(let i=0; i<particleCount; i++){
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 2 + 1
+      });
+    }
+
+    const draw = () => {
+      if(!ctx) return;
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0,0,w,h);
+      
+      // Update and draw particles
+      ctx.fillStyle = 'rgba(34, 171, 148, 0.5)'; // Teal color dots
+      particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Bounce off walls
+        if(p.x < 0 || p.x > w) p.vx *= -1;
+        if(p.y < 0 || p.y > h) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Connect dots
+        for(let j=i+1; j<particles.length; j++){
+          const p2 = particles[j];
+          const dx = p.x - p2.x;
+          const dy = p.y - p2.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < 150){
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(34, 171, 148, ${1 - dist/150})`; // Fading teal lines
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      });
+      animationFrameId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
+};
+
+// --- NEW COMPONENT: MATRIX RAIN BACKGROUND (DATA/ALGO THEME) ---
+const MatrixBackground = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h;
+    let animationFrameId;
+    
+    const resize = () => {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    const cols = Math.floor(w / 20) + 1;
+    const ypos = Array(cols).fill(0);
+
+    const draw = () => {
+      if(!ctx) return;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = '#22ab94'; // Teal text
+      ctx.font = '15pt monospace';
+
+      ypos.forEach((y, i) => {
+        const text = String.fromCharCode(Math.random() * 128);
+        const x = i * 20;
+        ctx.fillText(text, x, y);
+        
+        if (y > 100 + Math.random() * 10000) ypos[i] = 0;
+        else ypos[i] = y + 20;
+      });
+      animationFrameId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
+};
+
+// --- NEW COMPONENT: WARP/STARFIELD BACKGROUND (SPEED/FUTURE THEME) ---
+const WarpBackground = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h;
+    let animationFrameId;
+    
+    let stars = [];
+    const numStars = 200;
+    const speed = 2; // Warp speed
+
+    const resize = () => {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Initialize stars
+    for(let i=0; i<numStars; i++){
+      stars.push({
+        x: Math.random() * w - w/2,
+        y: Math.random() * h - h/2,
+        z: Math.random() * w
+      });
+    }
+
+    const draw = () => {
+      if(!ctx) return;
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, w, h);
+      
+      const cx = w/2;
+      const cy = h/2;
+
+      stars.forEach(star => {
+        star.z -= speed;
+        if(star.z <= 0) {
+          star.x = Math.random() * w - w/2;
+          star.y = Math.random() * h - h/2;
+          star.z = w;
+        }
+
+        const x = (star.x / star.z) * w + cx;
+        const y = (star.y / star.z) * h + cy;
+        
+        // Corrected size calculation to prevent negative values
+        const size = Math.max(0, (1 - star.z / w) * 3);
+        const alpha = Math.max(0, Math.min(1, (1 - star.z / w)));
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI*2);
+        ctx.fill();
+      });
+
+      animationFrameId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
+};
+
+// --- MOCK DATA ---
 const MOCK_HISTORICAL = Array.from({ length: 100 }, (_, i) => ({
     date: `2024-01-${i + 1}`,
     year: '2024',
@@ -534,8 +647,6 @@ const MOCK_LIVE = Array.from({ length: 50 }, (_, i) => ({
     value: 1500 + Math.random() * 200 + i * 5,
     drawdown: -(Math.random() * 5)
 }));
-
-// Generates fake monthly data for a range of years to test the filter
 const generateMockHeatmap = () => {
   const years = [];
   for (let y = 2024; y >= 2005; y--) {
@@ -545,17 +656,13 @@ const generateMockHeatmap = () => {
   return years;
 };
 const MOCK_HEATMAP = generateMockHeatmap();
-
-// --- MOCK DATA KHUSUS LIVE (2025-2029) ---
 const MOCK_LIVE_HEATMAP = [
-  { year: '2029', months: Array(12).fill(null) }, // Masa depan (kosong)
-  { year: '2028', months: Array(12).fill(null) }, // Masa depan (kosong)
-  { year: '2027', months: Array(12).fill(null) }, // Masa depan (kosong)
-  { year: '2026', months: Array(12).fill(null) }, // Masa depan (kosong)
-  // Tahun 2025 sebagian terisi sebagai simulasi "Live running"
+  { year: '2029', months: Array(12).fill(null) },
+  { year: '2028', months: Array(12).fill(null) },
+  { year: '2027', months: Array(12).fill(null) },
+  { year: '2026', months: Array(12).fill(null) },
   { year: '2025', months: [4.2, 1.5, -2.1, 3.8, 2.5, 1.2, 0.5, 3.1, 1.9, 4.2, 2.1, null] } 
 ];
-
 const MOCK_ANNUAL = [
     { year: '2021', value: 25.4 },
     { year: '2022', value: -5.2 },
@@ -565,8 +672,6 @@ const MOCK_ANNUAL = [
 ];
 const MOCK_STATS = { sharpe: 3.18, sortino: 4.22, maxDD: -12.45, winRate: 68.5 };
 const MOCK_LIVE_STATS = { totalReturn: 14.5, maxDrawdown: -8.24, sharpe: 2.14, sortino: 3.05, winRate: 62.4 };
-
-// --- MOCK DATA: TOP 5 DRAWDOWNS ---
 const MOCK_TOP_DRAWDOWNS = [
   { rank: 1, startDate: '2022-01-05', endDate: '2022-06-15', depth: -12.45, duration: 161, recovery: 45 },
   { rank: 2, startDate: '2021-09-10', endDate: '2021-10-05', depth: -8.32, duration: 25, recovery: 12 },
@@ -578,22 +683,23 @@ const MOCK_TOP_DRAWDOWNS = [
 // --- MAIN APPLICATION ---
 
 export default function App() {
-  // State for data
   const [fullData, setFullData] = useState([]);
   const [liveData, setLiveData] = useState([]);
   const [heatmapData, setHeatmapData] = useState([]);
-  const [liveHeatmapData, setLiveHeatmapData] = useState([]); // STATE BARU UNTUK LIVE HEATMAP
+  const [liveHeatmapData, setLiveHeatmapData] = useState([]);
   const [annualReturnsData, setAnnualReturnsData] = useState([]);
   const [statsData, setStatsData] = useState(null);
   const [liveStatsData, setLiveStatsData] = useState(null);
   const [loading, setLoading] = useState(true);
-  
   const [selectedYear, setSelectedYear] = useState('5Y');
   const [filteredChartData, setFilteredChartData] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  
-  // STATE FOR MOBILE MENU
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('home');
+  
+  // NEW STATE: Background Selection
+  const [bgType, setBgType] = useState('smoke'); 
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const yearsList = ['ALL', ...Array.from({length: 26}, (_, i) => (2025 - i).toString())];
   const manualRanges = ['2020-2024', '2015-2019', '2010-2014', '2005-2009'];
@@ -607,6 +713,7 @@ export default function App() {
   ];
 
   useEffect(() => {
+    // ... Data fetching logic same as before ...
     const fetchOrFallback = async (url, fallback) => {
         try {
             const response = await fetch(url);
@@ -626,7 +733,7 @@ export default function App() {
             fetchOrFallback('/data/annual-returns.json', MOCK_ANNUAL),
             fetchOrFallback('/data/stats-data.json', MOCK_STATS),
             fetchOrFallback('/data/live-stats-data.json', MOCK_LIVE_STATS),
-            fetchOrFallback('/data/live-heatmap-data.json', MOCK_LIVE_HEATMAP), // Load data live heatmap
+            fetchOrFallback('/data/live-heatmap-data.json', MOCK_LIVE_HEATMAP),
         ]);
         
         setFullData(hist);
@@ -639,7 +746,7 @@ export default function App() {
 
         setLiveData(live);
         setHeatmapData(heatmap);
-        setLiveHeatmapData(liveHeatmap); // Set state live heatmap
+        setLiveHeatmapData(liveHeatmap);
         setAnnualReturnsData(annual);
         setStatsData(stats);
         setLiveStatsData(liveStats);
@@ -649,56 +756,45 @@ export default function App() {
         setLoading(false);
       }
     };
-    
     fetchAllData();
   }, []);
-  
-  const [activeTab, setActiveTab] = useState('home');
 
   const handleTabChange = (tabId) => {
       setActiveTab(tabId);
-      setIsMenuOpen(false); // Close menu on mobile when a tab is selected
+      setIsMenuOpen(false);
   };
 
   const stats = useMemo(() => {
     if (!filteredChartData || filteredChartData.length === 0) return {
         totalReturn: 0, maxDrawdown: 0, cagr: 0, apr: 0, expectedValue: 0, volatility: 0, sharpe: 0, sortino: 0
     };
-
     const startVal = filteredChartData[0].value;
     const endVal = filteredChartData[filteredChartData.length - 1].value;
     const totalReturn = ((endVal - startVal) / startVal) * 100;
     const maxDrawdown = Math.min(...filteredChartData.map(d => d.drawdown));
-
     const dailyReturns = [];
     for (let i = 1; i < filteredChartData.length; i++) {
         const r = (filteredChartData[i].value - filteredChartData[i-1].value) / filteredChartData[i-1].value;
         dailyReturns.push(r);
     }
-
     const tradingDays = 252;
     const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
     const annualizedReturn = meanDailyReturn * tradingDays;
-    
     const startDate = new Date(filteredChartData[0].date);
     const endDate = new Date(filteredChartData[filteredChartData.length - 1].date);
     const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.01);
     const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
     const apr = annualizedReturn * 100;
     const expectedValue = meanDailyReturn * 100;
-
     const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDailyReturn, 2), 0) / (dailyReturns.length - 1);
     const stdDev = Math.sqrt(variance);
     const volatility = stdDev * Math.sqrt(tradingDays) * 100;
-
+    const sharpe = (volatility !== 0) ? (apr / volatility) : 0;
     const downsideReturns = dailyReturns.filter(r => r < 0);
-    const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length; 
+    const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length;
     const downsideDev = Math.sqrt(downsideVariance);
     const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
-
-    const sharpe = (volatility !== 0) ? (apr / volatility) : 0;
     const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
-
     return { totalReturn, maxDrawdown, cagr, apr, expectedValue, volatility, sharpe, sortino };
   }, [filteredChartData]);
 
@@ -743,7 +839,6 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen text-[#d1d4dc] font-sans overflow-hidden relative bg-black">
-      
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap');
@@ -764,6 +859,7 @@ export default function App() {
         `}
       </style>
 
+      {/* SPLASH SCREEN */}
       {showSplash && (
         <div className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-1000 ease-in-out ${fadeOutSplash ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="text-center overflow-hidden h-48 flex items-center justify-center">
@@ -774,7 +870,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 1. TOP NAVBAR */}
+      {/* HEADER */}
       <header className="h-[60px] flex-none flex items-center justify-between px-4 bg-transparent z-50 relative">
         <div className="flex items-center gap-6">
           <div className="hidden md:block">
@@ -791,54 +887,69 @@ export default function App() {
             </nav>
           </div>
         </div>
-
         <div className="flex items-center gap-4 ml-auto">
-          {/* NAVBAR BUTTON - WITH LOCK */}
+          {/* THEME SETTINGS BUTTON */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)} 
+              className={`p-2 rounded-full transition-colors ${isSettingsOpen ? 'bg-white/20 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'}`}
+            >
+              <Settings size={18} />
+            </button>
+            {isSettingsOpen && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-xl z-[100] overflow-hidden backdrop-blur-xl animate-fade-in-up">
+                <div className="p-3 border-b border-white/5">
+                  <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Immersive BG</span>
+                </div>
+                <div className="p-2 flex flex-col gap-1">
+                  <button onClick={() => { setBgType('smoke'); setIsSettingsOpen(false); }} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-left transition-all ${bgType === 'smoke' ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+                    <Wind size={14} /> Smoke (Default)
+                  </button>
+                  <button onClick={() => { setBgType('neural'); setIsSettingsOpen(false); }} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-left transition-all ${bgType === 'neural' ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+                    <Grid size={14} /> Neural Net
+                  </button>
+                  <button onClick={() => { setBgType('matrix'); setIsSettingsOpen(false); }} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-left transition-all ${bgType === 'matrix' ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+                    <Code size={14} /> Matrix Rain
+                  </button>
+                  <button onClick={() => { setBgType('warp'); setIsSettingsOpen(false); }} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-left transition-all ${bgType === 'warp' ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+                    <Zap size={14} /> Warp Speed
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <button className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors backdrop-blur-md flex items-center gap-2">
             Join <Lock size={14} />
           </button>
-          {/* MOBILE MENU TOGGLE */}
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="hover:bg-white/10 p-2 rounded-full md:hidden transition-colors text-white z-50"
-          >
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="hover:bg-white/10 p-2 rounded-full md:hidden transition-colors text-white z-50">
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </header>
 
-      {/* MOBILE MENU OVERLAY */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl pt-24 px-6 md:hidden flex flex-col gap-6 animate-fade-in-up">
             {navItems.map(item => (
-                <button 
-                  key={item.id} 
-                  onClick={() => handleTabChange(item.id)}
-                  className={`text-2xl font-bold text-left py-2 border-b border-white/10 ${activeTab === item.id ? 'text-white' : 'text-gray-500'}`}
-                >
-                  {item.label}
-                </button>
+                <button key={item.id} onClick={() => handleTabChange(item.id)} className={`text-2xl font-bold text-left py-2 border-b border-white/10 ${activeTab === item.id ? 'text-white' : 'text-gray-500'}`}>{item.label}</button>
             ))}
-            <div className="mt-auto pb-10">
-                <p className="text-gray-500 text-sm">© 2024 Sentquant, Inc.</p>
-            </div>
+            <div className="mt-auto pb-10"><p className="text-gray-500 text-sm">© 2024 Sentquant, Inc.</p></div>
         </div>
       )}
 
-      {/* 2. MAIN SCROLLABLE CONTENT */}
+      {/* MAIN CONTENT AREA */}
       <div className="flex flex-1 overflow-hidden relative z-10">
         <main className="flex-1 overflow-y-auto custom-scrollbar relative">
           
-          {/* DYNAMIC BACKGROUND LAYER */}
-          {activeTab === 'about' ? (
-             <SmokeBackground />
-          ) : (
-             <GridWaveBackground height={580} />
-          )}
+          {/* BACKGROUND ANIMATION SWITCHER LOGIC */}
+          {bgType === 'smoke' && <SmokeBackground />}
+          {bgType === 'neural' && <NeuralBackground />}
+          {bgType === 'matrix' && <MatrixBackground />}
+          {bgType === 'warp' && <WarpBackground />}
 
           <div className={`max-w-[1584px] mx-auto px-4 sm:px-6 py-8 pb-20 relative z-10 ${activeTab === 'about' ? 'h-[calc(100vh-60px)]' : ''}`}> 
             
-            {/* ================== TAB CONTENT: HOME ================== */}
+            {/* HOME */}
             {activeTab === 'home' && (
               <div className="animate-fade-in-up flex flex-col items-center justify-center h-[70vh]">
                   <h1 className="text-7xl md:text-9xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl mb-6">
@@ -850,7 +961,7 @@ export default function App() {
               </div>
             )}
 
-            {/* ================== TAB CONTENT: HISTORICAL ================== */}
+            {/* HISTORICAL */}
             {activeTab === 'historical' && (
               <>
                 <div className="mb-10 animate-fade-in-up">
@@ -860,11 +971,10 @@ export default function App() {
                           Historical Performance
                       </h3>
                     </div>
-
+                    {/* ... (Year Filter Logic) ... */}
                     <div className="relative flex gap-2 items-center">
                         <button onClick={() => { setSelectedYear('5Y'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === '5Y' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>5Y</button>
                         <button onClick={() => { setSelectedYear('ALL'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === 'ALL' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>ALL</button>
-                        
                         <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${selectedYear !== 'ALL' && selectedYear !== '5Y' ? 'bg-gray-600 text-white shadow-[0_0_15px_rgba(75,85,99,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>
                           {selectedYear !== 'ALL' && selectedYear !== '5Y' ? selectedYear : 'FILTER'} <ChevronDown size={14} className={`transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
                         </button>
@@ -872,9 +982,7 @@ export default function App() {
                           <div className="absolute top-full right-0 mt-2 w-40 max-h-60 overflow-y-auto bg-[#0a0a0a] rounded-xl shadow-xl z-50 p-2 custom-scrollbar backdrop-blur-md">
                               <div className="mb-2 pb-2 border-b border-white/10">
                                 {manualRanges.map(range => (
-                                    <button key={range} onClick={() => { setSelectedYear(range); setIsFilterOpen(false); }} className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors mb-1 ${selectedYear === range ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-300 hover:bg-white/10'}`}>
-                                        {range}
-                                    </button>
+                                    <button key={range} onClick={() => { setSelectedYear(range); setIsFilterOpen(false); }} className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors mb-1 ${selectedYear === range ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-300 hover:bg-white/10'}`}>{range}</button>
                                 ))}
                               </div>
                               {yearsList.map((year) => (
@@ -906,7 +1014,6 @@ export default function App() {
                           </div>
                        </div>
                     </div>
-
                     <div className="p-4 flex flex-col justify-center transition-colors">
                        <div className="grid grid-cols-2 gap-y-6 gap-x-8">
                           <div>
@@ -930,7 +1037,6 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-col space-y-2">
-                      {/* Responsive Charts */}
                       <div className="h-[300px] md:h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={filteredChartData} margin={{top:10, left:0, right:0, bottom:0}}>
@@ -942,29 +1048,12 @@ export default function App() {
                             </defs>
                             <XAxis dataKey="date" hide />
                             <YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
-                            <Tooltip 
-                                contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} 
-                                itemStyle={{color: '#22ab94'}} 
-                                formatter={(value) => [`$${value.toLocaleString()}`, 'Equity']}
-                                labelStyle={{color: '#fff', fontFamily: 'Inter'}}
-                            />
-                            <Area 
-                              type="monotone" 
-                              dataKey="value" 
-                              stroke="#22ab94" 
-                              strokeWidth={2} 
-                              fill="url(#colorGradient)" 
-                              isAnimationActive={selectedYear !== 'ALL'} 
-                              animationDuration={500}
-                              dot={false} 
-                            />
+                            <Tooltip contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(value) => [`$${value.toLocaleString()}`, 'Equity']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
+                            <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorGradient)" isAnimationActive={selectedYear !== 'ALL'} animationDuration={500} dot={false} />
                           </AreaChart>
                         </ResponsiveContainer>
-                        <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg">
-                            <span className="p-1 text-gray-300 text-xs font-bold cursor-pointer hover:text-white">Sentquant Model</span>
-                        </div>
+                        <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold cursor-pointer hover:text-white">Sentquant Model</span></div>
                       </div>
-
                       <div className="h-[180px] rounded-b-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={filteredChartData} margin={{top:5, left:0, right:0, bottom:0}}>
@@ -976,173 +1065,78 @@ export default function App() {
                             </defs>
                             <XAxis dataKey="date" hide />
                             <YAxis orientation="right" tick={{fill: '#a1a1aa', fontSize: 10}} axisLine={false} tickLine={false} />
-                            <Tooltip 
-                                contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} 
-                                itemStyle={{color: '#f23645'}} 
-                                formatter={(value) => [`${value}%`, 'Drawdown']} 
-                                labelStyle={{color: '#fff', fontFamily: 'Inter'}}
-                            />
+                            <Tooltip contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#f23645'}} formatter={(value) => [`${value}%`, 'Drawdown']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
                             <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
-                            <Area 
-                              type="stepAfter" 
-                              dataKey="drawdown" 
-                              stroke="#f23645" 
-                              strokeWidth={1.5} 
-                              fill="url(#colorDrawdown)" 
-                              isAnimationActive={selectedYear !== 'ALL'}
-                              dot={false} 
-                            />
+                            <Area type="stepAfter" dataKey="drawdown" stroke="#f23645" strokeWidth={1.5} fill="url(#colorDrawdown)" isAnimationActive={selectedYear !== 'ALL'} dot={false} />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
                   </div>
-
-                  {/* INSERTED HEATMAP IN HISTORICAL WITH FILTER ENABLED */}
                   <MonthlyHeatmap data={heatmapData} enableFilter={true} />
-
-                  {/* INSERTED TOP 5 DRAWDOWNS TABLE */}
                   <TopDrawdownsTable data={MOCK_TOP_DRAWDOWNS} />
                 </div>
               </>
             )}
 
-            {/* ================== TAB CONTENT: LIVE ================== */}
+            {/* LIVE */}
             {activeTab === 'live' && (
               <div className="animate-fade-in-up">
                 <div className="mb-10">
                   <div className="flex items-center gap-4 mb-4">
-                    <h3 className="text-xl font-bold flex items-center gap-2 text-white font-eth drop-shadow-md">
-                        Live on LIGHTER
-                    </h3>
-                    <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-500 text-xs backdrop-blur-md flex items-center gap-1">
-                       <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                       LIVE MONITORING (1Y)
-                    </div>
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-white font-eth drop-shadow-md">Live on LIGHTER</h3>
+                    <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-500 text-xs backdrop-blur-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>LIVE MONITORING (1Y)</div>
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                       <div className="p-4 flex flex-col justify-center transition-colors backdrop-blur-sm rounded-xl bg-black/10"> 
                           <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                              <div>
-                                  <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Total Return (1Y)</div>
-                                  <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.totalReturn, '%')}</div>
-                              </div>
-                              <div>
-                                  <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Max Drawdown</div>
-                                  <div className="text-lg font-bold text-[#f23645] drop-shadow-sm">{fmt(liveStatsData?.maxDrawdown, '%')}</div>
-                              </div>
-                              <div>
-                                  <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">CAGR (1Y)</div>
-                                  <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.totalReturn, '%')}</div>
-                              </div>
-                              <div>
-                                  <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Win Rate</div>
-                                  <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.winRate, '%')}</div>
-                              </div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Total Return (1Y)</div><div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.totalReturn, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Max Drawdown</div><div className="text-lg font-bold text-[#f23645] drop-shadow-sm">{fmt(liveStatsData?.maxDrawdown, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">CAGR (1Y)</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.totalReturn, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Win Rate</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.winRate, '%')}</div></div>
                           </div>
                       </div>
-
                       <div className="p-4 flex flex-col justify-center transition-colors backdrop-blur-sm rounded-xl bg-black/10">
                           <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                              <div>
-                                  <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Expected Value</div>
-                                  <div className="text-lg font-bold text-white drop-shadow-sm">+0.85 %</div>
-                              </div>
-                              <div>
-                                  <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Volatility</div>
-                                  <div className="text-lg font-bold text-white drop-shadow-sm">15.2 %</div>
-                              </div>
-                              <div>
-                                  <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sharpe Ratio</div>
-                                  <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.sharpe)}</div>
-                              </div>
-                              <div>
-                                  <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sortino Ratio</div>
-                                  <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.sortino)}</div>
-                              </div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Expected Value</div><div className="text-lg font-bold text-white drop-shadow-sm">+0.85 %</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Volatility</div><div className="text-lg font-bold text-white drop-shadow-sm">15.2 %</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sharpe Ratio</div><div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.sharpe)}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sortino Ratio</div><div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.sortino)}</div></div>
                           </div>
                       </div>
                   </div>
-
                   <div className="flex flex-col space-y-2">
                       <div className="h-[300px] md:h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={liveData} margin={{top:10, left:0, right:0, bottom:0}}>
-                            <defs>
-                                <linearGradient id="colorLive" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
-                                <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            <XAxis dataKey="date" hide />
-                            <YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
-                            <Tooltip 
-                                contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} 
-                                itemStyle={{color: '#22ab94'}} 
-                                formatter={(value) => [`$${value.toLocaleString()}`, 'Live Equity']}
-                                labelStyle={{color: '#fff', fontFamily: 'Inter'}}
-                            />
-                            <Area 
-                                type="monotone" 
-                                dataKey="value" 
-                                stroke="#22ab94" 
-                                strokeWidth={2} 
-                                fill="url(#colorLive)" 
-                                animationDuration={1500}
-                                dot={false} 
-                            />
+                            <defs><linearGradient id="colorLive" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/><stop offset="95%" stopColor="#22ab94" stopOpacity={0}/></linearGradient></defs>
+                            <XAxis dataKey="date" hide /><YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
+                            <Tooltip contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(value) => [`$${value.toLocaleString()}`, 'Live Equity']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
+                            <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorLive)" animationDuration={1500} dot={false} />
                             </AreaChart>
                         </ResponsiveContainer>
-                        <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg">
-                            <span className="p-1 text-gray-300 text-xs font-bold">Sentquant Model</span>
-                        </div>
+                        <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold">Sentquant Model</span></div>
                       </div>
-
                       <div className="h-[180px] rounded-b-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={liveData} margin={{top:5, left:0, right:0, bottom:0}}>
-                            <defs>
-                              <linearGradient id="colorDrawdownLive" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#f23645" stopOpacity={0.4}/>
-                                <stop offset="95%" stopColor="#f23645" stopOpacity={0.05}/>
-                              </linearGradient>
-                            </defs>
-                            <XAxis dataKey="date" hide />
-                            <YAxis orientation="right" tick={{fill: '#a1a1aa', fontSize: 10}} axisLine={false} tickLine={false} />
-                            <Tooltip 
-                                contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} 
-                                itemStyle={{color: '#f23645'}} 
-                                formatter={(value) => [`${value}%`, 'Live Drawdown']} 
-                                labelStyle={{color: '#fff', fontFamily: 'Inter'}}
-                            />
+                            <defs><linearGradient id="colorDrawdownLive" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f23645" stopOpacity={0.4}/><stop offset="95%" stopColor="#f23645" stopOpacity={0.05}/></linearGradient></defs>
+                            <XAxis dataKey="date" hide /><YAxis orientation="right" tick={{fill: '#a1a1aa', fontSize: 10}} axisLine={false} tickLine={false} />
+                            <Tooltip contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#f23645'}} formatter={(value) => [`${value}%`, 'Live Drawdown']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
                             <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
-                            <Area 
-                              type="stepAfter" 
-                              dataKey="drawdown" 
-                              stroke="#f23645" 
-                              strokeWidth={1.5} 
-                              fill="url(#colorDrawdownLive)" 
-                              animationDuration={1500}
-                              dot={false} 
-                            />
+                            <Area type="stepAfter" dataKey="drawdown" stroke="#f23645" strokeWidth={1.5} fill="url(#colorDrawdownLive)" animationDuration={1500} dot={false} />
                           </AreaChart>
                         </ResponsiveContainer>
-                        <div className="absolute top-2 left-4">
-                            <span className="text-[#f23645] text-[10px] font-bold uppercase tracking-widest">Live Underwater Plot</span>
-                        </div>
+                        <div className="absolute top-2 left-4"><span className="text-[#f23645] text-[10px] font-bold uppercase tracking-widest">Live Underwater Plot</span></div>
                       </div>
                   </div>
-
-                  {/* INSERTED HEATMAP IN LIVE - USING NEW LIVE DATA */}
                   <MonthlyHeatmap data={liveHeatmapData} enableFilter={false} />
                 </div>
               </div>
             )}
 
-            {/* ================== TAB CONTENT: STATS ================== */}
+            {/* STATS */}
             {activeTab === 'stats' && (
               <div className="animate-fade-in-up">
-                
                 <div className="mb-10">
                   <div className="flex items-center justify-between mb-6">
                       <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Annual Returns</h3>
@@ -1162,11 +1156,7 @@ export default function App() {
                       </ResponsiveContainer>
                   </div>
                 </div>
-
-                {/* EXECUTIVE SUMMARY */}
                 <AboutModelsCard />
-
-                {/* DETAILED STATS SECTIONS */}
                 <div className="mb-20 grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {DETAILED_STATS_SECTIONS.map((section, idx) => (
                       <DetailedStatCard key={idx} section={section} />
@@ -1175,63 +1165,31 @@ export default function App() {
               </div>
             )}
 
-            {/* ... ABOUT PAGE ... */}
+            {/* ABOUT */}
             {activeTab === 'about' && (
               <div className="animate-fade-in-up flex flex-col items-start justify-start h-full relative z-10 px-4 pt-0 md:pt-8 pl-4 md:pl-20">
                   <div className="max-w-3xl text-left">
-                    {/* 1. Medium Gray Title */}
-                    <h2 className="text-2xl md:text-3xl font-medium text-gray-400 font-eth mb-4">
-                        The trading industry is broken.
-                    </h2>
-
-                    {/* 2. Small White Text Block */}
+                    <h2 className="text-2xl md:text-3xl font-medium text-gray-400 font-eth mb-4">The trading industry is broken.</h2>
                     <div className="text-sm md:text-base text-white font-light leading-relaxed space-y-4 max-w-xl">
-                        <p>
-                            Fake gurus sell dreams.
-                        </p>
-                        <p>
-                            Performance can’t be verified.
-                        </p>
-                        <p>
-                            Retail traders are misled by empty claims.
-                        </p>
-                        <p>
-                            Everyone talks.<br/>
-                            No data.
-                        </p>
+                        <p>Fake gurus sell dreams.</p>
+                        <p>Performance can’t be verified.</p>
+                        <p>Retail traders are misled by empty claims.</p>
+                        <p>Everyone talks.<br/>No data.</p>
                     </div>
-
-                    {/* 3. "If CoinMarketCap..." block styled like the Title (Medium Gray) */}
                     <div className="text-2xl md:text-3xl font-medium text-gray-400 font-eth leading-tight space-y-2 mt-12 max-w-2xl">
-                        <p>
-                            If CoinMarketCap tracks assets,
-                        </p>
-                        <p>
-                            Sentquant tracks strategy performance.
-                        </p>
-                        <p>
-                            Because performance can’t lie, people can.
-                        </p>
+                        <p>If CoinMarketCap tracks assets,</p>
+                        <p>Sentquant tracks strategy performance.</p>
+                        <p>Because performance can’t lie, people can.</p>
                     </div>
-
-                    {/* Context for other parts */}
                     <div className="mt-12 space-y-12 pb-20">
-                        {/* 4. Sentquant doesn't sell... block - FULLY LEFT ALIGNED */}
                         <div className="flex flex-col space-y-3 text-white text-sm md:text-base font-light leading-relaxed max-w-xl text-left">
                             <div>Sentquant doesn't sell courses.</div>
                             <div>Sentquant doesn’t sell signals.</div>
                             <div>Sentquant doesn’t sell promises.</div>
-                            <div className="text-white mt-4 leading-relaxed">
-                                Sentquant is the arena where every claim is tested.
-                            </div>
+                            <div className="text-white mt-4 leading-relaxed">Sentquant is the arena where every claim is tested.</div>
                         </div>
-                        
-                        {/* 5. Bottom block - LEFT ALIGNED */}
                         <div className="flex flex-col items-start text-left w-full max-w-4xl pt-4">
-                            <div className="py-2">
-                                <span className="text-white font-bold text-xl block">This is the end of the fake trading mentor era.</span>
-                            </div>
-
+                            <div className="py-2"><span className="text-white font-bold text-xl block">This is the end of the fake trading mentor era.</span></div>
                             <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 border-t border-b border-white/10 py-6 my-8">
                                 <div className="flex flex-wrap justify-start gap-3 md:gap-6 text-[11px] md:text-[13px] font-mono text-blue-400 tracking-widest">
                                     <span>EVERY TRADER</span>
@@ -1239,28 +1197,22 @@ export default function App() {
                                     <span>EVERY CLAIM</span>
                                     <span className="whitespace-nowrap">PROVEN ON-CHAIN</span>
                                 </div>
-                                
-                                {/* JOIN MOVEMENT BUTTON WITH LOCK */}
                                 <button className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full text-sm md:text-base font-bold transition-colors backdrop-blur-md flex items-center gap-2 group border border-white/5">
-                                    Join Movement
-                                    <Lock size={18} />
+                                    Join Movement <Lock size={18} />
                                 </button>
                             </div>
                         </div>
                     </div>
-
                   </div>
               </div>
             )}
 
-            {/* --- FOOTER (Hidden on About Page for cleaner look) --- */}
+            {/* FOOTER */}
             {activeTab !== 'about' && (
                 <footer className="pt-12 pb-8 bg-black/20 backdrop-blur-md rounded-xl mt-10 border-t border-white/5">
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12 text-sm text-gray-400 px-6">
                     <div className="col-span-2 lg:col-span-2 pr-8">
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="text-xl font-bold text-white font-eth">Sentquant</span>
-                        </div>
+                        <div className="flex items-center gap-2 mb-4"><span className="text-xl font-bold text-white font-eth">Sentquant</span></div>
                         <p className="mb-4">Look first / Then leap.</p>
                     </div>
                 </div>
