@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star, Zap, Grid, Code, Wind, Settings
+  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star
 } from 'lucide-react';
 
 // --- COMPONENT: CUSTOM Q LOGO (SVG REPLICA) ---
@@ -334,235 +334,7 @@ const DetailedStatCard = ({ section }) => (
   </div>
 );
 
-// --- COMPONENT: SMOKE BACKGROUND (ORIGINAL) ---
-const SmokeBackground = () => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let w, h;
-    let animationFrameId;
-    let particles = [];
-
-    const resize = () => {
-      if(!canvas) return;
-      const parent = canvas.parentElement;
-      w = canvas.width = parent ? parent.clientWidth : window.innerWidth;
-      h = canvas.height = parent ? parent.clientHeight : window.innerHeight;
-    };
-    
-    window.addEventListener('resize', resize);
-    resize();
-
-    // Particle factory
-    const createParticle = () => ({
-        x: Math.random() * w,
-        y: h + Math.random() * 100, // Start slightly below screen
-        vx: (Math.random() - 0.5) * 0.8, // Slow horizontal drift
-        vy: -0.3 - Math.random() * 0.5, // Slow upward drift
-        size: 100 + Math.random() * 150, // Large, puffy particles
-        life: 0,
-        maxLife: 300 + Math.random() * 200,
-        alphaMax: 0.03 + Math.random() * 0.04 // Very subtle opacity
-    });
-
-    // Initialize some particles
-    for(let i = 0; i < 50; i++) {
-        particles.push({
-            ...createParticle(),
-            y: h - Math.random() * (h * 0.4), // Pre-populate bottom area
-            life: Math.random() * 200
-        });
-    }
-
-    const draw = () => {
-      if (!ctx) return;
-      
-      // Background: Solid Black
-      ctx.fillStyle = '#000000'; 
-      ctx.fillRect(0, 0, w, h);
-      
-      // Add new particles occasionally to keep density
-      if (particles.length < 80) {
-          particles.push(createParticle());
-      }
-
-      // Update and draw particles
-      for (let i = 0; i < particles.length; i++) {
-          const p = particles[i];
-          p.x += p.vx;
-          p.y += p.vy;
-          p.life++;
-
-          // Calculate opacity based on life cycle (fade in -> hold -> fade out)
-          let alpha = p.alphaMax;
-          if (p.life < 100) alpha = p.alphaMax * (p.life / 100); // Fade in
-          else if (p.life > p.maxLife - 100) alpha = p.alphaMax * ((p.maxLife - p.life) / 100); // Fade out
-
-          // Remove dead particles
-          if (p.life >= p.maxLife || alpha <= 0) {
-              particles[i] = createParticle();
-              continue;
-          }
-
-          // Draw Smoke Puff (Radial Gradient)
-          const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
-          gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`); // White center
-          gradient.addColorStop(0.4, `rgba(220, 220, 230, ${alpha * 0.5})`); // Grayish mid
-          gradient.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Transparent edge
-
-          ctx.fillStyle = gradient;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fill();
-      }
-
-      animationFrameId = requestAnimationFrame(draw);
-    };
-    
-    draw();
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
-};
-
-// --- NEW COMPONENT: NEURAL NETWORK BACKGROUND (QUANT/AI THEME) ---
-const NeuralBackground = () => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let w, h;
-    let animationFrameId;
-    let particles = [];
-    
-    const resize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', resize);
-    resize();
-
-    // Create particles
-    const particleCount = 60;
-    for(let i=0; i<particleCount; i++){
-      particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        size: Math.random() * 2 + 1
-      });
-    }
-
-    const draw = () => {
-      if(!ctx) return;
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0,0,w,h);
-      
-      // Update and draw particles
-      ctx.fillStyle = 'rgba(34, 171, 148, 0.5)'; // Teal color dots
-      particles.forEach((p, i) => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Bounce off walls
-        if(p.x < 0 || p.x > w) p.vx *= -1;
-        if(p.y < 0 || p.y > h) p.vy *= -1;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Connect dots
-        for(let j=i+1; j<particles.length; j++){
-          const p2 = particles[j];
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
-          if(dist < 150){
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(34, 171, 148, ${1 - dist/150})`; // Fading teal lines
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        }
-      });
-      animationFrameId = requestAnimationFrame(draw);
-    };
-    draw();
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
-};
-
-// --- NEW COMPONENT: MATRIX RAIN BACKGROUND (DATA/ALGO THEME) ---
-const MatrixBackground = () => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let w, h;
-    let animationFrameId;
-    
-    const resize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', resize);
-    resize();
-
-    const cols = Math.floor(w / 20) + 1;
-    const ypos = Array(cols).fill(0);
-
-    const draw = () => {
-      if(!ctx) return;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-      ctx.fillRect(0, 0, w, h);
-
-      ctx.fillStyle = '#22ab94'; // Teal text
-      ctx.font = '15pt monospace';
-
-      ypos.forEach((y, i) => {
-        const text = String.fromCharCode(Math.random() * 128);
-        const x = i * 20;
-        ctx.fillText(text, x, y);
-        
-        if (y > 100 + Math.random() * 10000) ypos[i] = 0;
-        else ypos[i] = y + 20;
-      });
-      animationFrameId = requestAnimationFrame(draw);
-    };
-    draw();
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
-};
-
-// --- NEW COMPONENT: WARP/STARFIELD BACKGROUND (SPEED/FUTURE THEME) ---
+// --- COMPONENT: WARP/STARFIELD BACKGROUND (SPEED/FUTURE THEME) ---
 const WarpBackground = () => {
   const canvasRef = useRef(null);
 
@@ -578,8 +350,9 @@ const WarpBackground = () => {
     const speed = 2; // Warp speed
 
     const resize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
+      const parent = canvas.parentElement;
+      w = canvas.width = parent ? parent.clientWidth : window.innerWidth;
+      h = canvas.height = parent ? parent.clientHeight : window.innerHeight;
     };
     window.addEventListener('resize', resize);
     resize();
@@ -697,10 +470,6 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   
-  // NEW STATE: Background Selection
-  const [bgType, setBgType] = useState('smoke'); 
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
   const yearsList = ['ALL', ...Array.from({length: 26}, (_, i) => (2025 - i).toString())];
   const manualRanges = ['2020-2024', '2015-2019', '2010-2014', '2005-2009'];
   
@@ -713,7 +482,6 @@ export default function App() {
   ];
 
   useEffect(() => {
-    // ... Data fetching logic same as before ...
     const fetchOrFallback = async (url, fallback) => {
         try {
             const response = await fetch(url);
@@ -888,37 +656,6 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-4 ml-auto">
-          {/* THEME SETTINGS BUTTON */}
-          <div className="relative">
-            <button 
-              onClick={() => setIsSettingsOpen(!isSettingsOpen)} 
-              className={`p-2 rounded-full transition-colors ${isSettingsOpen ? 'bg-white/20 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'}`}
-            >
-              <Settings size={18} />
-            </button>
-            {isSettingsOpen && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-xl z-[100] overflow-hidden backdrop-blur-xl animate-fade-in-up">
-                <div className="p-3 border-b border-white/5">
-                  <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Immersive BG</span>
-                </div>
-                <div className="p-2 flex flex-col gap-1">
-                  <button onClick={() => { setBgType('smoke'); setIsSettingsOpen(false); }} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-left transition-all ${bgType === 'smoke' ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
-                    <Wind size={14} /> Smoke (Default)
-                  </button>
-                  <button onClick={() => { setBgType('neural'); setIsSettingsOpen(false); }} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-left transition-all ${bgType === 'neural' ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
-                    <Grid size={14} /> Neural Net
-                  </button>
-                  <button onClick={() => { setBgType('matrix'); setIsSettingsOpen(false); }} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-left transition-all ${bgType === 'matrix' ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
-                    <Code size={14} /> Matrix Rain
-                  </button>
-                  <button onClick={() => { setBgType('warp'); setIsSettingsOpen(false); }} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-left transition-all ${bgType === 'warp' ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
-                    <Zap size={14} /> Warp Speed
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
           <button className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors backdrop-blur-md flex items-center gap-2">
             Join <Lock size={14} />
           </button>
@@ -941,11 +678,7 @@ export default function App() {
       <div className="flex flex-1 overflow-hidden relative z-10">
         <main className="flex-1 overflow-y-auto custom-scrollbar relative">
           
-          {/* BACKGROUND ANIMATION SWITCHER LOGIC */}
-          {bgType === 'smoke' && <SmokeBackground />}
-          {bgType === 'neural' && <NeuralBackground />}
-          {bgType === 'matrix' && <MatrixBackground />}
-          {bgType === 'warp' && <WarpBackground />}
+          <WarpBackground />
 
           <div className={`max-w-[1584px] mx-auto px-4 sm:px-6 py-8 pb-20 relative z-10 ${activeTab === 'about' ? 'h-[calc(100vh-60px)]' : ''}`}> 
             
