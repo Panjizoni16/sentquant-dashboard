@@ -620,6 +620,16 @@ export default function App() {
     updateFavicons();
   }, []);
 
+  // Force scrollbar visibility
+  useEffect(() => {
+    const mainEl = mainScrollRef.current;
+    if (mainEl) {
+      mainEl.style.overflowY = 'scroll';
+      mainEl.style.scrollbarGutter = 'stable';
+    }
+  }, []);
+
+  const handleTabChange = (tabId) => {
   const handleTabChange = (tabId) => {
       setActiveTab(tabId);
       setIsMenuOpen(false);
