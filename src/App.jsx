@@ -712,10 +712,35 @@ export default function App() {
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.4) transparent;
 }
-.custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.6); }
+/* Force scrollbar to always show */
+main.custom-scrollbar {
+  overflow-y: scroll !important;
+  scrollbar-gutter: stable;
+}
+
+/* For Webkit browsers (Chrome, Safari, Edge) */
+main.custom-scrollbar::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 10px !important;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+main.custom-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+main.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+/* For Firefox */
+main.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.05);
+}
           .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
           @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
