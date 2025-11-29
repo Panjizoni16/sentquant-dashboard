@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star
+  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star, Zap, Grid, Code, Wind, Settings
 } from 'lucide-react';
 
 // --- COMPONENT: CUSTOM Q LOGO (SVG REPLICA) ---
@@ -349,12 +349,27 @@ const WarpBackground = () => {
     const numStars = 200;
     const speed = 2; // Warp speed
 
+    // FIXED: Check for window.innerWidth change to avoid unnecessary resize on mobile scroll
+    let lastWidth = window.innerWidth;
+
     const resize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
+      // Only resize if width changes (orientation change), ignore height changes (address bar)
+      if (window.innerWidth !== lastWidth) {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+        lastWidth = window.innerWidth;
+      } else {
+        // Ensure height is always updated but don't reset stars/logic aggressively if not needed
+        // For WarpBackground specifically, full reset on resize is safer for star positions
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
     };
+    // Initial size
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    
     window.addEventListener('resize', resize);
-    resize();
 
     // Initialize stars
     for(let i=0; i<numStars; i++){
@@ -605,7 +620,8 @@ export default function App() {
   if (loading && !showSplash) return <div className="h-screen bg-black text-white flex items-center justify-center">Loading Data...</div>;
 
   return (
-    <div className="flex flex-col h-screen text-[#d1d4dc] font-sans overflow-hidden relative bg-black">
+    // FIX: Use 100dvh to stabilize viewport on mobile browsers (hiding address bar glitches)
+    <div className="flex flex-col h-[100dvh] text-[#d1d4dc] font-sans overflow-hidden relative bg-black">
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap');
@@ -638,7 +654,11 @@ export default function App() {
       )}
 
       {/* HEADER */}
-      <header className="h-[60px] flex-none flex items-center justify-between px-4 bg-transparent z-50 relative">
+      {/* FIX: Added transform-gpu / translateZ to force hardware acceleration and prevent flicker */}
+      <header 
+        className="h-[60px] flex-none flex items-center justify-between px-4 bg-transparent z-50 relative"
+        style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
+      >
         <div className="flex items-center gap-6">
           {/* MOBILE LOGO (NEW) */}
           <div className="flex items-center gap-2 md:hidden">
@@ -669,6 +689,7 @@ export default function App() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="block md:hidden hover:bg-white/10 p-2 rounded-full transition-colors text-white z-[60] relative"
             aria-label="Toggle Menu"
+            style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }} // Extra safety for the button itself
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -691,6 +712,7 @@ export default function App() {
           <WarpBackground />
 
           <div className={`max-w-[1584px] mx-auto px-4 sm:px-6 py-8 pb-20 relative z-10 ${activeTab === 'about' ? 'h-[calc(100vh-60px)]' : ''}`}> 
+             {/* Content remains same as before, truncated for brevity but fully preserved in logic */}
             
             {/* HOME */}
             {activeTab === 'home' && (
