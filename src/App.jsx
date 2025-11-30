@@ -421,27 +421,32 @@ const MOCK_HISTORICAL = Array.from({ length: 100 }, (_, i) => ({
     value: 1000 + Math.random() * 500 + i * 10,
     drawdown: -(Math.random() * 10)
 }));
-const MOCK_LIVE = Array.from({ length: 50 }, (_, i) => ({
-    date: `2025-01-${i + 1}`,
-    value: 1500 + Math.random() * 200 + i * 5,
-    drawdown: -(Math.random() * 5)
-}));
+
+// RESET LIVE DATA: Hanya satu titik awal yaitu 100
+const MOCK_LIVE = [
+    { date: 'Start', value: 100, drawdown: 0 }
+];
+
 const generateMockHeatmap = () => {
   const years = [];
-  for (let y = 2024; y >= 2005; y--) {
+  for (let y = 2025; y >= 2005; y--) {
     const months = Array.from({length: 12}, () => (Math.random() * 10 - 4).toFixed(1)).map(Number);
     years.push({ year: y.toString(), months });
   }
   return years;
 };
 const MOCK_HEATMAP = generateMockHeatmap();
+
+// DATA LIVE HEATMAP DIBALIK: 2025 di atas, 2029 di bawah
+// Updated: 2025 sekarang dikosongkan (Array(12).fill(null))
 const MOCK_LIVE_HEATMAP = [
-  { year: '2029', months: Array(12).fill(null) },
-  { year: '2028', months: Array(12).fill(null) },
-  { year: '2027', months: Array(12).fill(null) },
+  { year: '2025', months: Array(12).fill(null) },
   { year: '2026', months: Array(12).fill(null) },
-  { year: '2025', months: [4.2, 1.5, -2.1, 3.8, 2.5, 1.2, 0.5, 3.1, 1.9, 4.2, 2.1, null] } 
+  { year: '2027', months: Array(12).fill(null) },
+  { year: '2028', months: Array(12).fill(null) },
+  { year: '2029', months: Array(12).fill(null) }
 ];
+
 const MOCK_ANNUAL = [
     { year: '2021', value: 25.4 },
     { year: '2022', value: -5.2 },
@@ -450,7 +455,20 @@ const MOCK_ANNUAL = [
     { year: '2025', value: 8.5 },
 ];
 const MOCK_STATS = { sharpe: 3.18, sortino: 4.22, maxDD: -12.45, winRate: 68.5 };
-const MOCK_LIVE_STATS = { totalReturn: 14.5, maxDrawdown: -8.24, sharpe: 2.14, sortino: 3.05, winRate: 62.4 };
+
+// RESET LIVE STATS: Semua nilai di-set ke null agar muncul "-"
+const MOCK_LIVE_STATS = { 
+  totalReturn: null, 
+  maxDrawdown: null, 
+  sharpe: null, 
+  sortino: null, 
+  winRate: null, 
+  apr: null, 
+  cagr: null, 
+  expectedValue: null, 
+  volatility: null 
+};
+
 const MOCK_TOP_DRAWDOWNS = [
   { rank: 1, startDate: '2022-01-05', endDate: '2022-06-15', depth: -12.45, duration: 161, recovery: 45 },
   { rank: 2, startDate: '2021-09-10', endDate: '2021-10-05', depth: -8.32, duration: 25, recovery: 12 },
@@ -659,7 +677,8 @@ export default function App() {
     return { totalReturn, maxDrawdown, cagr, apr, expectedValue, volatility, sharpe, sortino };
   }, [filteredChartData]);
 
-  const fmt = (val, suffix = '') => val ? `${val > 0 && suffix === '%' ? '+' : ''}${val.toLocaleString(undefined, {maximumFractionDigits: 2})} ${suffix}` : '-';
+  // Updated fmt function: if value is null or undefined, return '-'
+  const fmt = (val, suffix = '') => (val !== null && val !== undefined) ? `${val > 0 && suffix === '%' ? '+' : ''}${val.toLocaleString(undefined, {maximumFractionDigits: 2})} ${suffix}` : '-';
   const colorClass = (val) => val >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]';
 
   useEffect(() => {
@@ -791,7 +810,6 @@ export default function App() {
             {navItems.map(item => (
                 <button key={item.id} onClick={() => handleTabChange(item.id)} className={`text-2xl font-bold text-left py-2 border-b border-white/10 ${activeTab === item.id ? 'text-white' : 'text-gray-500'}`}>{item.label}</button>
             ))}
-            <div className="mt-auto pb-10"><p className="text-gray-500 text-sm">© 2024 Sentquant, Inc.</p></div>
         </div>
       )}
 
@@ -812,7 +830,7 @@ export default function App() {
                     Sentquant
                   </h1>
                   <p className="text-gray-400 text-sm md:text-base font-light tracking-wide text-center max-w-lg">
-                    The era of fake trading gurus ends here.
+                    If CoinMarketCap tracks assets,<br />Sentquant tracks strategy performance.
                   </p>
               </div>
             )}
@@ -861,11 +879,11 @@ export default function App() {
                           </div>
                           <div>
                              <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">CAGR</div>
-                             <div className={`text-lg font-bold drop-shadow-sm ${colorClass(stats.cagr)}`}>{fmt(stats.cagr, '%')}</div>
+                             <div className="text-lg font-bold drop-shadow-sm text-white">{fmt(stats.cagr, '%')}</div>
                           </div>
                           <div>
                              <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">APR</div>
-                             <div className={`text-lg font-bold drop-shadow-sm ${colorClass(stats.apr)}`}>{fmt(stats.apr, '%')}</div>
+                             <div className="text-lg font-bold drop-shadow-sm text-white">{fmt(stats.apr, '%')}</div>
                           </div>
                        </div>
                     </div>
@@ -881,11 +899,11 @@ export default function App() {
                           </div>
                           <div>
                              <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sharpe Ratio</div>
-                             <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(stats.sharpe)}</div>
+                             <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(stats.sharpe)}</div>
                           </div>
                           <div>
                              <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sortino Ratio</div>
-                             <div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(stats.sortino)}</div>
+                             <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(stats.sortino)}</div>
                           </div>
                        </div>
                     </div>
@@ -903,7 +921,7 @@ export default function App() {
                             </defs>
                             <XAxis dataKey="date" hide />
                             <YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
-                            <Tooltip contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(value) => [`$${value.toLocaleString()}`, 'Equity']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
+                            <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(value) => [value.toLocaleString(), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
                             <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorGradient)" isAnimationActive={selectedYear !== 'ALL'} animationDuration={500} dot={false} />
                           </AreaChart>
                         </ResponsiveContainer>
@@ -939,23 +957,23 @@ export default function App() {
                 <div className="mb-10">
                   <div className="flex items-center gap-4 mb-4">
                     <h3 className="text-xl font-bold flex items-center gap-2 text-white font-eth drop-shadow-md">Live on LIGHTER</h3>
-                    <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-500 text-xs backdrop-blur-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>LIVE MONITORING (1Y)</div>
+                    <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-500 text-xs backdrop-blur-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>Offline</div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                       <div className="p-4 flex flex-col justify-center transition-colors backdrop-blur-sm rounded-xl bg-black/10"> 
                           <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Total Return (1Y)</div><div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.totalReturn, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Total Return</div><div className={`text-lg font-bold drop-shadow-sm ${colorClass(liveStatsData?.totalReturn)}`}>{fmt(liveStatsData?.totalReturn, '%')}</div></div>
                               <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Max Drawdown</div><div className="text-lg font-bold text-[#f23645] drop-shadow-sm">{fmt(liveStatsData?.maxDrawdown, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">CAGR (1Y)</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.totalReturn, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Win Rate</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.winRate, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">CAGR</div><div className="text-lg font-bold drop-shadow-sm text-white">{fmt(liveStatsData?.cagr, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">APR</div><div className="text-lg font-bold drop-shadow-sm text-white">{fmt(liveStatsData?.apr, '%')}</div></div>
                           </div>
                       </div>
                       <div className="p-4 flex flex-col justify-center transition-colors backdrop-blur-sm rounded-xl bg-black/10">
                           <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Expected Value</div><div className="text-lg font-bold text-white drop-shadow-sm">+0.85 %</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Volatility</div><div className="text-lg font-bold text-white drop-shadow-sm">15.2 %</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sharpe Ratio</div><div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.sharpe)}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sortino Ratio</div><div className="text-lg font-bold text-[#22ab94] drop-shadow-sm">{fmt(liveStatsData?.sortino)}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Expected Value</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.expectedValue, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Volatility</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.volatility, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sharpe Ratio</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.sharpe)}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sortino Ratio</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.sortino)}</div></div>
                           </div>
                       </div>
                   </div>
@@ -965,7 +983,7 @@ export default function App() {
                             <AreaChart data={liveData} margin={{top:10, left:0, right:0, bottom:0}}>
                             <defs><linearGradient id="colorLive" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/><stop offset="95%" stopColor="#22ab94" stopOpacity={0}/></linearGradient></defs>
                             <XAxis dataKey="date" hide /><YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
-                            <Tooltip contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(value) => [`$${value.toLocaleString()}`, 'Live Equity']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
+                            <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(value) => [value.toLocaleString(), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
                             <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorLive)" animationDuration={1500} dot={false} />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -981,7 +999,6 @@ export default function App() {
                             <Area type="stepAfter" dataKey="drawdown" stroke="#f23645" strokeWidth={1.5} fill="url(#colorDrawdownLive)" animationDuration={1500} dot={false} />
                           </AreaChart>
                         </ResponsiveContainer>
-                        <div className="absolute top-2 left-4"><span className="text-[#f23645] text-[10px] font-bold uppercase tracking-widest">Live Underwater Plot</span></div>
                       </div>
                   </div>
                   <MonthlyHeatmap data={liveHeatmapData} enableFilter={false} />
@@ -1025,11 +1042,12 @@ export default function App() {
               <div className="animate-fade-in-up flex flex-col items-start justify-start h-full relative z-10 px-4 pt-0 md:pt-8 pl-4 md:pl-20">
                   <div className="max-w-3xl text-left">
                     <h2 className="text-2xl md:text-3xl font-medium text-gray-400 font-eth mb-4">The trading industry is broken.</h2>
-                    <div className="text-sm md:text-base text-white font-light leading-relaxed space-y-4 max-w-xl">
+                    <div className="text-white text-sm font-medium leading-relaxed font-sans space-y-4 max-w-xl">
                         <p>Fake gurus sell dreams.</p>
                         <p>Performance can’t be verified.</p>
                         <p>Retail traders are misled by empty claims.</p>
-                        <p>Everyone talks.<br/>No data.</p>
+                        <p>Everyone talks.</p>
+                        <p>No data.</p>
                     </div>
                     <div className="text-2xl md:text-3xl font-medium text-gray-400 font-eth leading-tight space-y-2 mt-12 max-w-2xl">
                         <p>If CoinMarketCap tracks assets,</p>
@@ -1037,14 +1055,14 @@ export default function App() {
                         <p>Because performance can’t lie, people can.</p>
                     </div>
                     <div className="mt-12 space-y-12 pb-20">
-                        <div className="flex flex-col space-y-3 text-white text-sm md:text-base font-light leading-relaxed max-w-xl text-left">
-                            <div>Sentquant doesn't sell courses.</div>
-                            <div>Sentquant doesn’t sell signals.</div>
-                            <div>Sentquant doesn’t sell promises.</div>
-                            <div className="text-white mt-4 leading-relaxed">Sentquant is the arena where every claim is tested.</div>
+                        <div className="text-white text-sm font-medium leading-relaxed font-sans space-y-4 max-w-xl text-left">
+                            <p>Sentquant doesn't sell courses.</p>
+                            <p>Sentquant doesn’t sell signals.</p>
+                            <p>Sentquant doesn’t sell VIP Group</p>
+                            <p>Sentquant is the arena where every claim is tested.</p>
                         </div>
                         <div className="flex flex-col items-start text-left w-full max-w-4xl pt-4">
-                            <div className="py-2"><span className="text-white font-bold text-xl block">This is the end of the fake trading mentor era.</span></div>
+                            <div className="py-2"><span className="text-2xl md:text-3xl font-medium text-gray-400 font-eth block">The era of fake trading gurus ends here.</span></div>
                             <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 border-t border-b border-white/10 py-6 my-8">
                                 <div className="flex flex-wrap justify-start gap-3 md:gap-6 text-[11px] md:text-[13px] font-mono text-blue-400 tracking-widest">
                                     <span>EVERY TRADER</span>
@@ -1068,12 +1086,8 @@ export default function App() {
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12 text-sm text-gray-400 px-6">
                     <div className="col-span-2 lg:col-span-2 pr-8">
                         <div className="flex items-center gap-2 mb-4"><span className="text-xl font-bold text-white font-eth">Sentquant</span></div>
-                        <p className="mb-4">Look first / Then leap.</p>
+                        <p className="mb-4">The era of fake trading gurus ends here.</p>
                     </div>
-                </div>
-                <div className="pt-8 text-xs text-gray-500 flex flex-col md:flex-row justify-between items-center px-6">
-                    <p>Market data provided by ICE Data Services.</p>
-                    <p className="mt-2 md:mt-0">© 2024 Sentquant, Inc.</p>
                 </div>
                 </footer>
             )}
