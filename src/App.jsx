@@ -15,17 +15,20 @@ const LOGO_PATHS = [
 ];
 
 // --- COMPONENT: CUSTOM Q LOGO ---
-const SentquantLogo = ({ size = 120 }) => (
+const SentquantLogo = ({ size = 120, withBg = false }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
     width={size} 
     height={size} 
     viewBox="0 0 1024 1024"
-    className="animate-fade-in-up drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]"
+    className={`animate-fade-in-up ${!withBg ? 'drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]' : ''}`}
   >
-    {LOGO_PATHS.map((d, i) => (
-      <path key={i} fill="#FFFFFF" d={d} />
-    ))}
+    {withBg && <circle cx="512" cy="512" r="512" fill="#000000" />}
+    <g transform="translate(512, 512) scale(1.4) translate(-512, -512)">
+      {LOGO_PATHS.map((d, i) => (
+        <path key={i} fill="#FFFFFF" d={d} />
+      ))}
+    </g>
   </svg>
 );
 
@@ -183,6 +186,48 @@ const AboutModelsCard = () => (
         <p>If it has edge, you’ll see it. If it doesn’t, you’ll see that too.</p>
       </div>
     </div>
+  </div>
+);
+
+// --- COMPONENT: DETAILED STAT CARD ---
+// Correctly defined before App
+const DetailedStatCard = ({ section }) => (
+  <div className="rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden h-full flex flex-col">
+    <div className="bg-[#2962ff]/10 px-5 py-4">
+      <h3 className="font-bold text-white font-eth text-xl">{section.title}</h3>
+    </div>
+    
+    <div className="p-0 overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="bg-white/5 text-gray-400 text-xs uppercase tracking-wider">
+            <th className="px-5 py-3 font-semibold">Metric</th>
+            <th className="px-5 py-3 font-semibold text-right">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {section.metrics.map((item, idx) => (
+            <tr key={idx} className="hover:bg-white/5 transition-colors">
+              <td className="px-5 py-3 font-medium text-gray-300">{item.l}</td>
+              <td className="px-5 py-3 text-right text-white font-bold">{item.v}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {section.extras && (
+        <div className="p-5 bg-white/[0.02] flex-grow">
+          <h4 className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">{section.extras.title}</h4>
+          <ul className="space-y-1">
+            {section.extras.items.map((item, i) => (
+              <li key={i} className="text-gray-400 text-xs font-mono bg-black/40 px-2 py-1 rounded border-l-2 border-blue-500/50">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+    )}
   </div>
 );
 
@@ -816,39 +861,27 @@ export default function App() {
                       <SentquantLogo size={80} />
                       <span className="text-3xl md:text-4xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl">Sentquant</span>
                     </div>
-                    <h2 className="text-3xl md:text-5xl font-bold font-eth text-white mb-2 tracking-tighter opacity-80">THE BENCHMARK</h2>
-                    <p className="text-blue-400 font-mono tracking-widest text-sm md:text-base">MACHINE PRECISION. HUMAN INSTINCT. ONE TRUTH.</p>
                  </div>
 
                  {/* Cards Grid */}
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Left Card: Machine Alpha */}
-                    {/* UPDATED: Container reverted to black/20, Header background moved inside */}
-                    <div className="relative group bg-black rounded-3xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-500 flex flex-col h-[600px]">
-                       {/* Header: Icon + Name */}
-                       <div className="p-6 pb-2 flex items-center justify-between mb-0">
+                    {/* UPDATED: Background transparent with blur, font size reduced */}
+                    <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-white/20 transition-all duration-500 flex flex-col h-[600px]">
+                       {/* Header: Icon + Name - UPDATED BACKGROUND TO GRAY (bg-white/5) */}
+                       <div className="bg-white/5 p-6 flex items-center justify-between mb-0"> 
                           <div className="flex items-center gap-3">
-                            {/* Circle wrapper for logo */}
-                            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center border border-white/5">
-                               <SentquantLogo size={32} />
-                            </div>
+                            <SentquantLogo size={56} withBg={true} />
                             <div>
-                               <div className="flex items-center gap-2">
-                                   <h3 className="text-white font-bold text-lg tracking-tight">Sentquant ORIGIN</h3>
-                                   <span className="bg-white/10 text-xs px-1.5 py-0.5 rounded text-gray-400 font-semibold">SYSTEM</span>
-                               </div>
+                               <h3 className="text-white font-medium font-sans text-lg tracking-wider">Sentquant</h3>
                             </div>
-                          </div>
-                          {/* Minus icon/button simulation */}
-                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400">
-                              <div className="w-3 h-0.5 bg-gray-400 rounded-full"></div>
                           </div>
                        </div>
                        
                        <div className="p-6 pt-0 flex flex-col flex-grow">
-                           {/* BIG NUMBER DISPLAY (Replaced NAV with Percentage as requested) */}
+                           {/* BIG NUMBER DISPLAY - UPDATED FONT SIZE */}
                            <div className="mb-0 mt-4">
-                               <div className="text-[#22ab94] text-5xl font-bold tracking-tighter leading-none">+25,516%</div>
+                               <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">25,516%</div>
                                <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
                            </div>
 
@@ -888,34 +921,34 @@ export default function App() {
                        </div>
                     </div>
 
-                    {/* Right Card: Human Alpha */}
-                    {/* UPDATED: Clean TradingView Style */}
-                    <div className="relative group bg-black rounded-3xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-500 flex flex-col h-[600px]">
-                       <div className="p-6 pb-2 flex items-center justify-between mb-0">
+                    {/* Right Card: Human Alpha (HANSOLAR) - UPDATED: Blurred with "ELITE TRADER" Overlay */}
+                    <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden flex flex-col h-[600px]">
+                       
+                       {/* BLUR OVERLAY & "ELITE TRADER" TEXT */}
+                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                           <h3 className="text-4xl md:text-5xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl text-center px-4 border-2 border-white/20 py-4 rounded-xl bg-black/50">
+                               ELITE TRADER
+                           </h3>
+                       </div>
+
+                       {/* Header: Icon + Name (BLURRED BEHIND OVERLAY) */}
+                       <div className="bg-white/5 p-6 flex items-center justify-between mb-0 filter blur-[6px] opacity-50">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center border border-white/5">
-                               <User size={24} className="text-amber-400" />
+                            <div className="w-[56px] h-[56px] rounded-full bg-white/5 flex items-center justify-center">
+                               <User size={32} className="text-white" />
                             </div>
                             <div>
-                               <div className="flex items-center gap-2">
-                                   <h3 className="text-white font-bold text-lg tracking-tight">HANSOLAR</h3>
-                                   <span className="bg-white/10 text-xs px-1.5 py-0.5 rounded text-gray-400 font-semibold">ELITE</span>
-                               </div>
+                               <h3 className="text-white font-medium font-sans text-lg tracking-wider">HANSOLAR</h3>
                             </div>
-                          </div>
-                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400">
-                              <div className="w-3 h-0.5 bg-gray-400 rounded-full"></div>
                           </div>
                        </div>
                        
-                       <div className="p-6 pt-0 flex flex-col flex-grow">
-                           {/* BIG NUMBER DISPLAY (Replaced NAV with Percentage as requested) */}
+                       <div className="p-6 pt-0 flex flex-col flex-grow filter blur-[6px] opacity-50">
                            <div className="mb-0 mt-4">
-                               <div className="text-[#22ab94] text-5xl font-bold tracking-tighter leading-none">+450%</div>
+                               <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">450%</div>
                                <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
                            </div>
 
-                           {/* CHART AREA */}
                            <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
                               <ResponsiveContainer width="100%" height="100%">
                                   <AreaChart data={MOCK_BENCHMARK_HANSOLAR} margin={{top:10, left:0, right:0, bottom:0}}>
@@ -933,7 +966,6 @@ export default function App() {
                               </ResponsiveContainer>
                            </div>
 
-                           {/* BOTTOM STATS */}
                            <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
                               <div>
                                  <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">WIN RATE</div>
