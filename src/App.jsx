@@ -288,47 +288,6 @@ const DETAILED_STATS_SECTIONS = [
   }
 ];
 
-// --- COMPONENT: DETAILED STAT CARD ---
-const DetailedStatCard = ({ section }) => (
-  <div className="rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden h-full flex flex-col">
-    <div className="bg-[#2962ff]/10 px-5 py-4">
-      <h3 className="font-bold text-white font-eth text-xl">{section.title}</h3>
-    </div>
-    
-    <div className="p-0 overflow-x-auto">
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="bg-white/5 text-gray-400 text-xs uppercase tracking-wider">
-            <th className="px-5 py-3 font-semibold">Metric</th>
-            <th className="px-5 py-3 font-semibold text-right">Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {section.metrics.map((item, idx) => (
-            <tr key={idx} className="hover:bg-white/5 transition-colors">
-              <td className="px-5 py-3 font-medium text-gray-300">{item.l}</td>
-              <td className="px-5 py-3 text-right text-white font-bold">{item.v}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-
-    {section.extras && (
-        <div className="p-5 bg-white/[0.02] flex-grow">
-          <h4 className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">{section.extras.title}</h4>
-          <ul className="space-y-1">
-            {section.extras.items.map((item, i) => (
-              <li key={i} className="text-gray-400 text-xs font-mono bg-black/40 px-2 py-1 rounded border-l-2 border-blue-500/50">
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-    )}
-  </div>
-);
-
 // --- COMPONENT: WARP/STARFIELD BACKGROUND ---
 const WarpBackground = () => {
   const canvasRef = useRef(null);
@@ -865,18 +824,36 @@ export default function App() {
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Left Card: Machine Alpha */}
                     {/* UPDATED: Container reverted to black/20, Header background moved inside */}
-                    <div className="relative group bg-black/20 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-xl hover:bg-black/30 transition-all duration-500 flex flex-col h-[600px]">
-                       <div className="bg-[#2962ff]/10 p-6 flex items-center justify-between mb-0"> {/* Header with Blue BG */}
+                    <div className="relative group bg-black rounded-3xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-500 flex flex-col h-[600px]">
+                       {/* Header: Icon + Name */}
+                       <div className="p-6 pb-2 flex items-center justify-between mb-0">
                           <div className="flex items-center gap-3">
-                            <SentquantLogo size={56} />
-                            <div>
-                               <h3 className="text-white font-medium font-sans text-lg tracking-wider">Sentquant ORIGIN</h3>
+                            {/* Circle wrapper for logo */}
+                            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center border border-white/5">
+                               <SentquantLogo size={32} />
                             </div>
+                            <div>
+                               <div className="flex items-center gap-2">
+                                   <h3 className="text-white font-bold text-lg tracking-tight">Sentquant ORIGIN</h3>
+                                   <span className="bg-white/10 text-xs px-1.5 py-0.5 rounded text-gray-400 font-semibold">SYSTEM</span>
+                               </div>
+                            </div>
+                          </div>
+                          {/* Minus icon/button simulation */}
+                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400">
+                              <div className="w-3 h-0.5 bg-gray-400 rounded-full"></div>
                           </div>
                        </div>
                        
-                       <div className="p-6 pt-0 flex flex-col flex-grow"> {/* Body with padding, pt-0 to adjust spacing */}
-                           <div className="flex-grow relative w-full mb-6 mt-6">
+                       <div className="p-6 pt-0 flex flex-col flex-grow">
+                           {/* BIG NUMBER DISPLAY (Replaced NAV with Percentage as requested) */}
+                           <div className="mb-0 mt-4">
+                               <div className="text-[#22ab94] text-5xl font-bold tracking-tighter leading-none">+25,516%</div>
+                               <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
+                           </div>
+
+                           {/* CHART AREA - Filling the middle */}
+                           <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
                               <ResponsiveContainer width="100%" height="100%">
                                   <AreaChart data={MOCK_BENCHMARK_ORIGIN} margin={{top:10, left:0, right:0, bottom:0}}>
                                       <defs>
@@ -886,80 +863,91 @@ export default function App() {
                                           </linearGradient>
                                       </defs>
                                       <XAxis dataKey="date" hide />
-                                      <YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
+                                      <YAxis orientation="right" domain={['auto', 'auto']} hide /> {/* Hidden YAxis for clean look */}
                                       <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(val) => [val.toFixed(2), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
-                                      <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorOrigin)" dot={false} />
+                                      <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={3} fill="url(#colorOrigin)" dot={false} />
                                   </AreaChart>
                               </ResponsiveContainer>
-                              <div className="absolute top-2 left-2 text-gray-500 text-xs font-bold tracking-wider">21-YEAR PERFORMANCE CURVE</div>
                            </div>
 
-                           <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
+                           {/* BOTTOM STATS */}
+                           <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
                               <div>
-                                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">TOTAL RETURN</div>
-                                 <div className="text-[#22ab94] text-xl font-bold drop-shadow-sm">+25,516%</div>
+                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">APR</div>
+                                 <div className="text-white text-sm font-bold">+1,224%</div>
                               </div>
                               <div>
-                                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">APR</div>
-                                 <div className="text-white text-xl font-bold drop-shadow-sm">+1,224%</div>
+                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">MAX DD</div>
+                                 <div className="text-white text-sm font-bold">-12.5%</div>
                               </div>
                               <div>
-                                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">MAX DRAWDOWN</div>
-                                 <div className="text-[#f23645] text-xl font-bold drop-shadow-sm">-12.5%</div>
-                              </div>
-                              <div>
-                                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">SHARPE RATIO</div>
-                                 <div className="text-white text-xl font-bold drop-shadow-sm">2.5</div>
+                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">SHARPE</div>
+                                 <div className="text-white text-sm font-bold">2.5</div>
                               </div>
                            </div>
                        </div>
                     </div>
 
                     {/* Right Card: Human Alpha */}
-                    {/* Kept padding-6 on parent for simplicity as requested "rest as usual" */}
-                    <div className="relative group bg-black/20 border border-white/10 rounded-3xl p-6 overflow-hidden backdrop-blur-xl hover:bg-black/30 transition-all duration-500 flex flex-col h-[600px]">
-                       <div className="flex items-center justify-between mb-6">
+                    {/* UPDATED: Clean TradingView Style */}
+                    <div className="relative group bg-black rounded-3xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-500 flex flex-col h-[600px]">
+                       <div className="p-6 pb-2 flex items-center justify-between mb-0">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-white/5 text-amber-400"><User size={24} /></div>
+                            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center border border-white/5">
+                               <User size={24} className="text-amber-400" />
+                            </div>
                             <div>
-                               <h3 className="text-white font-bold font-mono text-lg tracking-wider">HANSOLAR [ELITE TRADER]</h3>
-                               <span className="text-gray-500 text-xs font-mono">HUMAN ALPHA</span>
+                               <div className="flex items-center gap-2">
+                                   <h3 className="text-white font-bold text-lg tracking-tight">HANSOLAR</h3>
+                                   <span className="bg-white/10 text-xs px-1.5 py-0.5 rounded text-gray-400 font-semibold">ELITE</span>
+                               </div>
                             </div>
                           </div>
-                          <div className="px-3 py-1 rounded-full border border-white/10 text-amber-400 text-xs font-mono bg-white/5">STATUS: AGGRESSIVE / LIVE</div>
+                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400">
+                              <div className="w-3 h-0.5 bg-gray-400 rounded-full"></div>
+                          </div>
                        </div>
                        
-                       <div className="flex-grow relative w-full mb-6">
-                          <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart data={MOCK_BENCHMARK_HANSOLAR} margin={{top:10, left:0, right:0, bottom:0}}>
-                                  <defs>
-                                      <linearGradient id="colorHansolar" x1="0" y1="0" x2="0" y2="1">
-                                          <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
-                                          <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
-                                      </linearGradient>
-                                  </defs>
-                                  <XAxis dataKey="date" hide />
-                                  <YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
-                                  <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(val) => [val.toFixed(2), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
-                                  <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorHansolar)" dot={false} />
-                              </AreaChart>
-                          </ResponsiveContainer>
-                          <div className="absolute top-2 left-2 text-gray-500 text-xs font-bold tracking-wider">LIVE DEFI PERFORMANCE</div>
-                       </div>
+                       <div className="p-6 pt-0 flex flex-col flex-grow">
+                           {/* BIG NUMBER DISPLAY (Replaced NAV with Percentage as requested) */}
+                           <div className="mb-0 mt-4">
+                               <div className="text-[#22ab94] text-5xl font-bold tracking-tighter leading-none">+450%</div>
+                               <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
+                           </div>
 
-                       <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">TOTAL RETURN</div>
-                             <div className="text-[#22ab94] text-xl font-bold drop-shadow-sm">+450%</div>
-                          </div>
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">WIN RATE</div>
-                             <div className="text-white text-xl font-bold drop-shadow-sm">78%</div>
-                          </div>
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">AVG. MONTHLY</div>
-                             <div className="text-white text-xl font-bold drop-shadow-sm">+15%</div>
-                          </div>
+                           {/* CHART AREA */}
+                           <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
+                              <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={MOCK_BENCHMARK_HANSOLAR} margin={{top:10, left:0, right:0, bottom:0}}>
+                                      <defs>
+                                          <linearGradient id="colorHansolar" x1="0" y1="0" x2="0" y2="1">
+                                              <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
+                                              <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
+                                          </linearGradient>
+                                      </defs>
+                                      <XAxis dataKey="date" hide />
+                                      <YAxis orientation="right" domain={['auto', 'auto']} hide />
+                                      <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(val) => [val.toFixed(2), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
+                                      <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={3} fill="url(#colorHansolar)" dot={false} />
+                                  </AreaChart>
+                              </ResponsiveContainer>
+                           </div>
+
+                           {/* BOTTOM STATS */}
+                           <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
+                              <div>
+                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">WIN RATE</div>
+                                 <div className="text-white text-sm font-bold">78%</div>
+                              </div>
+                              <div>
+                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">AVG MTH</div>
+                                 <div className="text-white text-sm font-bold">+15%</div>
+                              </div>
+                              <div>
+                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">STATUS</div>
+                                 <div className="text-amber-400 text-sm font-bold">LIVE</div>
+                              </div>
+                           </div>
                        </div>
                     </div>
                  </div>
