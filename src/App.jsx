@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star, Zap, Grid, Code, Wind, Settings, ArrowUp
+  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star, Zap, Grid, Code, Wind, Settings, ArrowUp, Bot, User
 } from 'lucide-react';
 
 // --- LOGO DATA ---
@@ -477,6 +477,18 @@ const MOCK_TOP_DRAWDOWNS = [
   { rank: 5, startDate: '2024-08-01', endDate: '2024-08-15', depth: -3.20, duration: 14, recovery: 5 },
 ];
 
+// --- MOCK DATA FOR BENCHMARK ---
+const MOCK_BENCHMARK_ORIGIN = Array.from({ length: 50 }, (_, i) => ({
+  date: i,
+  value: 100 + (i * 4) + (Math.random() * 10 - 5) // Steady linear growth
+}));
+
+const MOCK_BENCHMARK_HANSOLAR = Array.from({ length: 50 }, (_, i) => ({
+  date: i,
+  value: 100 + (i * 2) + (Math.pow(i, 2) * 0.15) + (Math.random() * 100 - 50) // Volatile exponential growth
+}));
+
+
 // --- MAIN APPLICATION ---
 
 export default function App() {
@@ -526,6 +538,7 @@ export default function App() {
   
   const navItems = [
     { id: 'home', label: 'Home' },
+    { id: 'benchmark', label: 'The Benchmark' }, // NEW ITEM
     { id: 'historical', label: 'Historical' },
     { id: 'live', label: 'Live' },
     { id: 'stats', label: 'Stats' },
@@ -832,6 +845,124 @@ export default function App() {
                   <p className="text-gray-400 text-sm md:text-base font-light tracking-wide text-center max-w-lg">
                     If CoinMarketCap tracks assets,<br />Sentquant tracks strategy performance.
                   </p>
+              </div>
+            )}
+
+            {/* THE BENCHMARK (NEW PAGE) */}
+            {activeTab === 'benchmark' && (
+              <div className="animate-fade-in-up px-4 md:px-8 py-8">
+                 {/* Header */}
+                 <div className="mb-12 flex flex-col items-center text-center">
+                    <div className="flex items-center gap-1 mb-4">
+                      <SentquantLogo size={80} />
+                      <span className="text-3xl md:text-4xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl">Sentquant</span>
+                    </div>
+                    <h2 className="text-3xl md:text-5xl font-bold font-eth text-white mb-2 tracking-tighter opacity-80">THE BENCHMARK</h2>
+                    <p className="text-blue-400 font-mono tracking-widest text-sm md:text-base">MACHINE PRECISION. HUMAN INSTINCT. ONE TRUTH.</p>
+                 </div>
+
+                 {/* Cards Grid */}
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Left Card: Machine Alpha */}
+                    {/* UPDATED: Container reverted to black/20, Header background moved inside */}
+                    <div className="relative group bg-black/20 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-xl hover:bg-black/30 transition-all duration-500 flex flex-col h-[600px]">
+                       <div className="bg-[#2962ff]/10 p-6 flex items-center justify-between mb-0"> {/* Header with Blue BG */}
+                          <div className="flex items-center gap-3">
+                            <SentquantLogo size={56} />
+                            <div>
+                               <h3 className="text-white font-medium font-sans text-lg tracking-wider">Sentquant ORIGIN</h3>
+                            </div>
+                          </div>
+                       </div>
+                       
+                       <div className="p-6 pt-0 flex flex-col flex-grow"> {/* Body with padding, pt-0 to adjust spacing */}
+                           <div className="flex-grow relative w-full mb-6 mt-6">
+                              <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={MOCK_BENCHMARK_ORIGIN} margin={{top:10, left:0, right:0, bottom:0}}>
+                                      <defs>
+                                          <linearGradient id="colorOrigin" x1="0" y1="0" x2="0" y2="1">
+                                              <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
+                                              <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
+                                          </linearGradient>
+                                      </defs>
+                                      <XAxis dataKey="date" hide />
+                                      <YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
+                                      <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(val) => [val.toFixed(2), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
+                                      <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorOrigin)" dot={false} />
+                                  </AreaChart>
+                              </ResponsiveContainer>
+                              <div className="absolute top-2 left-2 text-gray-500 text-xs font-bold tracking-wider">21-YEAR PERFORMANCE CURVE</div>
+                           </div>
+
+                           <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
+                              <div>
+                                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">TOTAL RETURN</div>
+                                 <div className="text-[#22ab94] text-xl font-bold drop-shadow-sm">+25,516%</div>
+                              </div>
+                              <div>
+                                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">APR</div>
+                                 <div className="text-white text-xl font-bold drop-shadow-sm">+1,224%</div>
+                              </div>
+                              <div>
+                                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">MAX DRAWDOWN</div>
+                                 <div className="text-[#f23645] text-xl font-bold drop-shadow-sm">-12.5%</div>
+                              </div>
+                              <div>
+                                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">SHARPE RATIO</div>
+                                 <div className="text-white text-xl font-bold drop-shadow-sm">2.5</div>
+                              </div>
+                           </div>
+                       </div>
+                    </div>
+
+                    {/* Right Card: Human Alpha */}
+                    {/* Kept padding-6 on parent for simplicity as requested "rest as usual" */}
+                    <div className="relative group bg-black/20 border border-white/10 rounded-3xl p-6 overflow-hidden backdrop-blur-xl hover:bg-black/30 transition-all duration-500 flex flex-col h-[600px]">
+                       <div className="flex items-center justify-between mb-6">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-white/5 text-amber-400"><User size={24} /></div>
+                            <div>
+                               <h3 className="text-white font-bold font-mono text-lg tracking-wider">HANSOLAR [ELITE TRADER]</h3>
+                               <span className="text-gray-500 text-xs font-mono">HUMAN ALPHA</span>
+                            </div>
+                          </div>
+                          <div className="px-3 py-1 rounded-full border border-white/10 text-amber-400 text-xs font-mono bg-white/5">STATUS: AGGRESSIVE / LIVE</div>
+                       </div>
+                       
+                       <div className="flex-grow relative w-full mb-6">
+                          <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={MOCK_BENCHMARK_HANSOLAR} margin={{top:10, left:0, right:0, bottom:0}}>
+                                  <defs>
+                                      <linearGradient id="colorHansolar" x1="0" y1="0" x2="0" y2="1">
+                                          <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
+                                          <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
+                                      </linearGradient>
+                                  </defs>
+                                  <XAxis dataKey="date" hide />
+                                  <YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
+                                  <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(val) => [val.toFixed(2), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
+                                  <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorHansolar)" dot={false} />
+                              </AreaChart>
+                          </ResponsiveContainer>
+                          <div className="absolute top-2 left-2 text-gray-500 text-xs font-bold tracking-wider">LIVE DEFI PERFORMANCE</div>
+                       </div>
+
+                       <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
+                          <div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">TOTAL RETURN</div>
+                             <div className="text-[#22ab94] text-xl font-bold drop-shadow-sm">+450%</div>
+                          </div>
+                          <div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">WIN RATE</div>
+                             <div className="text-white text-xl font-bold drop-shadow-sm">78%</div>
+                          </div>
+                          <div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">AVG. MONTHLY</div>
+                             <div className="text-white text-xl font-bold drop-shadow-sm">+15%</div>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
               </div>
             )}
 
