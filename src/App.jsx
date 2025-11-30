@@ -32,6 +32,150 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
   </svg>
 );
 
+// --- DATA: DETAILED STATS STRUCTURE (MOVED UP) ---
+const DETAILED_STATS_SECTIONS = [
+  {
+    title: "RETURN METRICS",
+    metrics: [
+      { l: "Total Return", v: "25,516.42%" },
+      { l: "CAGR (Annualized)", v: "30.50%" },
+      { l: "APR (Simple Annual)", v: "1,224.85%" },
+      { l: "Annualized Volatility", v: "17.16%" },
+      { l: "Daily Return (Mean)", v: "0.1100%" },
+      { l: "Daily Return (Median)", v: "-0.0800%" },
+      { l: "Years Analyzed", v: "20.83" }
+    ]
+  },
+  {
+    title: "DRAWDOWN METRICS",
+    metrics: [
+      { l: "Max Drawdown", v: "-29.20%" },
+      { l: "Average Drawdown", v: "-1.82%" },
+      { l: "Max DD Duration", v: "563 days" },
+      { l: "Average DD Duration", v: "12 days" },
+      { l: "Number of Drawdowns", v: "361" },
+      { l: "Drawdown Frequency", v: "6.77%" },
+      { l: "Ulcer Index", v: "5.33%" }
+    ]
+  },
+  {
+    title: "RISK-ADJUSTED RETURN METRICS",
+    metrics: [
+      { l: "Sharpe Ratio", v: "1.44" },
+      { l: "Sortino Ratio", v: "2.35" },
+      { l: "Calmar Ratio", v: "1.04" },
+      { l: "MAR Ratio", v: "1.04" },
+      { l: "Sterling Ratio", v: "16.74" },
+      { l: "Burke Ratio", v: "0.47" }
+    ]
+  },
+  {
+    title: "VOLATILITY & RISK METRICS",
+    metrics: [
+      { l: "Daily Std Deviation", v: "1.0808%" },
+      { l: "Daily Variance", v: "1.168221" },
+      { l: "Annual Volatility", v: "17.16%" },
+      { l: "Downside Deviation", v: "0.6631%" },
+      { l: "Upside Deviation", v: "1.0759%" },
+      { l: "Semi-Variance", v: "0.439702" },
+      { l: "VaR (95%)", v: "-1.06%" },
+      { l: "CVaR (Expected Shortfall)", v: "-1.77%" },
+      { l: "Max Daily Loss", v: "-23.42%" },
+      { l: "Max Daily Gain", v: "10.44%" }
+    ]
+  },
+  {
+    title: "DISTRIBUTION METRICS",
+    metrics: [
+      { l: "Skewness", v: "-0.0399" },
+      { l: "Kurtosis (Excess)", v: "54.4915" },
+      { l: "Kurtosis (Raw)", v: "57.4915" },
+      { l: "5th Percentile", v: "-1.06%" },
+      { l: "95th Percentile", v: "1.83%" },
+      { l: "25th Percentile (Q1)", v: "-0.34%" },
+      { l: "75th Percentile (Q3)", v: "0.39%" },
+      { l: "IQR", v: "0.7275%" },
+      { l: "Jarque-Bera Statistic", v: "659,315.33" },
+      { l: "Jarque-Bera p-value", v: "0.000000" },
+      { l: "Normal Distribution?", v: "No" }
+    ]
+  },
+  {
+    title: "WIN/LOSS METRICS",
+    metrics: [
+      { l: "Win Rate (Daily)", v: "42.84%" },
+      { l: "Loss Rate (Daily)", v: "56.60%" },
+      { l: "Winning Days", v: "2,283" },
+      { l: "Losing Days", v: "3,016" },
+      { l: "Neutral Days", v: "30" },
+      { l: "Average Win", v: "0.8606%" },
+      { l: "Average Loss", v: "-0.4571%" },
+      { l: "Largest Win", v: "10.44%" },
+      { l: "Largest Loss", v: "-23.42%" },
+      { l: "Win/Loss Ratio", v: "1.88" },
+      { l: "Profit Factor", v: "1.43" },
+      { l: "Expectancy", v: "0.1100%" },
+      { l: "Gross Profit", v: "1,964.74%" },
+      { l: "Gross Loss", v: "1,378.65%" }
+    ]
+  },
+  {
+    title: "CONSISTENCY METRICS",
+    metrics: [
+      { l: "Max Consecutive Wins", v: "8" },
+      { l: "Max Consecutive Losses", v: "18" },
+      { l: "Positive Months", v: "174" },
+      { l: "Negative Months", v: "77" },
+      { l: "Monthly Win Rate", v: "69.32%" },
+      { l: "Recovery Factor", v: "873.93" },
+      { l: "R-Squared (Stability)", v: "0.6848" },
+      { l: "Avg Positive Months/Year", v: "8.4" }
+    ]
+  }
+];
+
+// --- COMPONENT: DETAILED STAT CARD (MOVED UP) ---
+const DetailedStatCard = ({ section }) => (
+  <div className="rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden h-full flex flex-col">
+    <div className="bg-[#2962ff]/10 px-5 py-4">
+      <h3 className="font-bold text-white font-eth text-xl">{section.title}</h3>
+    </div>
+    
+    <div className="p-0 overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="bg-white/5 text-gray-400 text-xs uppercase tracking-wider">
+            <th className="px-5 py-3 font-semibold">Metric</th>
+            <th className="px-5 py-3 font-semibold text-right">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {section.metrics.map((item, idx) => (
+            <tr key={idx} className="hover:bg-white/5 transition-colors">
+              <td className="px-5 py-3 font-medium text-gray-300">{item.l}</td>
+              <td className="px-5 py-3 text-right text-white font-bold">{item.v}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {section.extras && (
+        <div className="p-5 bg-white/[0.02] flex-grow">
+          <h4 className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">{section.extras.title}</h4>
+          <ul className="space-y-1">
+            {section.extras.items.map((item, i) => (
+              <li key={i} className="text-gray-400 text-xs font-mono bg-black/40 px-2 py-1 rounded border-l-2 border-blue-500/50">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+    )}
+  </div>
+);
+
+
 // --- COMPONENT: MONTHLY HEATMAP ---
 const MonthlyHeatmap = ({ data, enableFilter = false }) => {
   const [selectedRange, setSelectedRange] = useState('2020-2025');
@@ -188,150 +332,6 @@ const AboutModelsCard = () => (
     </div>
   </div>
 );
-
-// --- COMPONENT: DETAILED STAT CARD ---
-// Correctly defined before App
-const DetailedStatCard = ({ section }) => (
-  <div className="rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden h-full flex flex-col">
-    <div className="bg-[#2962ff]/10 px-5 py-4">
-      <h3 className="font-bold text-white font-eth text-xl">{section.title}</h3>
-    </div>
-    
-    <div className="p-0 overflow-x-auto">
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="bg-white/5 text-gray-400 text-xs uppercase tracking-wider">
-            <th className="px-5 py-3 font-semibold">Metric</th>
-            <th className="px-5 py-3 font-semibold text-right">Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {section.metrics.map((item, idx) => (
-            <tr key={idx} className="hover:bg-white/5 transition-colors">
-              <td className="px-5 py-3 font-medium text-gray-300">{item.l}</td>
-              <td className="px-5 py-3 text-right text-white font-bold">{item.v}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-
-    {section.extras && (
-        <div className="p-5 bg-white/[0.02] flex-grow">
-          <h4 className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">{section.extras.title}</h4>
-          <ul className="space-y-1">
-            {section.extras.items.map((item, i) => (
-              <li key={i} className="text-gray-400 text-xs font-mono bg-black/40 px-2 py-1 rounded border-l-2 border-blue-500/50">
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-    )}
-  </div>
-);
-
-// --- DATA: DETAILED STATS STRUCTURE ---
-const DETAILED_STATS_SECTIONS = [
-  {
-    title: "RETURN METRICS",
-    metrics: [
-      { l: "Total Return", v: "25,516.42%" },
-      { l: "CAGR (Annualized)", v: "30.50%" },
-      { l: "APR (Simple Annual)", v: "1,224.85%" },
-      { l: "Annualized Volatility", v: "17.16%" },
-      { l: "Daily Return (Mean)", v: "0.1100%" },
-      { l: "Daily Return (Median)", v: "-0.0800%" },
-      { l: "Years Analyzed", v: "20.83" }
-    ]
-  },
-  {
-    title: "DRAWDOWN METRICS",
-    metrics: [
-      { l: "Max Drawdown", v: "-29.20%" },
-      { l: "Average Drawdown", v: "-1.82%" },
-      { l: "Max DD Duration", v: "563 days" },
-      { l: "Average DD Duration", v: "12 days" },
-      { l: "Number of Drawdowns", v: "361" },
-      { l: "Drawdown Frequency", v: "6.77%" },
-      { l: "Ulcer Index", v: "5.33%" }
-    ]
-  },
-  {
-    title: "RISK-ADJUSTED RETURN METRICS",
-    metrics: [
-      { l: "Sharpe Ratio", v: "1.44" },
-      { l: "Sortino Ratio", v: "2.35" },
-      { l: "Calmar Ratio", v: "1.04" },
-      { l: "MAR Ratio", v: "1.04" },
-      { l: "Sterling Ratio", v: "16.74" },
-      { l: "Burke Ratio", v: "0.47" }
-    ]
-  },
-  {
-    title: "VOLATILITY & RISK METRICS",
-    metrics: [
-      { l: "Daily Std Deviation", v: "1.0808%" },
-      { l: "Daily Variance", v: "1.168221" },
-      { l: "Annual Volatility", v: "17.16%" },
-      { l: "Downside Deviation", v: "0.6631%" },
-      { l: "Upside Deviation", v: "1.0759%" },
-      { l: "Semi-Variance", v: "0.439702" },
-      { l: "VaR (95%)", v: "-1.06%" },
-      { l: "CVaR (Expected Shortfall)", v: "-1.77%" },
-      { l: "Max Daily Loss", v: "-23.42%" },
-      { l: "Max Daily Gain", v: "10.44%" }
-    ]
-  },
-  {
-    title: "DISTRIBUTION METRICS",
-    metrics: [
-      { l: "Skewness", v: "-0.0399" },
-      { l: "Kurtosis (Excess)", v: "54.4915" },
-      { l: "Kurtosis (Raw)", v: "57.4915" },
-      { l: "5th Percentile", v: "-1.06%" },
-      { l: "95th Percentile", v: "1.83%" },
-      { l: "25th Percentile (Q1)", v: "-0.34%" },
-      { l: "75th Percentile (Q3)", v: "0.39%" },
-      { l: "IQR", v: "0.7275%" },
-      { l: "Jarque-Bera Statistic", v: "659,315.33" },
-      { l: "Jarque-Bera p-value", v: "0.000000" },
-      { l: "Normal Distribution?", v: "No" }
-    ]
-  },
-  {
-    title: "WIN/LOSS METRICS",
-    metrics: [
-      { l: "Win Rate (Daily)", v: "42.84%" },
-      { l: "Loss Rate (Daily)", v: "56.60%" },
-      { l: "Winning Days", v: "2,283" },
-      { l: "Losing Days", v: "3,016" },
-      { l: "Neutral Days", v: "30" },
-      { l: "Average Win", v: "0.8606%" },
-      { l: "Average Loss", v: "-0.4571%" },
-      { l: "Largest Win", v: "10.44%" },
-      { l: "Largest Loss", v: "-23.42%" },
-      { l: "Win/Loss Ratio", v: "1.88" },
-      { l: "Profit Factor", v: "1.43" },
-      { l: "Expectancy", v: "0.1100%" },
-      { l: "Gross Profit", v: "1,964.74%" },
-      { l: "Gross Loss", v: "1,378.65%" }
-    ]
-  },
-  {
-    title: "CONSISTENCY METRICS",
-    metrics: [
-      { l: "Max Consecutive Wins", v: "8" },
-      { l: "Max Consecutive Losses", v: "18" },
-      { l: "Positive Months", v: "174" },
-      { l: "Negative Months", v: "77" },
-      { l: "Monthly Win Rate", v: "69.32%" },
-      { l: "Recovery Factor", v: "873.93" },
-      { l: "R-Squared (Stability)", v: "0.6848" },
-      { l: "Avg Positive Months/Year", v: "8.4" }
-    ]
-  }
-];
 
 // --- COMPONENT: WARP/STARFIELD BACKGROUND ---
 const WarpBackground = () => {
@@ -542,10 +542,10 @@ export default function App() {
   
   const navItems = [
     { id: 'home', label: 'Home' },
-    { id: 'benchmark', label: 'The Benchmark' }, // NEW ITEM
     { id: 'historical', label: 'Historical' },
     { id: 'live', label: 'Live' },
     { id: 'stats', label: 'Stats' },
+    { id: 'terminal', label: 'Terminal' }, // Renamed and Reordered
     { id: 'about', label: 'About' }
   ];
 
@@ -852,8 +852,8 @@ export default function App() {
               </div>
             )}
 
-            {/* THE BENCHMARK (NEW PAGE) */}
-            {activeTab === 'benchmark' && (
+            {/* THE TERMINAL (NEW NAME FOR BENCHMARK, MOVED TO PAGE 5) */}
+            {activeTab === 'terminal' && (
               <div className="animate-fade-in-up px-4 md:px-8 py-8">
                  {/* Header */}
                  <div className="mb-12 flex flex-col items-center text-center">
@@ -865,21 +865,97 @@ export default function App() {
 
                  {/* Cards Grid */}
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Left Card: Machine Alpha */}
-                    {/* UPDATED: Background transparent with blur, font size reduced */}
-                    <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-white/20 transition-all duration-500 flex flex-col h-[600px]">
-                       {/* Header: Icon + Name - UPDATED BACKGROUND TO GRAY (bg-white/5) */}
-                       <div className="bg-white/5 p-6 flex items-center justify-between mb-0"> 
+                    {/* Right Card: Human Alpha (HANSOLAR) - SWAPPED to LEFT */}
+                    {/* UPDATED: Blurred with "ELITE TRADER" Overlay */}
+                    <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden flex flex-col h-[600px]">
+                       
+                       {/* BLUR OVERLAY & "ELITE TRADER" TEXT */}
+                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                           <h3 className="text-4xl md:text-5xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl text-center px-4 border-2 border-white/20 py-4 rounded-xl bg-black/50">
+                               ELITE TRADER
+                           </h3>
+                       </div>
+
+                       {/* Header: Icon + Name (BLURRED BEHIND OVERLAY) */}
+                       <div className="bg-white/5 p-6 flex items-center justify-between mb-0 relative z-10 filter blur-[6px] opacity-50">
                           <div className="flex items-center gap-3">
-                            <SentquantLogo size={56} withBg={true} />
+                            <div className="w-[56px] h-[56px] rounded-full bg-white/5 flex items-center justify-center">
+                               <User size={32} className="text-white" />
+                            </div>
                             <div>
-                               <h3 className="text-white font-medium font-sans text-lg tracking-wider">Sentquant</h3>
+                               <h3 className="text-white font-medium font-sans text-lg tracking-wider">HANSOLAR</h3>
                             </div>
                           </div>
                        </div>
                        
-                       <div className="p-6 pt-0 flex flex-col flex-grow">
-                           {/* BIG NUMBER DISPLAY - UPDATED FONT SIZE */}
+                       <div className="p-6 pt-0 flex flex-col flex-grow relative z-10 filter blur-[6px] opacity-50">
+                           <div className="mb-0 mt-4">
+                               <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">450%</div>
+                               <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
+                           </div>
+
+                           <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
+                              <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={MOCK_BENCHMARK_HANSOLAR} margin={{top:10, left:0, right:0, bottom:0}}>
+                                      <defs>
+                                          <linearGradient id="colorHansolar" x1="0" y1="0" x2="0" y2="1">
+                                              <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
+                                              <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
+                                          </linearGradient>
+                                      </defs>
+                                      <XAxis dataKey="date" hide />
+                                      <YAxis orientation="right" domain={['auto', 'auto']} hide />
+                                      <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(val) => [val.toFixed(2), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
+                                      <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={3} fill="url(#colorHansolar)" dot={false} />
+                                  </AreaChart>
+                              </ResponsiveContainer>
+                           </div>
+
+                           <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
+                              <div>
+                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">WIN RATE</div>
+                                 <div className="text-white text-sm font-bold">78%</div>
+                              </div>
+                              <div>
+                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">AVG MTH</div>
+                                 <div className="text-white text-sm font-bold">+15%</div>
+                              </div>
+                              <div>
+                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">STATUS</div>
+                                 <div className="text-amber-400 text-sm font-bold">LIVE</div>
+                              </div>
+                           </div>
+                       </div>
+                    </div>
+
+                    {/* Right Card: Machine Alpha (SENTQUANT) - SWAPPED to RIGHT */}
+                    {/* UPDATED: Background transparent with blur, font size reduced */}
+                    <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-white/20 transition-all duration-500 flex flex-col h-[600px]">
+                       {/* Header: Icon + Name + Buttons - UPDATED: Live button is now gray */}
+                       <div className="bg-white/5 p-6 flex items-center justify-between mb-0"> 
+                          <div className="flex items-center gap-3">
+                            <SentquantLogo size={56} withBg={true} />
+                            <div>
+                               <div className="flex items-center gap-2">
+                                  <h3 className="text-white font-medium font-sans text-lg tracking-wider">Sentquant</h3>
+                                  <span className="bg-red-500/20 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500/20">OFFLINE</span>
+                               </div>
+                            </div>
+                          </div>
+                          
+                          {/* NEW: History & Live Buttons without icons, both gray */}
+                          <div className="flex flex-col md:flex-row gap-2">
+                             <button onClick={() => handleTabChange('historical')} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors flex items-center justify-center">
+                                History
+                             </button>
+                             <button onClick={() => handleTabChange('live')} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors flex items-center justify-center">
+                                Live
+                             </button>
+                          </div>
+                       </div>
+                       
+                       <div className="p-6 pt-0 flex flex-col flex-grow"> {/* Body with padding, pt-0 to adjust spacing */}
+                           {/* Added Percentage Display for ORIGIN - Reinstated as Hero Metric - UPDATED FONT SIZE */}
                            <div className="mb-0 mt-4">
                                <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">25,516%</div>
                                <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
@@ -916,68 +992,6 @@ export default function App() {
                               <div>
                                  <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">SHARPE</div>
                                  <div className="text-white text-sm font-bold">2.5</div>
-                              </div>
-                           </div>
-                       </div>
-                    </div>
-
-                    {/* Right Card: Human Alpha (HANSOLAR) - UPDATED: Blurred with "ELITE TRADER" Overlay */}
-                    <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden flex flex-col h-[600px]">
-                       
-                       {/* BLUR OVERLAY & "ELITE TRADER" TEXT */}
-                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                           <h3 className="text-4xl md:text-5xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl text-center px-4 border-2 border-white/20 py-4 rounded-xl bg-black/50">
-                               ELITE TRADER
-                           </h3>
-                       </div>
-
-                       {/* Header: Icon + Name (BLURRED BEHIND OVERLAY) */}
-                       <div className="bg-white/5 p-6 flex items-center justify-between mb-0 filter blur-[6px] opacity-50">
-                          <div className="flex items-center gap-3">
-                            <div className="w-[56px] h-[56px] rounded-full bg-white/5 flex items-center justify-center">
-                               <User size={32} className="text-white" />
-                            </div>
-                            <div>
-                               <h3 className="text-white font-medium font-sans text-lg tracking-wider">HANSOLAR</h3>
-                            </div>
-                          </div>
-                       </div>
-                       
-                       <div className="p-6 pt-0 flex flex-col flex-grow filter blur-[6px] opacity-50">
-                           <div className="mb-0 mt-4">
-                               <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">450%</div>
-                               <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
-                           </div>
-
-                           <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
-                              <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart data={MOCK_BENCHMARK_HANSOLAR} margin={{top:10, left:0, right:0, bottom:0}}>
-                                      <defs>
-                                          <linearGradient id="colorHansolar" x1="0" y1="0" x2="0" y2="1">
-                                              <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
-                                              <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
-                                          </linearGradient>
-                                      </defs>
-                                      <XAxis dataKey="date" hide />
-                                      <YAxis orientation="right" domain={['auto', 'auto']} hide />
-                                      <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(val) => [val.toFixed(2), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
-                                      <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={3} fill="url(#colorHansolar)" dot={false} />
-                                  </AreaChart>
-                              </ResponsiveContainer>
-                           </div>
-
-                           <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
-                              <div>
-                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">WIN RATE</div>
-                                 <div className="text-white text-sm font-bold">78%</div>
-                              </div>
-                              <div>
-                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">AVG MTH</div>
-                                 <div className="text-white text-sm font-bold">+15%</div>
-                              </div>
-                              <div>
-                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">STATUS</div>
-                                 <div className="text-amber-400 text-sm font-bold">LIVE</div>
                               </div>
                            </div>
                        </div>
