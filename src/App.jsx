@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Lock, User, ArrowUp
+  Menu, X, ChevronDown, Lock, User, ArrowUp, Activity, TrendingUp, AlertTriangle
 } from 'lucide-react';
 
 // --- LOGO DATA ---
@@ -31,6 +31,34 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
     </g>
   </svg>
 );
+
+// --- VAULT DATA ---
+const VAULT_ITEMS = [
+  { 
+    id: 1, 
+    name: "HANSOLAR", 
+    type: "user", 
+    metrics: { ret: "450%", dd: "-12.5%", sharpe: "2.5" } 
+  },
+  { 
+    id: 2, 
+    name: "SENTQUANT", 
+    type: "logo", 
+    metrics: { ret: "25,516%", dd: "-29.20%", sharpe: "1.44" } 
+  },
+  { 
+    id: 3, 
+    name: "RIV", 
+    type: "user", 
+    metrics: { ret: "45%", dd: "-12.5%", sharpe: "2.5" } 
+  },
+  { 
+    id: 4, 
+    name: "PURE", 
+    type: "user", 
+    metrics: { ret: "12%", dd: "-12.5%", sharpe: "2.5" } 
+  }
+];
 
 // --- DATA: DETAILED STATS STRUCTURE ---
 const DETAILED_STATS_SECTIONS = [
@@ -842,7 +870,7 @@ export default function App() {
                  </div>
 
                  {/* Cards Grid */}
-                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
                     {/* Left Card: Human Alpha (HANSOLAR) - WITH BLUR AND OVERLAY */}
                     <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden flex flex-col h-[600px]">
                         
@@ -915,7 +943,6 @@ export default function App() {
                             <div>
                                <div className="flex items-center gap-2">
                                   <h3 className="text-white font-medium font-sans text-lg tracking-wider">Sentquant</h3>
-                                  <span className="bg-red-500/20 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500/20">OFFLINE</span>
                                </div>
                             </div>
                           </div>
@@ -957,23 +984,64 @@ export default function App() {
                            </div>
 
                            {/* BOTTOM STATS */}
-                           <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
-                              <div>
-                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">APR</div>
-                                 <div className="text-white text-sm font-bold">+1,224%</div>
-                              </div>
-                              <div>
-                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">MAX DD</div>
-                                 <div className="text-white text-sm font-bold">-12.5%</div>
-                              </div>
-                              <div>
-                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">SHARPE</div>
-                                 <div className="text-white text-sm font-bold">2.5</div>
-                              </div>
+                           <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4 text-center">
+                             <div>
+                                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">APR</div>
+                                <div className="text-white text-sm font-bold">+1,224%</div>
+                             </div>
+                             <div>
+                                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">MAX DD</div>
+                                <div className="text-white text-sm font-bold">-12.5%</div>
+                             </div>
+                             <div>
+                                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">SHARPE</div>
+                                <div className="text-white text-sm font-bold">2.5</div>
+                             </div>
                            </div>
                         </div>
                     </div>
                  </div>
+
+                 {/* --- THE VAULT SECTION --- */}
+                 <div className="mb-8 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden flex flex-col">
+                    <div className="bg-white/5 px-5 py-4 border-b border-white/5">
+                      <h3 className="font-bold text-white font-eth text-xl">THE VAULT</h3>
+                    </div>
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                       {VAULT_ITEMS.map((item) => (
+                          <div key={item.id} className="bg-black/20 border border-white/5 rounded-xl p-5 hover:bg-white/5 hover:border-white/10 transition-all cursor-pointer group flex flex-col justify-between h-full">
+                              <div className="flex items-center gap-3 mb-6">
+                                {item.type === 'logo' ? (
+                                    <div className="w-10 h-10 flex items-center justify-center">
+                                      <SentquantLogo size={36} withBg={true} />
+                                    </div>
+                                ) : (
+                                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                       <User size={20} className="text-white" />
+                                    </div>
+                                )}
+                                <h4 className="text-white font-bold font-eth tracking-wide">{item.name}</h4>
+                              </div>
+                              
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                   <span className="text-xs text-gray-500 font-bold uppercase">Return</span>
+                                   <span className="text-[#22ab94] font-bold font-mono text-sm">{item.metrics.ret}</span>
+                                </div>
+                                <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                   <span className="text-xs text-gray-500 font-bold uppercase">Drawdown</span>
+                                   <span className="text-[#f23645] font-bold font-mono text-sm">{item.metrics.dd}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                   <span className="text-xs text-gray-500 font-bold uppercase">Sharpe</span>
+                                   <span className="text-white font-bold font-mono text-sm">{item.metrics.sharpe}</span>
+                                </div>
+                              </div>
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+
               </div>
             )}
 
