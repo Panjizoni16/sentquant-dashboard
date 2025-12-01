@@ -1,2 +1,2 @@
-# sentquant-dashboard
+# sentquant
 Equity curve dashboard
