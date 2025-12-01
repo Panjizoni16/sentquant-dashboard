@@ -23,7 +23,7 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
     viewBox="0 0 1024 1024"
     className={`animate-fade-in-up ${!withBg ? 'drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]' : ''}`}
   >
-    {withBg && <rect x="0" y="0" width="1024" height="1024" fill="#000000" />}
+    {withBg && <rect x="0" y="0" width="1024" height="1024" fill="#000000" rx="220" ry="220" />}
     <g transform="translate(512, 512) scale(1.4) translate(-512, -512)">
       {LOGO_PATHS.map((d, i) => (
         <path key={i} fill="#FFFFFF" d={d} />
@@ -36,7 +36,7 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
 const VAULT_ITEMS = [
   { 
     id: 1, 
-    name: "HANSOLAR", 
+    name: "ANON", 
     type: "user", 
     metrics: { ret: "450%", dd: "-12.5%", sharpe: "2.5" } 
   },
@@ -608,7 +608,7 @@ export default function App() {
     const updateFavicons = async () => {
       const svgString = `
         <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-          <rect x="0" y="0" width="1024" height="1024" fill="black"/>
+          <rect x="0" y="0" width="1024" height="1024" fill="black" rx="220" ry="220"/>
           <g transform="translate(512, 512) scale(1.5) translate(-512, -512)"> 
             ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
           </g>
@@ -862,8 +862,8 @@ export default function App() {
             {activeTab === 'terminal' && (
               <div className="animate-fade-in-up px-4 md:px-8 py-8">
                  {/* Header */}
-                 <div className="mb-12 flex flex-col items-center text-center">
-                    <div className="flex items-center gap-1 mb-4">
+                 <div className="mb-12 flex flex-col items-center justify-center text-center w-full">
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 mb-4">
                       <SentquantLogo size={80} />
                       <span className="text-3xl md:text-4xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl">Sentquant</span>
                     </div>
@@ -871,7 +871,7 @@ export default function App() {
 
                  {/* Cards Grid */}
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
-                    {/* Left Card: Human Alpha (HANSOLAR) - WITH BLUR AND OVERLAY */}
+                    {/* Left Card: Human Alpha (ANON) - WITH BLUR AND OVERLAY */}
                     <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden flex flex-col h-[600px]">
                         
                         {/* BLUR OVERLAY & "ELITE TRADER" TEXT */}
@@ -889,7 +889,7 @@ export default function App() {
                                    <User size={32} className="text-white" />
                                 </div>
                                 <div>
-                                   <h3 className="text-white font-medium font-sans text-lg tracking-wider">HANSOLAR</h3>
+                                   <h3 className="text-white font-medium font-sans text-lg tracking-wider">ANON</h3>
                                 </div>
                               </div>
                             </div>
@@ -961,7 +961,7 @@ export default function App() {
                         <div className="p-6 pt-0 flex flex-col flex-grow">
                            {/* Hero Metric - UPDATED FONT SIZE */}
                            <div className="mb-0 mt-4">
-                               <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">25,516%</div>
+                               <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">0%</div>
                                <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
                            </div>
 
@@ -987,36 +987,37 @@ export default function App() {
                            <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4 text-center">
                              <div>
                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">APR</div>
-                                <div className="text-white text-sm font-bold">+1,224%</div>
+                                <div className="text-white text-sm font-bold">0%</div>
                              </div>
                              <div>
                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">MAX DD</div>
-                                <div className="text-white text-sm font-bold">-12.5%</div>
+                                <div className="text-white text-sm font-bold">0%</div>
                              </div>
                              <div>
                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">SHARPE</div>
-                                <div className="text-white text-sm font-bold">2.5</div>
+                                <div className="text-white text-sm font-bold">0</div>
                              </div>
                            </div>
                         </div>
                     </div>
                  </div>
 
-                 {/* --- THE VAULT SECTION --- */}
+                 {/* --- MORE TRADER SOON SECTION --- */}
                  <div className="mb-8 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden flex flex-col">
                     <div className="bg-white/5 px-5 py-4 border-b border-white/5">
-                      <h3 className="font-bold text-white font-eth text-xl">THE VAULT</h3>
+                      <h3 className="font-bold text-white font-eth text-xl">MORE TRADER SOON</h3>
                     </div>
-                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Added blur, opacity, and disabled interactions */}
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 filter blur-sm opacity-50 pointer-events-none select-none">
                        {VAULT_ITEMS.map((item) => (
-                          <div key={item.id} className="bg-black/20 border border-white/5 rounded-xl p-5 hover:bg-white/5 hover:border-white/10 transition-all cursor-pointer group flex flex-col justify-between h-full">
+                          <div key={item.id} className="bg-black/20 border border-white/5 rounded-xl p-5 flex flex-col justify-between h-full">
                               <div className="flex items-center gap-3 mb-6">
                                 {item.type === 'logo' ? (
                                     <div className="w-10 h-10 flex items-center justify-center">
                                       <SentquantLogo size={36} withBg={true} />
                                     </div>
                                 ) : (
-                                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
                                        <User size={20} className="text-white" />
                                     </div>
                                 )}
