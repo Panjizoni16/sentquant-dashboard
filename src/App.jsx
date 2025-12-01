@@ -911,6 +911,7 @@ export default function App() {
 
   useEffect(() => {
     const updateFavicons = async () => {
+      document.title = "Sentquant";
       // UPDATED: Reverted scale to 1.5 (original size) but kept rounded corners (rx, ry)
       const svgString = `
         <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
