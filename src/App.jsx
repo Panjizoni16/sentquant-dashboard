@@ -1473,7 +1473,7 @@ export default function App() {
                       </div>
                   </div>
                   <MonthlyHeatmap data={heatmapData} enableFilter={true} t={t.historical} />
-                  <TopDrawdownsTable data={MOCK_TOP_DRAWDOWNS} t={t.historical} />
+                  <TopDrawdownsTable data={topDrawdownsData} t={t.historical} />
                 </div>
               </>
             )}
