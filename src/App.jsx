@@ -606,10 +606,11 @@ export default function App() {
 
   useEffect(() => {
     const updateFavicons = async () => {
+      // UPDATED: Scaled up to 3.2 to make logo significantly larger in favicon
       const svgString = `
         <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
           <rect x="0" y="0" width="1024" height="1024" fill="black" rx="220" ry="220"/>
-          <g transform="translate(512, 512) scale(1.5) translate(-512, -512)"> 
+          <g transform="translate(512, 512) scale(3.2) translate(-512, -512)"> 
             ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
           </g>
         </svg>
