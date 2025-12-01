@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Filter, ArrowUpRight, Circle, Lock, Info, Star, Zap, Grid, Code, Wind, Settings, ArrowUp, Bot, User
+  Menu, X, ChevronDown, Lock, User, ArrowUp
 } from 'lucide-react';
 
 // --- LOGO DATA ---
@@ -23,7 +23,7 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
     viewBox="0 0 1024 1024"
     className={`animate-fade-in-up ${!withBg ? 'drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]' : ''}`}
   >
-    {withBg && <circle cx="512" cy="512" r="512" fill="#000000" />}
+    {withBg && <rect x="0" y="0" width="1024" height="1024" fill="#000000" />}
     <g transform="translate(512, 512) scale(1.4) translate(-512, -512)">
       {LOGO_PATHS.map((d, i) => (
         <path key={i} fill="#FFFFFF" d={d} />
@@ -32,7 +32,7 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
   </svg>
 );
 
-// --- DATA: DETAILED STATS STRUCTURE (MOVED UP) ---
+// --- DATA: DETAILED STATS STRUCTURE ---
 const DETAILED_STATS_SECTIONS = [
   {
     title: "RETURN METRICS",
@@ -134,10 +134,10 @@ const DETAILED_STATS_SECTIONS = [
   }
 ];
 
-// --- COMPONENT: DETAILED STAT CARD (MOVED UP) ---
+// --- COMPONENT: DETAILED STAT CARD ---
 const DetailedStatCard = ({ section }) => (
   <div className="rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden h-full flex flex-col">
-    <div className="bg-[#2962ff]/10 px-5 py-4">
+    <div className="bg-white/5 px-5 py-4">
       <h3 className="font-bold text-white font-eth text-xl">{section.title}</h3>
     </div>
     
@@ -159,22 +159,8 @@ const DetailedStatCard = ({ section }) => (
         </tbody>
       </table>
     </div>
-
-    {section.extras && (
-        <div className="p-5 bg-white/[0.02] flex-grow">
-          <h4 className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">{section.extras.title}</h4>
-          <ul className="space-y-1">
-            {section.extras.items.map((item, i) => (
-              <li key={i} className="text-gray-400 text-xs font-mono bg-black/40 px-2 py-1 rounded border-l-2 border-blue-500/50">
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-    )}
   </div>
 );
-
 
 // --- COMPONENT: MONTHLY HEATMAP ---
 const MonthlyHeatmap = ({ data, enableFilter = false }) => {
@@ -304,7 +290,7 @@ const TopDrawdownsTable = ({ data }) => (
 // --- COMPONENT: ABOUT MODELS CARD ---
 const AboutModelsCard = () => (
   <div className="mb-8 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden flex flex-col">
-    <div className="bg-[#2962ff]/10 px-5 py-4">
+    <div className="bg-white/5 px-5 py-4">
       <h3 className="font-bold text-white font-eth text-xl">ABOUT THE MODELS</h3>
     </div>
     
@@ -351,7 +337,6 @@ const WarpBackground = () => {
     let lastWidth = window.innerWidth;
 
     const resize = () => {
-      // Only resize if width changes (orientation change), ignore height changes (address bar)
       if (window.innerWidth !== lastWidth) {
         w = canvas.width = window.innerWidth;
         h = canvas.height = window.innerHeight;
@@ -395,7 +380,6 @@ const WarpBackground = () => {
         const x = (star.x / star.z) * w + cx;
         const y = (star.y / star.z) * h + cy;
         
-        // Corrected size calculation to prevent negative values
         const size = Math.max(0, (1 - star.z / w) * 3);
         const alpha = Math.max(0, Math.min(1, (1 - star.z / w)));
 
@@ -426,7 +410,6 @@ const MOCK_HISTORICAL = Array.from({ length: 100 }, (_, i) => ({
     drawdown: -(Math.random() * 10)
 }));
 
-// RESET LIVE DATA: Hanya satu titik awal yaitu 100
 const MOCK_LIVE = [
     { date: 'Start', value: 100, drawdown: 0 }
 ];
@@ -441,8 +424,6 @@ const generateMockHeatmap = () => {
 };
 const MOCK_HEATMAP = generateMockHeatmap();
 
-// DATA LIVE HEATMAP DIBALIK: 2025 di atas, 2029 di bawah
-// Updated: 2025 sekarang dikosongkan (Array(12).fill(null))
 const MOCK_LIVE_HEATMAP = [
   { year: '2025', months: Array(12).fill(null) },
   { year: '2026', months: Array(12).fill(null) },
@@ -460,7 +441,6 @@ const MOCK_ANNUAL = [
 ];
 const MOCK_STATS = { sharpe: 3.18, sortino: 4.22, maxDD: -12.45, winRate: 68.5 };
 
-// RESET LIVE STATS: Semua nilai di-set ke null agar muncul "-"
 const MOCK_LIVE_STATS = { 
   totalReturn: null, 
   maxDrawdown: null, 
@@ -481,7 +461,7 @@ const MOCK_TOP_DRAWDOWNS = [
   { rank: 5, startDate: '2024-08-01', endDate: '2024-08-15', depth: -3.20, duration: 14, recovery: 5 },
 ];
 
-// --- MOCK DATA FOR BENCHMARK ---
+// --- MOCK DATA FOR TERMINAL ---
 const MOCK_BENCHMARK_ORIGIN = Array.from({ length: 50 }, (_, i) => ({
   date: i,
   value: 100 + (i * 4) + (Math.random() * 10 - 5) // Steady linear growth
@@ -540,12 +520,13 @@ export default function App() {
   const yearsList = ['ALL', ...Array.from({length: 26}, (_, i) => (2025 - i).toString())];
   const manualRanges = ['2020-2024', '2015-2019', '2010-2014', '2005-2009'];
   
+  // UPDATED: Nav items with Terminal as 5th tab
   const navItems = [
     { id: 'home', label: 'Home' },
     { id: 'historical', label: 'Historical' },
     { id: 'live', label: 'Live' },
     { id: 'stats', label: 'Stats' },
-    { id: 'terminal', label: 'Terminal' }, // Renamed and Reordered
+    { id: 'terminal', label: 'Terminal' }, 
     { id: 'about', label: 'About' }
   ];
 
@@ -599,7 +580,7 @@ export default function App() {
     const updateFavicons = async () => {
       const svgString = `
         <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-          <circle cx="512" cy="512" r="512" fill="black"/>
+          <rect x="0" y="0" width="1024" height="1024" fill="black"/>
           <g transform="translate(512, 512) scale(1.5) translate(-512, -512)"> 
             ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
           </g>
@@ -620,7 +601,6 @@ export default function App() {
             resolve(canvas.toDataURL('image/png'));
           };
           img.onerror = () => {
-             // Fallback for iframe environments that block data URL images
              resolve('');
           }
         });
@@ -636,7 +616,6 @@ export default function App() {
         }
         linkIcon.href = svgUrl;
 
-        // Note: These might not render in all sandboxed environments but the code is preserved
         const appleTouchIconUrl = await generatePngIcon(180);
         if(appleTouchIconUrl) {
             let linkApple = document.querySelector("link[rel='apple-touch-icon']");
@@ -694,7 +673,6 @@ export default function App() {
     return { totalReturn, maxDrawdown, cagr, apr, expectedValue, volatility, sharpe, sortino };
   }, [filteredChartData]);
 
-  // Updated fmt function: if value is null or undefined, return '-'
   const fmt = (val, suffix = '') => (val !== null && val !== undefined) ? `${val > 0 && suffix === '%' ? '+' : ''}${val.toLocaleString(undefined, {maximumFractionDigits: 2})} ${suffix}` : '-';
   const colorClass = (val) => val >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]';
 
@@ -852,7 +830,7 @@ export default function App() {
               </div>
             )}
 
-            {/* THE TERMINAL (NEW NAME FOR BENCHMARK, MOVED TO PAGE 5) */}
+            {/* THE TERMINAL (FORMERLY BENCHMARK) */}
             {activeTab === 'terminal' && (
               <div className="animate-fade-in-up px-4 md:px-8 py-8">
                  {/* Header */}
@@ -865,74 +843,73 @@ export default function App() {
 
                  {/* Cards Grid */}
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Right Card: Human Alpha (HANSOLAR) - SWAPPED to LEFT */}
-                    {/* UPDATED: Blurred with "ELITE TRADER" Overlay */}
+                    {/* Left Card: Human Alpha (HANSOLAR) - WITH BLUR AND OVERLAY */}
                     <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden flex flex-col h-[600px]">
-                       
-                       {/* BLUR OVERLAY & "ELITE TRADER" TEXT */}
-                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                        
+                        {/* BLUR OVERLAY & "ELITE TRADER" TEXT */}
+                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
                            <h3 className="text-4xl md:text-5xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl text-center px-4 border-2 border-white/20 py-4 rounded-xl bg-black/50">
                                ELITE TRADER
                            </h3>
-                       </div>
+                        </div>
 
-                       {/* Header: Icon + Name (BLURRED BEHIND OVERLAY) */}
-                       <div className="bg-white/5 p-6 flex items-center justify-between mb-0 relative z-10 filter blur-[6px] opacity-50">
-                          <div className="flex items-center gap-3">
-                            <div className="w-[56px] h-[56px] rounded-full bg-white/5 flex items-center justify-center">
-                               <User size={32} className="text-white" />
+                        {/* Content below overlay (Blurred) */}
+                        <div className="filter blur-[6px] opacity-50 flex flex-col h-full pointer-events-none">
+                            <div className="bg-white/5 p-6 flex items-center justify-between mb-0 relative z-10">
+                              <div className="flex items-center gap-3">
+                                <div className="w-[56px] h-[56px] rounded-full bg-white/5 flex items-center justify-center">
+                                   <User size={32} className="text-white" />
+                                </div>
+                                <div>
+                                   <h3 className="text-white font-medium font-sans text-lg tracking-wider">HANSOLAR</h3>
+                                </div>
+                              </div>
                             </div>
-                            <div>
-                               <h3 className="text-white font-medium font-sans text-lg tracking-wider">HANSOLAR</h3>
+                            
+                            <div className="p-6 pt-0 flex flex-col flex-grow relative z-10">
+                                <div className="mb-0 mt-4">
+                                   <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">450%</div>
+                                   <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
+                                </div>
+
+                                <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                      <AreaChart data={MOCK_BENCHMARK_HANSOLAR} margin={{top:10, left:0, right:0, bottom:0}}>
+                                          <defs>
+                                              <linearGradient id="colorHansolar" x1="0" y1="0" x2="0" y2="1">
+                                                  <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
+                                                  <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
+                                              </linearGradient>
+                                          </defs>
+                                          <XAxis dataKey="date" hide />
+                                          <YAxis orientation="right" domain={['auto', 'auto']} hide />
+                                          <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={3} fill="url(#colorHansolar)" dot={false} />
+                                      </AreaChart>
+                                  </ResponsiveContainer>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
+                                  <div>
+                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">WIN RATE</div>
+                                     <div className="text-white text-sm font-bold">78%</div>
+                                  </div>
+                                  <div>
+                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">AVG MTH</div>
+                                     <div className="text-white text-sm font-bold">+15%</div>
+                                  </div>
+                                  <div>
+                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">STATUS</div>
+                                     <div className="text-amber-400 text-sm font-bold">LIVE</div>
+                                  </div>
+                                </div>
                             </div>
-                          </div>
-                       </div>
-                       
-                       <div className="p-6 pt-0 flex flex-col flex-grow relative z-10 filter blur-[6px] opacity-50">
-                           <div className="mb-0 mt-4">
-                               <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">450%</div>
-                               <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
-                           </div>
-
-                           <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
-                              <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart data={MOCK_BENCHMARK_HANSOLAR} margin={{top:10, left:0, right:0, bottom:0}}>
-                                      <defs>
-                                          <linearGradient id="colorHansolar" x1="0" y1="0" x2="0" y2="1">
-                                              <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
-                                              <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
-                                          </linearGradient>
-                                      </defs>
-                                      <XAxis dataKey="date" hide />
-                                      <YAxis orientation="right" domain={['auto', 'auto']} hide />
-                                      <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(val) => [val.toFixed(2), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
-                                      <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={3} fill="url(#colorHansolar)" dot={false} />
-                                  </AreaChart>
-                              </ResponsiveContainer>
-                           </div>
-
-                           <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
-                              <div>
-                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">WIN RATE</div>
-                                 <div className="text-white text-sm font-bold">78%</div>
-                              </div>
-                              <div>
-                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">AVG MTH</div>
-                                 <div className="text-white text-sm font-bold">+15%</div>
-                              </div>
-                              <div>
-                                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">STATUS</div>
-                                 <div className="text-amber-400 text-sm font-bold">LIVE</div>
-                              </div>
-                           </div>
-                       </div>
+                        </div>
                     </div>
 
-                    {/* Right Card: Machine Alpha (SENTQUANT) - SWAPPED to RIGHT */}
-                    {/* UPDATED: Background transparent with blur, font size reduced */}
+                    {/* Right Card: Machine Alpha (SENTQUANT) - TRANSPARENT BLUR, REDUCED FONT SIZE */}
                     <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-white/20 transition-all duration-500 flex flex-col h-[600px]">
-                       {/* Header: Icon + Name + Buttons - UPDATED: Live button is now gray */}
-                       <div className="bg-white/5 p-6 flex items-center justify-between mb-0"> 
+                        {/* Header: Icon + Name + Buttons */}
+                        <div className="bg-white/5 p-6 flex items-center justify-between mb-0"> 
                           <div className="flex items-center gap-3">
                             <SentquantLogo size={56} withBg={true} />
                             <div>
@@ -943,25 +920,25 @@ export default function App() {
                             </div>
                           </div>
                           
-                          {/* NEW: History & Live Buttons without icons, both gray */}
+                          {/* UPDATED: History & Live Buttons - Gray, No Icons */}
                           <div className="flex flex-col md:flex-row gap-2">
                              <button onClick={() => handleTabChange('historical')} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors flex items-center justify-center">
-                                History
+                               History
                              </button>
                              <button onClick={() => handleTabChange('live')} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors flex items-center justify-center">
-                                Live
+                               Live
                              </button>
                           </div>
-                       </div>
-                       
-                       <div className="p-6 pt-0 flex flex-col flex-grow"> {/* Body with padding, pt-0 to adjust spacing */}
-                           {/* Added Percentage Display for ORIGIN - Reinstated as Hero Metric - UPDATED FONT SIZE */}
+                        </div>
+                        
+                        <div className="p-6 pt-0 flex flex-col flex-grow">
+                           {/* Hero Metric - UPDATED FONT SIZE */}
                            <div className="mb-0 mt-4">
                                <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">25,516%</div>
                                <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
                            </div>
 
-                           {/* CHART AREA - Filling the middle */}
+                           {/* CHART AREA */}
                            <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
                               <ResponsiveContainer width="100%" height="100%">
                                   <AreaChart data={MOCK_BENCHMARK_ORIGIN} margin={{top:10, left:0, right:0, bottom:0}}>
@@ -972,7 +949,7 @@ export default function App() {
                                           </linearGradient>
                                       </defs>
                                       <XAxis dataKey="date" hide />
-                                      <YAxis orientation="right" domain={['auto', 'auto']} hide /> {/* Hidden YAxis for clean look */}
+                                      <YAxis orientation="right" domain={['auto', 'auto']} hide />
                                       <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(val) => [val.toFixed(2), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
                                       <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={3} fill="url(#colorOrigin)" dot={false} />
                                   </AreaChart>
@@ -994,7 +971,7 @@ export default function App() {
                                  <div className="text-white text-sm font-bold">2.5</div>
                               </div>
                            </div>
-                       </div>
+                        </div>
                     </div>
                  </div>
               </div>
@@ -1075,7 +1052,7 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-col space-y-2">
-                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
+                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-[#080808] backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={filteredChartData} margin={{top:10, left:0, right:0, bottom:0}}>
                             <defs>
@@ -1092,7 +1069,7 @@ export default function App() {
                         </ResponsiveContainer>
                         <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold cursor-pointer hover:text-white">Sentquant Model</span></div>
                       </div>
-                      <div className="h-[180px] rounded-b-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
+                      <div className="h-[180px] rounded-b-xl bg-[#080808] backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={filteredChartData} margin={{top:5, left:0, right:0, bottom:0}}>
                             <defs>
@@ -1143,7 +1120,7 @@ export default function App() {
                       </div>
                   </div>
                   <div className="flex flex-col space-y-2">
-                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
+                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-[#080808] backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={liveData} margin={{top:10, left:0, right:0, bottom:0}}>
                             <defs><linearGradient id="colorLive" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/><stop offset="95%" stopColor="#22ab94" stopOpacity={0}/></linearGradient></defs>
@@ -1154,7 +1131,7 @@ export default function App() {
                         </ResponsiveContainer>
                         <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold">Sentquant Model</span></div>
                       </div>
-                      <div className="h-[180px] rounded-b-xl bg-black/20 backdrop-blur-sm overflow-hidden relative">
+                      <div className="h-[180px] rounded-b-xl bg-[#080808] backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={liveData} margin={{top:5, left:0, right:0, bottom:0}}>
                             <defs><linearGradient id="colorDrawdownLive" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f23645" stopOpacity={0.4}/><stop offset="95%" stopColor="#f23645" stopOpacity={0.05}/></linearGradient></defs>
