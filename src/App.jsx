@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell 
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Lock, User, ArrowUp, Activity, TrendingUp, AlertTriangle
+  Menu, X, ChevronDown, Lock, User, ArrowUp, Activity, TrendingUp, AlertTriangle, Globe
 } from 'lucide-react';
 
 // --- LOGO DATA ---
@@ -23,7 +23,7 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
     viewBox="0 0 1024 1024"
     className={`animate-fade-in-up ${!withBg ? 'drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]' : ''}`}
   >
-    {withBg && <rect x="0" y="0" width="1024" height="1024" fill="#000000" rx="220" ry="220" />}
+    {withBg && <rect x="0" y="0" width="1024" height="1024" fill="#000000" />}
     <g transform="translate(512, 512) scale(1.4) translate(-512, -512)">
       {LOGO_PATHS.map((d, i) => (
         <path key={i} fill="#FFFFFF" d={d} />
@@ -31,6 +31,308 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
     </g>
   </svg>
 );
+
+// --- TRANSLATIONS ---
+const TRANSLATIONS = {
+  en: {
+    nav: { home: "Home", historical: "Historical", live: "Live", stats: "Stats", terminal: "Terminal", about: "About" },
+    join: "Join",
+    home: { 
+      subtitle_1: "If CoinMarketCap tracks assets,",
+      subtitle_2: "Sentquant tracks strategy performance."
+    },
+    terminal: {
+      elite_trader: "ELITE TRADER",
+      total_return: "TOTAL RETURN",
+      win_rate: "WIN RATE",
+      avg_mth: "AVG MTH",
+      status: "STATUS",
+      live: "LIVE",
+      offline: "OFFLINE",
+      history: "History",
+      live_btn: "Live",
+      more_trader: "MORE TRADER SOON",
+      return: "Return",
+      drawdown: "Drawdown",
+      sharpe: "Sharpe"
+    },
+    historical: {
+      title: "Historical Performance",
+      filter: "FILTER",
+      sentquant_model: "Sentquant Model",
+      heatmap_title: "Monthly Returns Heatmap",
+      top_drawdowns: "Top 5 Drawdowns",
+      rank: "Rank",
+      start_date: "Start Date",
+      end_date: "End Date",
+      depth: "Depth",
+      duration: "Duration (Days)",
+      recovery: "Recovery (Days)",
+      positive: "Positive",
+      negative: "Negative"
+    },
+    live: {
+      title: "Live on LIGHTER",
+      offline_status: "Offline",
+      live_drawdown: "Live Drawdown"
+    },
+    stats: {
+      annual_returns: "Annual Returns",
+      about_models: "ABOUT THE MODELS",
+      model_desc_1: "The Framework is for exploiting structural inefficiencies in commodity and cryptocurrency markets.",
+      model_desc_2: "We run O-U mean reversion on commodities and microstructure on crypto. two strategies, zero overlap, naturally uncorrelated.",
+      model_desc_3: "Regimes shift? No problem. We use 3 state HMM dynamically reallocates risk so the model always adapts.",
+      model_desc_4: "IN SAMPLE/OUT OF SAMPLE backtest , with 30%+ CAGR , 1.44 Sharpe , 27.77% APR in 21 years, Kurtosis 54.5 yeah, it’s fat-tail territory but chill we tame the tails with EVT + CVaR hedging.",
+      model_desc_infra: "Infrastructure use : Python, C++, Wolfram",
+      model_desc_nerd: "But enough with the nerd stuff.",
+      model_desc_edge: "If it has edge, you’ll see it. If it doesn’t, you’ll see that too.",
+      section_return: "RETURN METRICS",
+      section_drawdown: "DRAWDOWN METRICS",
+      section_risk_adj: "RISK-ADJUSTED RETURN METRICS",
+      section_volatility: "VOLATILITY & RISK METRICS",
+      section_distribution: "DISTRIBUTION METRICS",
+      section_win_loss: "WIN/LOSS METRICS",
+      section_consistency: "CONSISTENCY METRICS"
+    },
+    about: {
+      broken: "The trading industry is broken.",
+      fake_gurus: "Fake gurus sell dreams.",
+      cant_verify: "Performance can’t be verified.",
+      misled: "Retail traders are misled by empty claims.",
+      talks: "Everyone talks.",
+      no_data: "No data.",
+      cmc_analogy_1: "If CoinMarketCap tracks assets,",
+      cmc_analogy_2: "Sentquant tracks strategy performance.",
+      cant_lie: "Because performance can’t lie, people can.",
+      no_sell_courses: "Sentquant doesn't sell courses.",
+      no_sell_signals: "Sentquant doesn’t sell signals.",
+      no_sell_vip: "Sentquant doesn’t sell VIP Group",
+      arena: "Sentquant is the arena where every claim is tested.",
+      era_ends: "The era of fake trading gurus ends here.",
+      every_trader: "EVERY TRADER",
+      every_strategy: "EVERY STRATEGY",
+      every_claim: "EVERY CLAIM",
+      proven: "PROVEN ON-CHAIN",
+      join_movement: "Join Movement"
+    },
+    metrics_labels: {
+      total_return: "Total Return",
+      cagr: "CAGR (Annualized)",
+      apr: "APR (Simple Annual)",
+      ann_vol: "Annualized Volatility",
+      daily_mean: "Daily Return (Mean)",
+      daily_median: "Daily Return (Median)",
+      years: "Years Analyzed",
+      max_dd: "Max Drawdown",
+      avg_dd: "Average Drawdown",
+      max_dd_dur: "Max DD Duration",
+      avg_dd_dur: "Average DD Duration",
+      num_dd: "Number of Drawdowns",
+      dd_freq: "Drawdown Frequency",
+      ulcer: "Ulcer Index",
+      sharpe: "Sharpe Ratio",
+      sortino: "Sortino Ratio",
+      calmar: "Calmar Ratio",
+      mar: "MAR Ratio",
+      sterling: "Sterling Ratio",
+      burke: "Burke Ratio",
+      daily_std: "Daily Std Deviation",
+      daily_var: "Daily Variance",
+      ann_vol_simple: "Annual Volatility",
+      downside_dev: "Downside Deviation",
+      upside_dev: "Upside Deviation",
+      semi_var: "Semi-Variance",
+      var_95: "VaR (95%)",
+      cvar: "CVaR (Expected Shortfall)",
+      max_loss: "Max Daily Loss",
+      max_gain: "Max Daily Gain",
+      skew: "Skewness",
+      kurt_exc: "Kurtosis (Excess)",
+      kurt_raw: "Kurtosis (Raw)",
+      p05: "5th Percentile",
+      p95: "95th Percentile",
+      q1: "25th Percentile (Q1)",
+      q3: "75th Percentile (Q3)",
+      iqr: "IQR",
+      jb_stat: "Jarque-Bera Statistic",
+      jb_p: "Jarque-Bera p-value",
+      normal: "Normal Distribution?",
+      win_rate: "Win Rate (Daily)",
+      loss_rate: "Loss Rate (Daily)",
+      win_days: "Winning Days",
+      loss_days: "Losing Days",
+      neutral_days: "Neutral Days",
+      avg_win: "Average Win",
+      avg_loss: "Average Loss",
+      largest_win: "Largest Win",
+      largest_loss: "Largest Loss",
+      win_loss_ratio: "Win/Loss Ratio",
+      profit_factor: "Profit Factor",
+      expectancy: "Expectancy",
+      gross_profit: "Gross Profit",
+      gross_loss: "Gross Loss",
+      max_con_wins: "Max Consecutive Wins",
+      max_con_loss: "Max Consecutive Losses",
+      pos_months: "Positive Months",
+      neg_months: "Negative Months",
+      mth_win_rate: "Monthly Win Rate",
+      rec_factor: "Recovery Factor",
+      r_sq: "R-Squared (Stability)",
+      avg_pos_mth: "Avg Positive Months/Year",
+      expected_val_short: "Expected Value",
+      volatility_short: "Volatility"
+    }
+  },
+  id: {
+    nav: { home: "Beranda", historical: "Historis", live: "Langsung", stats: "Statistik", terminal: "Terminal", about: "Tentang" },
+    join: "Gabung",
+    home: { 
+      subtitle_1: "Jika CoinMarketCap melacak aset,",
+      subtitle_2: "Sentquant melacak kinerja strategi."
+    },
+    terminal: {
+      elite_trader: "TRADER ELIT",
+      total_return: "TOTAL PENGEMBALIAN",
+      win_rate: "TINGKAT KEMENANGAN",
+      avg_mth: "RATA-RATA BLN",
+      status: "STATUS",
+      live: "LANGSUNG",
+      offline: "OFFLINE",
+      history: "Riwayat",
+      live_btn: "Langsung",
+      more_trader: "LEBIH BANYAK TRADER SEGERA",
+      return: "Return",
+      drawdown: "Drawdown",
+      sharpe: "Sharpe"
+    },
+    historical: {
+      title: "Kinerja Historis",
+      filter: "FILTER",
+      sentquant_model: "Model Sentquant",
+      heatmap_title: "Peta Panas Pengembalian Bulanan",
+      top_drawdowns: "5 Drawdown Teratas",
+      rank: "Peringkat",
+      start_date: "Tanggal Mulai",
+      end_date: "Tanggal Akhir",
+      depth: "Kedalaman",
+      duration: "Durasi (Hari)",
+      recovery: "Pemulihan (Hari)",
+      positive: "Positif",
+      negative: "Negatif"
+    },
+    live: {
+      title: "Langsung di LIGHTER",
+      offline_status: "Offline",
+      live_drawdown: "Drawdown Langsung"
+    },
+    stats: {
+      annual_returns: "Pengembalian Tahunan",
+      about_models: "TENTANG MODEL",
+      model_desc_1: "Kerangka kerja ini untuk mengeksploitasi inefisiensi struktural di pasar komoditas dan mata uang kripto.",
+      model_desc_2: "Kami menjalankan mean reversion O-U pada komoditas dan struktur mikro pada kripto. Dua strategi, nol tumpang tindih, tidak berkorelasi secara alami.",
+      model_desc_3: "Pergeseran rezim? Tidak masalah. Kami menggunakan HMM 3 keadaan yang secara dinamis mengalokasikan risiko sehingga model selalu beradaptasi.",
+      model_desc_4: "Backtest IN SAMPLE/OUT OF SAMPLE, dengan 30%+ CAGR, 1.44 Sharpe, 27.77% APR dalam 21 tahun, Kurtosis 54.5 ya, itu wilayah fat-tail tapi tenang kami jinakkan ekornya dengan lindung nilai EVT + CVaR.",
+      model_desc_infra: "Infrastruktur yang digunakan: Python, C++, Wolfram",
+      model_desc_nerd: "Tapi cukup dengan hal-hal teknis.",
+      model_desc_edge: "Jika ada keunggulan, Anda akan melihatnya. Jika tidak, Anda juga akan melihatnya.",
+      section_return: "METRIK PENGEMBALIAN",
+      section_drawdown: "METRIK DRAWDOWN",
+      section_risk_adj: "METRIK PENGEMBALIAN DISESUAIKAN RISIKO",
+      section_volatility: "METRIK VOLATILITAS & RISIKO",
+      section_distribution: "METRIK DISTRIBUSI",
+      section_win_loss: "METRIK MENANG/KALAH",
+      section_consistency: "METRIK KONSISTENSI"
+    },
+    about: {
+      broken: "Industri perdagangan rusak.",
+      fake_gurus: "Guru palsu menjual mimpi.",
+      cant_verify: "Kinerja tidak dapat diverifikasi.",
+      misled: "Pedagang ritel disesatkan oleh klaim kosong.",
+      talks: "Semua orang bicara.",
+      no_data: "Tidak ada data.",
+      cmc_analogy_1: "Jika CoinMarketCap melacak aset,",
+      cmc_analogy_2: "Sentquant melacak kinerja strategi.",
+      cant_lie: "Karena kinerja tidak bisa berbohong, orang bisa.",
+      no_sell_courses: "Sentquant tidak menjual kursus.",
+      no_sell_signals: "Sentquant tidak menjual sinyal.",
+      no_sell_vip: "Sentquant tidak menjual Grup VIP",
+      arena: "Sentquant adalah arena di mana setiap klaim diuji.",
+      era_ends: "Era guru perdagangan palsu berakhir di sini.",
+      every_trader: "SETIAP TRADER",
+      every_strategy: "SETIAP STRATEGI",
+      every_claim: "SETIAP KLAIM",
+      proven: "TERBUKTI ON-CHAIN",
+      join_movement: "Gabung Gerakan"
+    },
+    metrics_labels: {
+      total_return: "Total Return",
+      cagr: "CAGR (Disetahunkan)",
+      apr: "APR (Bunga Sederhana)",
+      ann_vol: "Volatilitas Disetahunkan",
+      daily_mean: "Return Harian (Rata-rata)",
+      daily_median: "Return Harian (Median)",
+      years: "Tahun Dianalisis",
+      max_dd: "Max Drawdown",
+      avg_dd: "Rata-rata Drawdown",
+      max_dd_dur: "Durasi Max DD",
+      avg_dd_dur: "Durasi Rata-rata DD",
+      num_dd: "Jumlah Drawdown",
+      dd_freq: "Frekuensi Drawdown",
+      ulcer: "Indeks Ulcer",
+      sharpe: "Rasio Sharpe",
+      sortino: "Rasio Sortino",
+      calmar: "Rasio Calmar",
+      mar: "Rasio MAR",
+      sterling: "Rasio Sterling",
+      burke: "Rasio Burke",
+      daily_std: "Deviasi Std Harian",
+      daily_var: "Varians Harian",
+      ann_vol_simple: "Volatilitas Tahunan",
+      downside_dev: "Deviasi Sisi Bawah",
+      upside_dev: "Deviasi Sisi Atas",
+      semi_var: "Semi-Varians",
+      var_95: "VaR (95%)",
+      cvar: "CVaR (Expected Shortfall)",
+      max_loss: "Rugi Harian Maks",
+      max_gain: "Untung Harian Maks",
+      skew: "Skewness",
+      kurt_exc: "Kurtosis (Excess)",
+      kurt_raw: "Kurtosis (Raw)",
+      p05: "Persentil ke-5",
+      p95: "Persentil ke-95",
+      q1: "Persentil ke-25 (Q1)",
+      q3: "Persentil ke-75 (Q3)",
+      iqr: "IQR",
+      jb_stat: "Statistik Jarque-Bera",
+      jb_p: "Nilai-p Jarque-Bera",
+      normal: "Distribusi Normal?",
+      win_rate: "Tingkat Menang (Harian)",
+      loss_rate: "Tingkat Kalah (Harian)",
+      win_days: "Hari Menang",
+      loss_days: "Hari Kalah",
+      neutral_days: "Hari Netral",
+      avg_win: "Rata-rata Menang",
+      avg_loss: "Rata-rata Kalah",
+      largest_win: "Kemenangan Terbesar",
+      largest_loss: "Kekalahan Terbesar",
+      win_loss_ratio: "Rasio Menang/Kalah",
+      profit_factor: "Faktor Profit",
+      expectancy: "Ekspektasi",
+      gross_profit: "Laba Kotor",
+      gross_loss: "Rugi Kotor",
+      max_con_wins: "Menang Beruntun Maks",
+      max_con_loss: "Kalah Beruntun Maks",
+      pos_months: "Bulan Positif",
+      neg_months: "Bulan Negatif",
+      mth_win_rate: "Tingkat Menang Bulanan",
+      rec_factor: "Faktor Pemulihan",
+      r_sq: "R-Squared (Stabilitas)",
+      avg_pos_mth: "Rata-rata Bulan Positif/Tahun",
+      expected_val_short: "Nilai Harapan",
+      volatility_short: "Volatilitas"
+    }
+  }
+};
 
 // --- VAULT DATA ---
 const VAULT_ITEMS = [
@@ -57,108 +359,6 @@ const VAULT_ITEMS = [
     name: "PURE", 
     type: "user", 
     metrics: { ret: "12%", dd: "-12.5%", sharpe: "2.5" } 
-  }
-];
-
-// --- DATA: DETAILED STATS STRUCTURE ---
-const DETAILED_STATS_SECTIONS = [
-  {
-    title: "RETURN METRICS",
-    metrics: [
-      { l: "Total Return", v: "25,516.42%" },
-      { l: "CAGR (Annualized)", v: "30.50%" },
-      { l: "APR (Simple Annual)", v: "1,224.85%" },
-      { l: "Annualized Volatility", v: "17.16%" },
-      { l: "Daily Return (Mean)", v: "0.1100%" },
-      { l: "Daily Return (Median)", v: "-0.0800%" },
-      { l: "Years Analyzed", v: "20.83" }
-    ]
-  },
-  {
-    title: "DRAWDOWN METRICS",
-    metrics: [
-      { l: "Max Drawdown", v: "-29.20%" },
-      { l: "Average Drawdown", v: "-1.82%" },
-      { l: "Max DD Duration", v: "563 days" },
-      { l: "Average DD Duration", v: "12 days" },
-      { l: "Number of Drawdowns", v: "361" },
-      { l: "Drawdown Frequency", v: "6.77%" },
-      { l: "Ulcer Index", v: "5.33%" }
-    ]
-  },
-  {
-    title: "RISK-ADJUSTED RETURN METRICS",
-    metrics: [
-      { l: "Sharpe Ratio", v: "1.44" },
-      { l: "Sortino Ratio", v: "2.35" },
-      { l: "Calmar Ratio", v: "1.04" },
-      { l: "MAR Ratio", v: "1.04" },
-      { l: "Sterling Ratio", v: "16.74" },
-      { l: "Burke Ratio", v: "0.47" }
-    ]
-  },
-  {
-    title: "VOLATILITY & RISK METRICS",
-    metrics: [
-      { l: "Daily Std Deviation", v: "1.0808%" },
-      { l: "Daily Variance", v: "1.168221" },
-      { l: "Annual Volatility", v: "17.16%" },
-      { l: "Downside Deviation", v: "0.6631%" },
-      { l: "Upside Deviation", v: "1.0759%" },
-      { l: "Semi-Variance", v: "0.439702" },
-      { l: "VaR (95%)", v: "-1.06%" },
-      { l: "CVaR (Expected Shortfall)", v: "-1.77%" },
-      { l: "Max Daily Loss", v: "-23.42%" },
-      { l: "Max Daily Gain", v: "10.44%" }
-    ]
-  },
-  {
-    title: "DISTRIBUTION METRICS",
-    metrics: [
-      { l: "Skewness", v: "-0.0399" },
-      { l: "Kurtosis (Excess)", v: "54.4915" },
-      { l: "Kurtosis (Raw)", v: "57.4915" },
-      { l: "5th Percentile", v: "-1.06%" },
-      { l: "95th Percentile", v: "1.83%" },
-      { l: "25th Percentile (Q1)", v: "-0.34%" },
-      { l: "75th Percentile (Q3)", v: "0.39%" },
-      { l: "IQR", v: "0.7275%" },
-      { l: "Jarque-Bera Statistic", v: "659,315.33" },
-      { l: "Jarque-Bera p-value", v: "0.000000" },
-      { l: "Normal Distribution?", v: "No" }
-    ]
-  },
-  {
-    title: "WIN/LOSS METRICS",
-    metrics: [
-      { l: "Win Rate (Daily)", v: "42.84%" },
-      { l: "Loss Rate (Daily)", v: "56.60%" },
-      { l: "Winning Days", v: "2,283" },
-      { l: "Losing Days", v: "3,016" },
-      { l: "Neutral Days", v: "30" },
-      { l: "Average Win", v: "0.8606%" },
-      { l: "Average Loss", v: "-0.4571%" },
-      { l: "Largest Win", v: "10.44%" },
-      { l: "Largest Loss", v: "-23.42%" },
-      { l: "Win/Loss Ratio", v: "1.88" },
-      { l: "Profit Factor", v: "1.43" },
-      { l: "Expectancy", v: "0.1100%" },
-      { l: "Gross Profit", v: "1,964.74%" },
-      { l: "Gross Loss", v: "1,378.65%" }
-    ]
-  },
-  {
-    title: "CONSISTENCY METRICS",
-    metrics: [
-      { l: "Max Consecutive Wins", v: "8" },
-      { l: "Max Consecutive Losses", v: "18" },
-      { l: "Positive Months", v: "174" },
-      { l: "Negative Months", v: "77" },
-      { l: "Monthly Win Rate", v: "69.32%" },
-      { l: "Recovery Factor", v: "873.93" },
-      { l: "R-Squared (Stability)", v: "0.6848" },
-      { l: "Avg Positive Months/Year", v: "8.4" }
-    ]
   }
 ];
 
@@ -191,7 +391,7 @@ const DetailedStatCard = ({ section }) => (
 );
 
 // --- COMPONENT: MONTHLY HEATMAP ---
-const MonthlyHeatmap = ({ data, enableFilter = false }) => {
+const MonthlyHeatmap = ({ data, enableFilter = false, t }) => {
   const [selectedRange, setSelectedRange] = useState('2020-2025');
   const filterRanges = ['2020-2025', '2015-2019', '2010-2014', '2005-2009'];
 
@@ -207,7 +407,7 @@ const MonthlyHeatmap = ({ data, enableFilter = false }) => {
   return (
     <div className="mb-10 animate-fade-in-up mt-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-          <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Monthly Returns Heatmap</h3>
+          <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">{t.heatmap_title}</h3>
           {enableFilter ? (
             <div className="flex flex-wrap gap-2">
               {filterRanges.map((range) => (
@@ -226,8 +426,8 @@ const MonthlyHeatmap = ({ data, enableFilter = false }) => {
             </div>
           ) : (
             <div className="flex gap-2">
-              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> Positive</span>
-              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> Negative</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> {t.positive}</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> {t.negative}</span>
             </div>
           )}
       </div>
@@ -277,21 +477,21 @@ const MonthlyHeatmap = ({ data, enableFilter = false }) => {
 };
 
 // --- COMPONENT: TOP 5 DRAWDOWNS TABLE ---
-const TopDrawdownsTable = ({ data }) => (
+const TopDrawdownsTable = ({ data, t }) => (
   <div className="mb-10 animate-fade-in-up mt-8">
     <div className="flex items-center justify-between mb-6">
-      <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Top 5 Drawdowns</h3>
+      <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">{t.top_drawdowns}</h3>
     </div>
     <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2">
       <table className="w-full text-sm border-collapse min-w-[800px]">
         <thead>
           <tr className="text-left text-gray-400 font-medium border-b border-white/5">
-            <th className="py-3 px-4">Rank</th>
-            <th className="py-3 px-4">Start Date</th>
-            <th className="py-3 px-4">End Date</th>
-            <th className="py-3 px-4 text-right">Depth</th>
-            <th className="py-3 px-4 text-right">Duration (Days)</th>
-            <th className="py-3 px-4 text-right">Recovery (Days)</th>
+            <th className="py-3 px-4">{t.rank}</th>
+            <th className="py-3 px-4">{t.start_date}</th>
+            <th className="py-3 px-4">{t.end_date}</th>
+            <th className="py-3 px-4 text-right">{t.depth}</th>
+            <th className="py-3 px-4 text-right">{t.duration}</th>
+            <th className="py-3 px-4 text-right">{t.recovery}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
@@ -316,32 +516,22 @@ const TopDrawdownsTable = ({ data }) => (
 );
 
 // --- COMPONENT: ABOUT MODELS CARD ---
-const AboutModelsCard = () => (
+const AboutModelsCard = ({ t }) => (
   <div className="mb-8 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden flex flex-col">
     <div className="bg-white/5 px-5 py-4">
-      <h3 className="font-bold text-white font-eth text-xl">ABOUT THE MODELS</h3>
+      <h3 className="font-bold text-white font-eth text-xl">{t.about_models}</h3>
     </div>
     
     <div className="p-5 md:p-6 space-y-4 text-white text-sm font-medium leading-relaxed font-sans">
-      <p>
-        The Framework is for exploiting structural inefficiencies in commodity and cryptocurrency markets.
-      </p>
-      <p>
-        We run O-U mean reversion on commodities and microstructure on crypto. two strategies, zero overlap, naturally uncorrelated.
-      </p>
-      <p>
-        Regimes shift? No problem. We use 3 state HMM dynamically reallocates risk so the model always adapts.
-      </p>
-      <p>
-        IN SAMPLE/OUT OF SAMPLE backtest , with 30%+ CAGR , 1.44 Sharpe , 27.77% APR in 21 years, Kurtosis 54.5 yeah, it’s fat-tail territory but chill we tame the tails with EVT + CVaR hedging.
-      </p>
-      <p className="pt-2">
-        Infrastructure use : Python, C++, Wolfram
-      </p>
+      <p>{t.model_desc_1}</p>
+      <p>{t.model_desc_2}</p>
+      <p>{t.model_desc_3}</p>
+      <p>{t.model_desc_4}</p>
+      <p className="pt-2">{t.model_desc_infra}</p>
       
       <div className="mt-6 pt-6 opacity-100 font-sans">
-        <p>But enough with the nerd stuff.</p>
-        <p>If it has edge, you’ll see it. If it doesn’t, you’ll see that too.</p>
+        <p>{t.model_desc_nerd}</p>
+        <p>{t.model_desc_edge}</p>
       </div>
     </div>
   </div>
@@ -517,6 +707,14 @@ export default function App() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
+  const [language, setLanguage] = useState('en'); // Default to English
+
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'en' ? 'id' : 'en');
+  };
+
+  // Get current translation object
+  const t = TRANSLATIONS[language];
   
   // Scroll to top logic
   const mainScrollRef = useRef(null);
@@ -550,13 +748,115 @@ export default function App() {
   
   // UPDATED: Nav items with Terminal as 5th tab
   const navItems = [
-    { id: 'home', label: 'Home' },
-    { id: 'historical', label: 'Historical' },
-    { id: 'live', label: 'Live' },
-    { id: 'stats', label: 'Stats' },
-    { id: 'terminal', label: 'Terminal' }, 
-    { id: 'about', label: 'About' }
+    { id: 'home', label: t.nav.home },
+    { id: 'historical', label: t.nav.historical },
+    { id: 'live', label: t.nav.live },
+    { id: 'stats', label: t.nav.stats },
+    { id: 'terminal', label: t.nav.terminal }, 
+    { id: 'about', label: t.nav.about }
   ];
+
+  // Dynamic detailed stats sections based on language
+  const detailedStatsSections = useMemo(() => [
+    {
+      title: t.stats.section_return,
+      metrics: [
+        { l: t.metrics_labels.total_return, v: "25,516.42%" },
+        { l: t.metrics_labels.cagr, v: "30.50%" },
+        { l: t.metrics_labels.apr, v: "1,224.85%" },
+        { l: t.metrics_labels.ann_vol, v: "17.16%" },
+        { l: t.metrics_labels.daily_mean, v: "0.1100%" },
+        { l: t.metrics_labels.daily_median, v: "-0.0800%" },
+        { l: t.metrics_labels.years, v: "20.83" }
+      ]
+    },
+    {
+      title: t.stats.section_drawdown,
+      metrics: [
+        { l: t.metrics_labels.max_dd, v: "-29.20%" },
+        { l: t.metrics_labels.avg_dd, v: "-1.82%" },
+        { l: t.metrics_labels.max_dd_dur, v: "563 days" },
+        { l: t.metrics_labels.avg_dd_dur, v: "12 days" },
+        { l: t.metrics_labels.num_dd, v: "361" },
+        { l: t.metrics_labels.dd_freq, v: "6.77%" },
+        { l: t.metrics_labels.ulcer, v: "5.33%" }
+      ]
+    },
+    {
+      title: t.stats.section_risk_adj,
+      metrics: [
+        { l: t.metrics_labels.sharpe, v: "1.44" },
+        { l: t.metrics_labels.sortino, v: "2.35" },
+        { l: t.metrics_labels.calmar, v: "1.04" },
+        { l: t.metrics_labels.mar, v: "1.04" },
+        { l: t.metrics_labels.sterling, v: "16.74" },
+        { l: t.metrics_labels.burke, v: "0.47" }
+      ]
+    },
+    {
+      title: t.stats.section_volatility,
+      metrics: [
+        { l: t.metrics_labels.daily_std, v: "1.0808%" },
+        { l: t.metrics_labels.daily_var, v: "1.168221" },
+        { l: t.metrics_labels.ann_vol_simple, v: "17.16%" },
+        { l: t.metrics_labels.downside_dev, v: "0.6631%" },
+        { l: t.metrics_labels.upside_dev, v: "1.0759%" },
+        { l: t.metrics_labels.semi_var, v: "0.439702" },
+        { l: t.metrics_labels.var_95, v: "-1.06%" },
+        { l: t.metrics_labels.cvar, v: "-1.77%" },
+        { l: t.metrics_labels.max_loss, v: "-23.42%" },
+        { l: t.metrics_labels.max_gain, v: "10.44%" }
+      ]
+    },
+    {
+      title: t.stats.section_distribution,
+      metrics: [
+        { l: t.metrics_labels.skew, v: "-0.0399" },
+        { l: t.metrics_labels.kurt_exc, v: "54.4915" },
+        { l: t.metrics_labels.kurt_raw, v: "57.4915" },
+        { l: t.metrics_labels.p05, v: "-1.06%" },
+        { l: t.metrics_labels.p95, v: "1.83%" },
+        { l: t.metrics_labels.q1, v: "-0.34%" },
+        { l: t.metrics_labels.q3, v: "0.39%" },
+        { l: t.metrics_labels.iqr, v: "0.7275%" },
+        { l: t.metrics_labels.jb_stat, v: "659,315.33" },
+        { l: t.metrics_labels.jb_p, v: "0.000000" },
+        { l: t.metrics_labels.normal, v: "No" }
+      ]
+    },
+    {
+      title: t.stats.section_win_loss,
+      metrics: [
+        { l: t.metrics_labels.win_rate, v: "42.84%" },
+        { l: t.metrics_labels.loss_rate, v: "56.60%" },
+        { l: t.metrics_labels.win_days, v: "2,283" },
+        { l: t.metrics_labels.loss_days, v: "3,016" },
+        { l: t.metrics_labels.neutral_days, v: "30" },
+        { l: t.metrics_labels.avg_win, v: "0.8606%" },
+        { l: t.metrics_labels.avg_loss, v: "-0.4571%" },
+        { l: t.metrics_labels.largest_win, v: "10.44%" },
+        { l: t.metrics_labels.largest_loss, v: "-23.42%" },
+        { l: t.metrics_labels.win_loss_ratio, v: "1.88" },
+        { l: t.metrics_labels.profit_factor, v: "1.43" },
+        { l: t.metrics_labels.expectancy, v: "0.1100%" },
+        { l: t.metrics_labels.gross_profit, v: "1,964.74%" },
+        { l: t.metrics_labels.gross_loss, v: "1,378.65%" }
+      ]
+    },
+    {
+      title: t.stats.section_consistency,
+      metrics: [
+        { l: t.metrics_labels.max_con_wins, v: "8" },
+        { l: t.metrics_labels.max_con_loss, v: "18" },
+        { l: t.metrics_labels.pos_months, v: "174" },
+        { l: t.metrics_labels.neg_months, v: "77" },
+        { l: t.metrics_labels.mth_win_rate, v: "69.32%" },
+        { l: t.metrics_labels.rec_factor, v: "873.93" },
+        { l: t.metrics_labels.r_sq, v: "0.6848" },
+        { l: t.metrics_labels.avg_pos_mth, v: "8.4" }
+      ]
+    }
+  ], [language, t]); // Depend on language
 
   useEffect(() => {
     const fetchOrFallback = async (url, fallback) => {
@@ -606,7 +906,7 @@ export default function App() {
 
   useEffect(() => {
     const updateFavicons = async () => {
-      // UPDATED: Scaled up to 3.2 to make logo significantly larger in favicon
+      // UPDATED: Scaled up to 3.2 and added rounded corners (rx, ry)
       const svgString = `
         <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
           <rect x="0" y="0" width="1024" height="1024" fill="black" rx="220" ry="220"/>
@@ -814,8 +1114,17 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-4 ml-auto">
+          {/* LANGUAGE TOGGLE */}
+          <button 
+            onClick={toggleLanguage}
+            className="p-2 rounded-full hover:bg-white/10 transition-colors text-sm font-bold text-white"
+            title={language === 'en' ? "Switch to Indonesian" : "Switch to English"}
+          >
+            {language === 'en' ? 'EN' : 'ID'}
+          </button>
+
           <button className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors backdrop-blur-md flex items-center gap-2">
-            Join <Lock size={14} />
+            {t.join} <Lock size={14} />
           </button>
           {/* MOBILE MENU TOGGLE */}
           <button 
@@ -854,7 +1163,7 @@ export default function App() {
                     Sentquant
                   </h1>
                   <p className="text-gray-400 text-sm md:text-base font-light tracking-wide text-center max-w-lg">
-                    If CoinMarketCap tracks assets,<br />Sentquant tracks strategy performance.
+                    {t.home.subtitle_1}<br />{t.home.subtitle_2}
                   </p>
               </div>
             )}
@@ -878,7 +1187,7 @@ export default function App() {
                         {/* BLUR OVERLAY & "ELITE TRADER" TEXT */}
                         <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
                            <h3 className="text-4xl md:text-5xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl text-center px-4 border-2 border-white/20 py-4 rounded-xl bg-black/50">
-                               ELITE TRADER
+                               {t.terminal.elite_trader}
                            </h3>
                         </div>
 
@@ -898,7 +1207,7 @@ export default function App() {
                             <div className="p-6 pt-0 flex flex-col flex-grow relative z-10">
                                 <div className="mb-0 mt-4">
                                    <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">450%</div>
-                                   <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
+                                   <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">{t.terminal.total_return}</div>
                                 </div>
 
                                 <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
@@ -919,16 +1228,16 @@ export default function App() {
 
                                 <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
                                   <div>
-                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">WIN RATE</div>
+                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t.terminal.win_rate}</div>
                                      <div className="text-white text-sm font-bold">78%</div>
                                   </div>
                                   <div>
-                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">AVG MTH</div>
+                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t.terminal.avg_mth}</div>
                                      <div className="text-white text-sm font-bold">+15%</div>
                                   </div>
                                   <div>
-                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">STATUS</div>
-                                     <div className="text-amber-400 text-sm font-bold">LIVE</div>
+                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t.terminal.status}</div>
+                                     <div className="text-amber-400 text-sm font-bold">{t.terminal.live}</div>
                                   </div>
                                 </div>
                             </div>
@@ -951,10 +1260,10 @@ export default function App() {
                           {/* UPDATED: History & Live Buttons - Gray, No Icons */}
                           <div className="flex flex-col md:flex-row gap-2">
                              <button onClick={() => handleTabChange('historical')} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors flex items-center justify-center">
-                               History
+                               {t.terminal.history}
                              </button>
                              <button onClick={() => handleTabChange('live')} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors flex items-center justify-center">
-                               Live
+                               {t.terminal.live_btn}
                              </button>
                           </div>
                         </div>
@@ -963,7 +1272,7 @@ export default function App() {
                            {/* Hero Metric - UPDATED FONT SIZE */}
                            <div className="mb-0 mt-4">
                                <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">0%</div>
-                               <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">TOTAL RETURN</div>
+                               <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">{t.terminal.total_return}</div>
                            </div>
 
                            {/* CHART AREA */}
@@ -1006,7 +1315,7 @@ export default function App() {
                  {/* --- MORE TRADER SOON SECTION --- */}
                  <div className="mb-8 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden flex flex-col">
                     <div className="bg-white/5 px-5 py-4 border-b border-white/5">
-                      <h3 className="font-bold text-white font-eth text-xl">MORE TRADER SOON</h3>
+                      <h3 className="font-bold text-white font-eth text-xl">{t.terminal.more_trader}</h3>
                     </div>
                     {/* Added blur, opacity, and disabled interactions */}
                     <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 filter blur-sm opacity-50 pointer-events-none select-none">
@@ -1027,15 +1336,15 @@ export default function App() {
                               
                               <div className="space-y-3">
                                 <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                   <span className="text-xs text-gray-500 font-bold uppercase">Return</span>
+                                   <span className="text-xs text-gray-500 font-bold uppercase">{t.terminal.return}</span>
                                    <span className="text-[#22ab94] font-bold font-mono text-sm">{item.metrics.ret}</span>
                                 </div>
                                 <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                   <span className="text-xs text-gray-500 font-bold uppercase">Drawdown</span>
+                                   <span className="text-xs text-gray-500 font-bold uppercase">{t.terminal.drawdown}</span>
                                    <span className="text-[#f23645] font-bold font-mono text-sm">{item.metrics.dd}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                   <span className="text-xs text-gray-500 font-bold uppercase">Sharpe</span>
+                                   <span className="text-xs text-gray-500 font-bold uppercase">{t.terminal.sharpe}</span>
                                    <span className="text-white font-bold font-mono text-sm">{item.metrics.sharpe}</span>
                                 </div>
                               </div>
@@ -1054,14 +1363,14 @@ export default function App() {
                   <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
                     <div className="flex items-center gap-4">
                       <h3 className="text-xl font-bold flex items-center gap-2 text-white font-eth drop-shadow-md">
-                          Historical Performance
+                          {t.historical.title}
                       </h3>
                     </div>
                     <div className="relative flex gap-2 items-center">
                         <button onClick={() => { setSelectedYear('5Y'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === '5Y' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>5Y</button>
                         <button onClick={() => { setSelectedYear('ALL'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === 'ALL' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>ALL</button>
                         <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${selectedYear !== 'ALL' && selectedYear !== '5Y' ? 'bg-gray-600 text-white shadow-[0_0_15px_rgba(75,85,99,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>
-                          {selectedYear !== 'ALL' && selectedYear !== '5Y' ? selectedYear : 'FILTER'} <ChevronDown size={14} className={`transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+                          {selectedYear !== 'ALL' && selectedYear !== '5Y' ? selectedYear : t.historical.filter} <ChevronDown size={14} className={`transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
                         </button>
                         {isFilterOpen && (
                           <div className="absolute top-full right-0 mt-2 w-40 max-h-60 overflow-y-auto bg-[#0a0a0a] rounded-xl shadow-xl z-50 p-2 custom-scrollbar backdrop-blur-md">
@@ -1082,19 +1391,19 @@ export default function App() {
                     <div className="p-4 flex flex-col justify-center transition-colors"> 
                        <div className="grid grid-cols-2 gap-y-6 gap-x-8">
                           <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Total Return</div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.total_return}</div>
                              <div className={`text-lg font-bold drop-shadow-sm ${colorClass(stats.totalReturn)}`}>{fmt(stats.totalReturn, '%')}</div>
                           </div>
                           <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Max Drawdown</div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.max_dd}</div>
                              <div className="text-lg font-bold text-[#f23645] drop-shadow-sm">{fmt(stats.maxDrawdown, '%')}</div>
                           </div>
                           <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">CAGR</div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.cagr}</div>
                              <div className="text-lg font-bold drop-shadow-sm text-white">{fmt(stats.cagr, '%')}</div>
                           </div>
                           <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">APR</div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.apr}</div>
                              <div className="text-lg font-bold drop-shadow-sm text-white">{fmt(stats.apr, '%')}</div>
                           </div>
                        </div>
@@ -1102,19 +1411,19 @@ export default function App() {
                     <div className="p-4 flex flex-col justify-center transition-colors">
                        <div className="grid grid-cols-2 gap-y-6 gap-x-8">
                           <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Expected Value</div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.expected_val_short}</div>
                              <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(stats.expectedValue, '%')}</div>
                           </div>
                           <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Volatility</div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.volatility_short}</div>
                              <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(stats.volatility, '%')}</div>
                           </div>
                           <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sharpe Ratio</div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.sharpe}</div>
                              <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(stats.sharpe)}</div>
                           </div>
                           <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sortino Ratio</div>
+                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.sortino}</div>
                              <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(stats.sortino)}</div>
                           </div>
                        </div>
@@ -1137,7 +1446,7 @@ export default function App() {
                             <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorGradient)" isAnimationActive={selectedYear !== 'ALL'} animationDuration={500} dot={false} />
                           </AreaChart>
                         </ResponsiveContainer>
-                        <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold cursor-pointer hover:text-white">Sentquant Model</span></div>
+                        <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold cursor-pointer hover:text-white">{t.historical.sentquant_model}</span></div>
                       </div>
                       <div className="h-[180px] rounded-b-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
@@ -1157,8 +1466,8 @@ export default function App() {
                         </ResponsiveContainer>
                       </div>
                   </div>
-                  <MonthlyHeatmap data={heatmapData} enableFilter={true} />
-                  <TopDrawdownsTable data={MOCK_TOP_DRAWDOWNS} />
+                  <MonthlyHeatmap data={heatmapData} enableFilter={true} t={t.historical} />
+                  <TopDrawdownsTable data={MOCK_TOP_DRAWDOWNS} t={t.historical} />
                 </div>
               </>
             )}
@@ -1168,24 +1477,24 @@ export default function App() {
               <div className="animate-fade-in-up">
                 <div className="mb-10">
                   <div className="flex items-center gap-4 mb-4">
-                    <h3 className="text-xl font-bold flex items-center gap-2 text-white font-eth drop-shadow-md">Live on LIGHTER</h3>
-                    <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-500 text-xs backdrop-blur-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>Offline</div>
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-white font-eth drop-shadow-md">{t.live.title}</h3>
+                    <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-500 text-xs backdrop-blur-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>{t.live.offline_status}</div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                       <div className="p-4 flex flex-col justify-center transition-colors backdrop-blur-sm rounded-xl bg-black/10"> 
                           <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Total Return</div><div className={`text-lg font-bold drop-shadow-sm ${colorClass(liveStatsData?.totalReturn)}`}>{fmt(liveStatsData?.totalReturn, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Max Drawdown</div><div className="text-lg font-bold text-[#f23645] drop-shadow-sm">{fmt(liveStatsData?.maxDrawdown, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">CAGR</div><div className="text-lg font-bold drop-shadow-sm text-white">{fmt(liveStatsData?.cagr, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">APR</div><div className="text-lg font-bold drop-shadow-sm text-white">{fmt(liveStatsData?.apr, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.total_return}</div><div className={`text-lg font-bold drop-shadow-sm ${colorClass(liveStatsData?.totalReturn)}`}>{fmt(liveStatsData?.totalReturn, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.max_dd}</div><div className="text-lg font-bold text-[#f23645] drop-shadow-sm">{fmt(liveStatsData?.maxDrawdown, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.cagr}</div><div className="text-lg font-bold drop-shadow-sm text-white">{fmt(liveStatsData?.cagr, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.apr}</div><div className="text-lg font-bold drop-shadow-sm text-white">{fmt(liveStatsData?.apr, '%')}</div></div>
                           </div>
                       </div>
                       <div className="p-4 flex flex-col justify-center transition-colors backdrop-blur-sm rounded-xl bg-black/10">
                           <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Expected Value</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.expectedValue, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Volatility</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.volatility, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sharpe Ratio</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.sharpe)}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">Sortino Ratio</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.sortino)}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.expected_val_short}</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.expectedValue, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.volatility_short}</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.volatility, '%')}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.sharpe}</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.sharpe)}</div></div>
+                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.sortino}</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.sortino)}</div></div>
                           </div>
                       </div>
                   </div>
@@ -1199,21 +1508,21 @@ export default function App() {
                             <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorLive)" animationDuration={1500} dot={false} />
                             </AreaChart>
                         </ResponsiveContainer>
-                        <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold">Sentquant Model</span></div>
+                        <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold">{t.historical.sentquant_model}</span></div>
                       </div>
                       <div className="h-[180px] rounded-b-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={liveData} margin={{top:5, left:0, right:0, bottom:0}}>
                             <defs><linearGradient id="colorDrawdownLive" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f23645" stopOpacity={0.4}/><stop offset="95%" stopColor="#f23645" stopOpacity={0.05}/></linearGradient></defs>
                             <XAxis dataKey="date" hide /><YAxis orientation="right" tick={{fill: '#a1a1aa', fontSize: 10}} axisLine={false} tickLine={false} />
-                            <Tooltip contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#f23645'}} formatter={(value) => [`${value}%`, 'Live Drawdown']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
+                            <Tooltip contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#f23645'}} formatter={(value) => [`${value}%`, t.live.live_drawdown]} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
                             <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
                             <Area type="stepAfter" dataKey="drawdown" stroke="#f23645" strokeWidth={1.5} fill="url(#colorDrawdownLive)" animationDuration={1500} dot={false} />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
                   </div>
-                  <MonthlyHeatmap data={liveHeatmapData} enableFilter={false} />
+                  <MonthlyHeatmap data={liveHeatmapData} enableFilter={false} t={t.historical} />
                 </div>
               </div>
             )}
@@ -1223,7 +1532,7 @@ export default function App() {
               <div className="animate-fade-in-up">
                 <div className="mb-10">
                   <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">Annual Returns</h3>
+                      <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">{t.stats.annual_returns}</h3>
                   </div>
                   <div className="h-[300px] rounded-xl bg-black/20 backdrop-blur-sm p-4 relative">
                       <ResponsiveContainer width="100%" height="100%">
@@ -1240,9 +1549,9 @@ export default function App() {
                       </ResponsiveContainer>
                   </div>
                 </div>
-                <AboutModelsCard />
+                <AboutModelsCard t={t.stats} />
                 <div className="mb-20 grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {DETAILED_STATS_SECTIONS.map((section, idx) => (
+                    {detailedStatsSections.map((section, idx) => (
                       <DetailedStatCard key={idx} section={section} />
                     ))}
                 </div>
@@ -1253,37 +1562,37 @@ export default function App() {
             {activeTab === 'about' && (
               <div className="animate-fade-in-up flex flex-col items-start justify-start h-full relative z-10 px-4 pt-0 md:pt-8 pl-4 md:pl-20">
                   <div className="max-w-3xl text-left">
-                    <h2 className="text-2xl md:text-3xl font-medium text-gray-400 font-eth mb-4">The trading industry is broken.</h2>
+                    <h2 className="text-2xl md:text-3xl font-medium text-gray-400 font-eth mb-4">{t.about.broken}</h2>
                     <div className="text-white text-sm font-medium leading-relaxed font-sans space-y-4 max-w-xl">
-                        <p>Fake gurus sell dreams.</p>
-                        <p>Performance can’t be verified.</p>
-                        <p>Retail traders are misled by empty claims.</p>
-                        <p>Everyone talks.</p>
-                        <p>No data.</p>
+                        <p>{t.about.fake_gurus}</p>
+                        <p>{t.about.cant_verify}</p>
+                        <p>{t.about.misled}</p>
+                        <p>{t.about.talks}</p>
+                        <p>{t.about.no_data}</p>
                     </div>
                     <div className="text-2xl md:text-3xl font-medium text-gray-400 font-eth leading-tight space-y-2 mt-12 max-w-2xl">
-                        <p>If CoinMarketCap tracks assets,</p>
-                        <p>Sentquant tracks strategy performance.</p>
-                        <p>Because performance can’t lie, people can.</p>
+                        <p>{t.about.cmc_analogy_1}</p>
+                        <p>{t.about.cmc_analogy_2}</p>
+                        <p>{t.about.cant_lie}</p>
                     </div>
                     <div className="mt-12 space-y-12 pb-20">
                         <div className="text-white text-sm font-medium leading-relaxed font-sans space-y-4 max-w-xl text-left">
-                            <p>Sentquant doesn't sell courses.</p>
-                            <p>Sentquant doesn’t sell signals.</p>
-                            <p>Sentquant doesn’t sell VIP Group</p>
-                            <p>Sentquant is the arena where every claim is tested.</p>
+                            <p>{t.about.no_sell_courses}</p>
+                            <p>{t.about.no_sell_signals}</p>
+                            <p>{t.about.no_sell_vip}</p>
+                            <p>{t.about.arena}</p>
                         </div>
                         <div className="flex flex-col items-start text-left w-full max-w-4xl pt-4">
-                            <div className="py-2"><span className="text-2xl md:text-3xl font-medium text-gray-400 font-eth block">The era of fake trading gurus ends here.</span></div>
+                            <div className="py-2"><span className="text-2xl md:text-3xl font-medium text-gray-400 font-eth block">{t.about.era_ends}</span></div>
                             <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 border-t border-b border-white/10 py-6 my-8">
                                 <div className="flex flex-wrap justify-start gap-3 md:gap-6 text-[11px] md:text-[13px] font-mono text-blue-400 tracking-widest">
-                                    <span>EVERY TRADER</span>
-                                    <span>EVERY STRATEGY</span>
-                                    <span>EVERY CLAIM</span>
-                                    <span className="whitespace-nowrap">PROVEN ON-CHAIN</span>
+                                    <span>{t.about.every_trader}</span>
+                                    <span>{t.about.every_strategy}</span>
+                                    <span>{t.about.every_claim}</span>
+                                    <span className="whitespace-nowrap">{t.about.proven}</span>
                                 </div>
                                 <button className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full text-sm md:text-base font-bold transition-colors backdrop-blur-md flex items-center gap-2 group border border-white/5">
-                                    Join Movement <Lock size={18} />
+                                    {t.about.join_movement} <Lock size={18} />
                                 </button>
                             </div>
                         </div>
@@ -1298,7 +1607,7 @@ export default function App() {
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12 text-sm text-gray-400 px-6">
                     <div className="col-span-2 lg:col-span-2 pr-8">
                         <div className="flex items-center gap-2 mb-4"><span className="text-xl font-bold text-white font-eth">Sentquant</span></div>
-                        <p className="mb-4">The era of fake trading gurus ends here.</p>
+                        <p className="mb-4">{t.about.era_ends}</p>
                     </div>
                 </div>
                 </footer>
