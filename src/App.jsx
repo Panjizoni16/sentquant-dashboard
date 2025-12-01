@@ -896,6 +896,7 @@ export default function App() {
         setLiveData(live);
         setHeatmapData(heatmap);
         setLiveHeatmapData(liveHeatmap);
+        setTopDrawdownsData(topDrawdowns);
         setAnnualReturnsData(annual);
         setStatsData(stats);
         setLiveStatsData(liveStats);
