@@ -6,6 +6,7 @@ import {
 import { 
   Menu, X, ChevronDown, Lock, User, ArrowUp, Activity, TrendingUp, AlertTriangle, Globe
 } from 'lucide-react';
+import { Analytics } from "@vercel/analytics/react";
 
 // --- LOGO DATA ---
 const LOGO_PATHS = [
@@ -1632,6 +1633,9 @@ export default function App() {
           <ArrowUp size={24} />
         </button>
       </div>
+
+      {/* VERCEL ANALYTICS */}
+      <Analytics />
     </div>
   );
 }
