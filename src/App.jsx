@@ -744,7 +744,8 @@ export default function App() {
   };
   
   const yearsList = ['ALL', ...Array.from({length: 26}, (_, i) => (2025 - i).toString())];
-  const manualRanges = ['2020-2024', '2015-2019', '2010-2014', '2005-2009'];
+  // UPDATED: Changed '2020-2024' to '2020-2025' to be consistent with Heatmap and include 2025
+  const manualRanges = ['2020-2025', '2015-2019', '2010-2014', '2005-2009'];
   
   // UPDATED: Nav items with Terminal as 5th tab
   const navItems = [
@@ -883,9 +884,10 @@ export default function App() {
         
         setFullData(hist);
         const currentYear = 2025;
+        // UPDATED: Changed logic to y >= (currentYear - 5) to INCLUDE 2020 in the 5Y view
         const initialFiltered = hist.filter(d => {
             const y = parseInt(d.year);
-            return y > (currentYear - 5) && y <= currentYear;
+            return y >= (currentYear - 5) && y <= currentYear;
         });
         setFilteredChartData(initialFiltered);
 
@@ -1010,9 +1012,10 @@ export default function App() {
         setFilteredChartData(fullData);
     } else if (selectedYear === '5Y') {
         const currentYear = 2025;
+        // UPDATED: Changed logic to y >= (currentYear - 5) to INCLUDE 2020
         const filtered = fullData.filter(d => {
             const y = parseInt(d.year);
-            return y > (currentYear - 5) && y <= currentYear;
+            return y >= (currentYear - 5) && y <= currentYear;
         });
         setFilteredChartData(filtered);
     } else if (selectedYear.includes('-')) {
