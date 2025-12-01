@@ -392,7 +392,9 @@ const DetailedStatCard = ({ section }) => (
 
 // --- COMPONENT: MONTHLY HEATMAP ---
 const MonthlyHeatmap = ({ data, enableFilter = false, t }) => {
+  // Ensure default state includes 2020
   const [selectedRange, setSelectedRange] = useState('2020-2025');
+  // Ensure filter options include 2020
   const filterRanges = ['2020-2025', '2015-2019', '2010-2014', '2005-2009'];
 
   const filteredData = useMemo(() => {
@@ -400,6 +402,7 @@ const MonthlyHeatmap = ({ data, enableFilter = false, t }) => {
     const [start, end] = selectedRange.split('-').map(Number);
     return data.filter(row => {
       const year = parseInt(row.year);
+      // Explicitly check inclusive range to ensure 2020 is shown
       return year >= start && year <= end;
     });
   }, [data, enableFilter, selectedRange]);
