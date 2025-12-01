@@ -398,11 +398,16 @@ const MonthlyHeatmap = ({ data, enableFilter = false, t }) => {
   const filterRanges = ['2020-2025', '2015-2019', '2010-2014', '2005-2009'];
 
   const filteredData = useMemo(() => {
-    if (!enableFilter) return data;
+    if (!enableFilter || !data) return data || [];
+    
     const [start, end] = selectedRange.split('-').map(Number);
-    return data.filter(row => {
-      const year = parseInt(row.year);
-      // Explicitly check inclusive range to ensure 2020 is shown
+    
+    // Sort data descending by year just in case
+    const sortedData = [...data].sort((a, b) => Number(b.year) - Number(a.year));
+
+    return sortedData.filter(row => {
+      const year = Number(row.year);
+      // Robust comparison
       return year >= start && year <= end;
     });
   }, [data, enableFilter, selectedRange]);
@@ -435,7 +440,7 @@ const MonthlyHeatmap = ({ data, enableFilter = false, t }) => {
           )}
       </div>
 
-      <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2">
+      <div className="overflow-x-auto custom-scrollbar pb-4 rounded-xl bg-black/10 backdrop-blur-sm p-2">
           <table className="w-full text-sm border-collapse min-w-[800px]">
             <thead>
                 <tr>
@@ -448,11 +453,11 @@ const MonthlyHeatmap = ({ data, enableFilter = false, t }) => {
             </thead>
             <tbody>
                 {filteredData.length > 0 ? (
-                  filteredData.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-white/5 transition-colors rounded-lg">
+                  filteredData.map((row) => (
+                    <tr key={row.year} className="hover:bg-white/5 transition-colors rounded-lg">
                         <td className="text-left font-bold text-white py-4 px-2">{row.year}</td>
                         {row.months.map((val, i) => (
-                          <td key={i} className="text-center py-4 px-2">
+                          <td key={`${row.year}-${i}`} className="text-center py-4 px-2">
                               {val !== null ? (
                                 <span className={`px-2 py-1 rounded font-medium backdrop-blur-md ${val >= 0 ? 'text-[#22ab94] bg-[#22ab94]/20' : 'text-[#f23645] bg-[#f23645]/20'}`}>
                                       {val > 0 ? '+' : ''}{val}%
