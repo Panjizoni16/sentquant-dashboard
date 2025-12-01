@@ -873,7 +873,7 @@ export default function App() {
 
     const fetchAllData = async () => {
       try {
-        const [hist, live, heatmap, annual, stats, liveStats, liveHeatmap] = await Promise.all([
+        const [hist, live, heatmap, annual, stats, liveStats, liveHeatmap, topDrawdowns] = await Promise.all([
             fetchOrFallback('/data/equity-historical.json', MOCK_HISTORICAL),
             fetchOrFallback('/data/equity-live.json', MOCK_LIVE),
             fetchOrFallback('/data/heatmap-data.json', MOCK_HEATMAP),
@@ -881,6 +881,7 @@ export default function App() {
             fetchOrFallback('/data/stats-data.json', MOCK_STATS),
             fetchOrFallback('/data/live-stats-data.json', MOCK_LIVE_STATS),
             fetchOrFallback('/data/live-heatmap-data.json', MOCK_LIVE_HEATMAP),
+            fetchOrFallback('/data/top-drawdowns.json', MOCK_TOP_DRAWDOWNS),
         ]);
         
         setFullData(hist);
