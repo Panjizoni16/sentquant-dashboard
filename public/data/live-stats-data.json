@@ -1,6 +1,10 @@
 {
-  "totalReturn": 14.5,
-  "maxDrawdown": -8.24,
-  "cagr": 14.5,
-  "winRate": 62.4
+  "totalReturn": null,
+  "maxDrawdown": null,
+  "cagr": null,
+  "apr": null,
+  "expectedValue": null,
+  "volatility": null,
+  "sharpe": null,
+  "sortino": null
 }
