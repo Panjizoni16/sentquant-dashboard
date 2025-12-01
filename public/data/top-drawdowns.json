@@ -1,1 +1,42 @@
-
+[
+  {
+    "rank": 1,
+    "startDate": "2022-01-26",
+    "endDate": "2022-05-10",
+    "depth": -29.2,
+    "duration": 22,
+    "recovery": 82
+  },
+  {
+    "rank": 2,
+    "startDate": "2019-07-05",
+    "endDate": "2020-02-26",
+    "depth": -17.58,
+    "duration": 77,
+    "recovery": 159
+  },
+  {
+    "rank": 3,
+    "startDate": "2013-04-17",
+    "endDate": "2015-08-19",
+    "depth": -16.95,
+    "duration": 245,
+    "recovery": 609
+  },
+  {
+    "rank": 4,
+    "startDate": "2022-07-27",
+    "endDate": "2022-10-28",
+    "depth": -16.67,
+    "duration": 20,
+    "recovery": 73
+  },
+  {
+    "rank": 5,
+    "startDate": "2022-05-11",
+    "endDate": "2022-06-14",
+    "depth": -13.92,
+    "duration": 16,
+    "recovery": 18
+  }
+]
