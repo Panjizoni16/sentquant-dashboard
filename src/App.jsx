@@ -701,6 +701,7 @@ export default function App() {
   const [annualReturnsData, setAnnualReturnsData] = useState([]);
   const [statsData, setStatsData] = useState(null);
   const [liveStatsData, setLiveStatsData] = useState(null);
+  const [topDrawdownsData, setTopDrawdownsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState('5Y');
   const [filteredChartData, setFilteredChartData] = useState([]);
