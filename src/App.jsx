@@ -233,8 +233,8 @@ const TRANSLATIONS = {
       model_desc_3: "Pergeseran rezim? Tidak masalah. Kami menggunakan HMM 3 keadaan yang secara dinamis mengalokasikan risiko sehingga model selalu beradaptasi.",
       model_desc_4: "Backtest IN SAMPLE/OUT OF SAMPLE, dengan 30%+ CAGR, 1.44 Sharpe, 27.77% APR dalam 21 tahun, Kurtosis 54.5 ya, itu wilayah fat-tail tapi tenang kami jinakkan ekornya dengan lindung nilai EVT + CVaR.",
       model_desc_infra: "Infrastruktur yang digunakan: Python, C++, Wolfram",
-      model_desc_nerd: "Tapi cukup dengan hal-hal teknis.",
-      model_desc_edge: "Jika ada keunggulan, Anda akan melihatnya. Jika tidak, Anda juga akan melihatnya.",
+      model_desc_nerd: "Tapi cukup ngebacot nya.",
+      model_desc_edge: "Jika ada keunggulan, kalian akan melihatnya. Jika tidak, kalian juga akan melihatnya. on chain.",
       section_return: "METRIK PENGEMBALIAN",
       section_drawdown: "METRIK DRAWDOWN",
       section_risk_adj: "METRIK PENGEMBALIAN DISESUAIKAN RISIKO",
@@ -244,10 +244,10 @@ const TRANSLATIONS = {
       section_consistency: "METRIK KONSISTENSI"
     },
     about: {
-      broken: "Industri perdagangan rusak.",
+      broken: "Industri trading rusak.",
       fake_gurus: "Guru palsu menjual mimpi.",
       cant_verify: "Kinerja tidak dapat diverifikasi.",
-      misled: "Pedagang ritel disesatkan oleh klaim kosong.",
+      misled: "Trader ritel disesatkan oleh klaim kosong.",
       talks: "Semua orang bicara.",
       no_data: "Tidak ada data.",
       cmc_analogy_1: "Jika CoinMarketCap melacak aset,",
@@ -256,12 +256,12 @@ const TRANSLATIONS = {
       no_sell_courses: "Sentquant tidak menjual kursus.",
       no_sell_signals: "Sentquant tidak menjual sinyal.",
       no_sell_vip: "Sentquant tidak menjual Grup VIP",
-      arena: "Sentquant adalah arena di mana setiap klaim diuji.",
-      era_ends: "Era guru perdagangan palsu berakhir di sini.",
+      arena: "Sentquant adalah arena di mana setiap klaim dibuka, agar terlihat mana yang punya edge, mana yang cuma bacot marketing.",
+      era_ends: "Era trading guru palsu berakhir di sini.",
       every_trader: "SETIAP TRADER",
       every_strategy: "SETIAP STRATEGI",
       every_claim: "SETIAP KLAIM",
-      proven: "TERBUKTI ON-CHAIN",
+      proven: "DIBUKTIKAN ON-CHAIN",
       join_movement: "Gabung Gerakan"
     },
     metrics_labels: {
@@ -906,11 +906,11 @@ export default function App() {
 
   useEffect(() => {
     const updateFavicons = async () => {
-      // UPDATED: Scaled up to 3.2 and added rounded corners (rx, ry)
+      // UPDATED: Reverted scale to 1.5 (original size) but kept rounded corners (rx, ry)
       const svgString = `
         <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
           <rect x="0" y="0" width="1024" height="1024" fill="black" rx="220" ry="220"/>
-          <g transform="translate(512, 512) scale(3.2) translate(-512, -512)"> 
+          <g transform="translate(512, 512) scale(1.5) translate(-512, -512)"> 
             ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
           </g>
         </svg>
