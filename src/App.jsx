@@ -1052,7 +1052,7 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-col space-y-2">
-                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-[#080808] backdrop-blur-sm overflow-hidden relative">
+                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={filteredChartData} margin={{top:10, left:0, right:0, bottom:0}}>
                             <defs>
@@ -1069,7 +1069,7 @@ export default function App() {
                         </ResponsiveContainer>
                         <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold cursor-pointer hover:text-white">Sentquant Model</span></div>
                       </div>
-                      <div className="h-[180px] rounded-b-xl bg-[#080808] backdrop-blur-sm overflow-hidden relative">
+                      <div className="h-[180px] rounded-b-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={filteredChartData} margin={{top:5, left:0, right:0, bottom:0}}>
                             <defs>
@@ -1120,7 +1120,7 @@ export default function App() {
                       </div>
                   </div>
                   <div className="flex flex-col space-y-2">
-                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-[#080808] backdrop-blur-sm overflow-hidden relative">
+                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={liveData} margin={{top:10, left:0, right:0, bottom:0}}>
                             <defs><linearGradient id="colorLive" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/><stop offset="95%" stopColor="#22ab94" stopOpacity={0}/></linearGradient></defs>
@@ -1131,7 +1131,7 @@ export default function App() {
                         </ResponsiveContainer>
                         <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold">Sentquant Model</span></div>
                       </div>
-                      <div className="h-[180px] rounded-b-xl bg-[#080808] backdrop-blur-sm overflow-hidden relative">
+                      <div className="h-[180px] rounded-b-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={liveData} margin={{top:5, left:0, right:0, bottom:0}}>
                             <defs><linearGradient id="colorDrawdownLive" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f23645" stopOpacity={0.4}/><stop offset="95%" stopColor="#f23645" stopOpacity={0.05}/></linearGradient></defs>
