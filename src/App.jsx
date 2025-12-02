@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
-  BarChart as RechartsBarChart, Bar, Cell 
+  BarChart as RechartsBarChart, Bar, Cell, LineChart, Line, CartesianGrid
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Lock, User, ArrowUp, Activity, TrendingUp, AlertTriangle, Globe
+  Menu, X, ChevronDown, Lock, User, ArrowUp, Activity, TrendingUp, AlertTriangle, Globe, FlaskConical, Play, RefreshCw, Settings, Info, Brain
 } from 'lucide-react';
-import { Analytics } from "@vercel/analytics/react";
+
+// --- MOCK ANALYTICS (To ensure compatibility in preview environment) ---
+const Analytics = () => null;
 
 // --- LOGO DATA ---
 const LOGO_PATHS = [
@@ -36,7 +38,7 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
 // --- TRANSLATIONS ---
 const TRANSLATIONS = {
   en: {
-    nav: { home: "Home", historical: "Historical", live: "Live", stats: "Stats", terminal: "Terminal", about: "About" },
+    nav: { home: "Home", historical: "Historical", live: "Live", stats: "Stats", terminal: "Terminal", lab: "Lab", about: "About" },
     join: "Join",
     home: { 
       subtitle_1: "If CoinMarketCap tracks assets,",
@@ -56,6 +58,29 @@ const TRANSLATIONS = {
       return: "Return",
       drawdown: "Drawdown",
       sharpe: "Sharpe"
+    },
+    lab: {
+      title: "Monte Carlo Engine",
+      subtitle: "", 
+      run_sim: "RUN SIMULATION",
+      params: "PARAMETERS",
+      init_bal: "Initial Balance",
+      exp_ret: "Expected Annual Return",
+      volatility: "Annual Volatility (Risk)",
+      time: "Time Horizon (Years)",
+      sims: "Number of Simulations",
+      stats: "SIMULATION OUTCOME",
+      best_case: "Best Case (P95)",
+      median: "Median Outcome (P50)",
+      worst_case: "Worst Case (P05)",
+      prob_loss: "Probability of Loss",
+      disclaimer: "Simulations based on Geometric Brownian Motion. Past performance is not indicative of future results.",
+      psy_title: "Psychology Engine",
+      psy_subtitle: "Visualizing the impact of emotions on P&L",
+      psy_slider: "Psychology level",
+      psy_status: "Trader Status",
+      psy_quote_title: "It’s never about your psychology, you just don’t have profitable strategies, peace.",
+      psy_quote_desc: "Psychology matters only when you already have something profitable. So focus on the right method, not your feelings."
     },
     historical: {
       title: "Historical Performance",
@@ -185,7 +210,7 @@ const TRANSLATIONS = {
     }
   },
   id: {
-    nav: { home: "Beranda", historical: "Historis", live: "Langsung", stats: "Statistik", terminal: "Terminal", about: "Tentang" },
+    nav: { home: "Beranda", historical: "Historis", live: "Langsung", stats: "Statistik", terminal: "Terminal", lab: "Lab", about: "Tentang" },
     join: "Gabung",
     home: { 
       subtitle_1: "Jika CoinMarketCap melacak aset,",
@@ -205,6 +230,29 @@ const TRANSLATIONS = {
       return: "Return",
       drawdown: "Drawdown",
       sharpe: "Sharpe"
+    },
+    lab: {
+      title: "Mesin Monte Carlo",
+      subtitle: "", 
+      run_sim: "JALANKAN SIMULASI",
+      params: "PARAMETER",
+      init_bal: "Saldo Awal",
+      exp_ret: "Ekspektasi Return Tahunan",
+      volatility: "Volatilitas Tahunan (Risiko)",
+      time: "Cakupan Waktu (Tahun)",
+      sims: "Jumlah Simulasi",
+      stats: "HASIL SIMULASI",
+      best_case: "Skenario Terbaik (P95)",
+      median: "Skenario Median (P50)",
+      worst_case: "Skenario Terburuk (P05)",
+      prob_loss: "Probabilitas Rugi",
+      disclaimer: "Simulasi berdasarkan Geometric Brownian Motion. Kinerja masa lalu tidak menjamin hasil masa depan.",
+      psy_title: "Mesin Psikologi",
+      psy_subtitle: "Visualisasi dampak emosi pada P&L",
+      psy_slider: "Level Psikologi",
+      psy_status: "Status Trader",
+      psy_quote_title: "Ini bukan soal psikologi lo, lo cuma gak punya strategi yang profitable, peace",
+      psy_quote_desc: "Psikologi cuma ngaruh kalau lo udah punya sesuatu yang profitable. Jadi fokus ke metode yang bener, bukan perasaan lo."
     },
     historical: {
       title: "Kinerja Historis",
@@ -710,6 +758,21 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [language, setLanguage] = useState('en'); // Default to English
+  
+  // --- MONTE CARLO STATE ---
+  const [mcInitialBalance, setMcInitialBalance] = useState(10000);
+  const [mcReturn, setMcReturn] = useState(15);
+  const [mcVolatility, setMcVolatility] = useState(20);
+  const [mcTimeHorizon, setMcTimeHorizon] = useState(1);
+  const [mcSimulations, setMcSimulations] = useState(50);
+  const [mcChartData, setMcChartData] = useState([]);
+  const [mcStats, setMcStats] = useState({ best: 0, median: 0, worst: 0, probLoss: 0 });
+
+  // --- PSYCHOLOGY ENGINE STATE ---
+  const [psyLevel, setPsyLevel] = useState(50);
+  const [psyStatus, setPsyStatus] = useState("Calibrating Mindset...");
+  const [psyChartData, setPsyChartData] = useState([]);
+  const crashTimerRef = useRef(null);
 
   const toggleLanguage = () => {
     setLanguage(prev => prev === 'en' ? 'id' : 'en');
@@ -756,6 +819,7 @@ export default function App() {
     { id: 'live', label: t.nav.live },
     { id: 'stats', label: t.nav.stats },
     { id: 'terminal', label: t.nav.terminal }, 
+    { id: 'lab', label: t.nav.lab }, // Added Lab Tab
     { id: 'about', label: t.nav.about }
   ];
 
@@ -860,6 +924,137 @@ export default function App() {
       ]
     }
   ], [language, t]); // Depend on language
+
+  // --- MONTE CARLO LOGIC ---
+  const runMonteCarlo = () => {
+    const steps = 252 * mcTimeHorizon;
+    const dt = 1 / 252;
+    const mu = mcReturn / 100;
+    const sigma = mcVolatility / 100;
+    
+    // Arrays to hold simulation data
+    // Format: [{ step: 0, sim0: 100, sim1: 100, ... }, ...]
+    let data = [];
+    
+    // Initialize Step 0
+    let initialStep = { step: 0, p95: mcInitialBalance, p50: mcInitialBalance, p05: mcInitialBalance };
+    for(let s=0; s<mcSimulations; s++) {
+      initialStep[`sim${s}`] = mcInitialBalance;
+    }
+    data.push(initialStep);
+
+    // Run Simulations
+    // Temporary array to store current values for each simulation
+    let currentValues = Array(mcSimulations).fill(mcInitialBalance);
+    
+    // Helper for box-muller transform (Gaussian random)
+    const randn_bm = () => {
+      let u = 0, v = 0;
+      while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+      while(v === 0) v = Math.random();
+      return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+    };
+
+    let finalValues = [];
+
+    for(let t=1; t<=steps; t++) {
+      let stepData = { step: t };
+      let stepValues = [];
+
+      for(let s=0; s<mcSimulations; s++) {
+        const drift = (mu - 0.5 * sigma * sigma) * dt;
+        const shock = sigma * Math.sqrt(dt) * randn_bm();
+        const change = Math.exp(drift + shock);
+        
+        currentValues[s] = currentValues[s] * change;
+        stepData[`sim${s}`] = currentValues[s];
+        stepValues.push(currentValues[s]);
+      }
+
+      // Calculate Percentiles for this step
+      stepValues.sort((a,b) => a-b);
+      const p05Index = Math.floor(stepValues.length * 0.05);
+      const p50Index = Math.floor(stepValues.length * 0.50);
+      const p95Index = Math.floor(stepValues.length * 0.95);
+      
+      stepData.p05 = stepValues[p05Index];
+      stepData.p50 = stepValues[p50Index];
+      stepData.p95 = stepValues[p95Index];
+      
+      data.push(stepData);
+
+      if(t === steps) finalValues = stepValues;
+    }
+
+    // Reduce data points for chart performance if steps > 500
+    if (data.length > 500) {
+      data = data.filter((_, i) => i % Math.ceil(data.length / 500) === 0);
+    }
+
+    setMcChartData(data);
+
+    // Calculate Stats
+    finalValues.sort((a,b) => a-b);
+    const best = finalValues[Math.floor(finalValues.length * 0.95)];
+    const median = finalValues[Math.floor(finalValues.length * 0.50)];
+    const worst = finalValues[Math.floor(finalValues.length * 0.05)];
+    const lossCount = finalValues.filter(v => v < mcInitialBalance).length;
+    const probLoss = (lossCount / mcSimulations) * 100;
+
+    setMcStats({ best, median, worst, probLoss });
+  };
+
+  // Run initial simulation on mount
+  useEffect(() => {
+    runMonteCarlo();
+  }, []); // Run once on load
+
+  // --- PSYCHOLOGY ENGINE LOGIC ---
+  const handlePsyChange = (newVal) => {
+     setPsyLevel(Number(newVal));
+     
+     // Sarcastic Messages Logic
+     const messages = [
+         "Manifesting alpha...", "Aligning chakras...", "Eliminating fear...",
+         "Visualizing lambo...", "Suppressing emotions...", "Entering flow state...",
+         "Trusting the gut...", "Reading tea leaves...", "Ignoring macro...",
+         "Vibrating higher..."
+     ];
+     setPsyStatus(messages[Math.floor(Math.random() * messages.length)]);
+
+     // Chart Animation Logic: Up only, then crash
+     // Generate fake uptrend data
+     const fakeData = [];
+     let val = 100;
+     for(let i=0; i<20; i++) {
+        val = val * (1 + (Math.random() * 0.05)); // Go up
+        fakeData.push({ step: i, val });
+     }
+     setPsyChartData(fakeData);
+
+     // Clear existing crash
+     if(crashTimerRef.current) clearTimeout(crashTimerRef.current);
+
+     // Schedule crash
+     crashTimerRef.current = setTimeout(() => {
+         const crashData = [...fakeData];
+         // Append crash points
+         crashData.push({ step: 20, val: val });
+         crashData.push({ step: 21, val: 0 }); // Crash to 0 (-100%)
+         setPsyChartData(crashData);
+         
+         const crashMessages = [
+             "Liquidation Cascade.", "Emotions Don't Hedge.", "Margin Call.", 
+             "Market DGAF.", "Oof.", "Rekt.", "Psychology < Math."
+         ];
+         setPsyStatus(crashMessages[Math.floor(Math.random() * crashMessages.length)]);
+     }, 600); // Crash 600ms after slider stops moving
+  };
+  
+  // Initial load for Psychology Engine
+  useEffect(() => {
+      handlePsyChange(50);
+  }, []);
 
   useEffect(() => {
     const fetchOrFallback = async (url, fallback) => {
@@ -1084,6 +1279,29 @@ export default function App() {
             width: 100%;
             background-color: #000000;
           }
+          
+          /* Range Slider Styling */
+          input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+          }
+          input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #22ab94;
+            cursor: pointer;
+            margin-top: -6px;
+          }
+          input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+          }
         `}
       </style>
 
@@ -1261,10 +1479,10 @@ export default function App() {
                             <div>
                                <div className="flex items-center gap-2">
                                   <h3 className="text-white font-medium font-sans text-lg tracking-wider">Sentquant</h3>
-                               </div>
+                                </div>
                             </div>
                           </div>
-                          
+                           
                           {/* UPDATED: History & Live Buttons - Gray, No Icons */}
                           <div className="flex flex-col md:flex-row gap-2">
                              <button onClick={() => handleTabChange('historical')} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors flex items-center justify-center">
@@ -1337,7 +1555,7 @@ export default function App() {
                                 ) : (
                                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
                                        <User size={20} className="text-white" />
-                                    </div>
+                                     </div>
                                 )}
                                 <h4 className="text-white font-bold font-eth tracking-wide">{item.name}</h4>
                               </div>
@@ -1360,6 +1578,263 @@ export default function App() {
                        ))}
                     </div>
                  </div>
+
+              </div>
+            )}
+
+            {/* LAB (MONTE CARLO & PSYCHOLOGY) */}
+            {activeTab === 'lab' && (
+              <div className="animate-fade-in-up px-4 md:px-8 py-8">
+                {/* Lab Header */}
+                <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-2xl font-bold text-white font-eth drop-shadow-md">{t.lab.title}</h3>
+                        </div>
+                        {/* Subtitle removed per request */}
+                    </div>
+                    <button 
+                        onClick={runMonteCarlo}
+                        className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-3 rounded-full text-sm font-bold transition-all shadow-[0_0_20px_rgba(107,114,128,0.3)] flex items-center gap-2"
+                    >
+                        <Play size={16} fill="currentColor" /> {t.lab.run_sim}
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                    {/* INPUTS PANEL */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                            <h4 className="text-white font-bold mb-6 flex items-center gap-2 text-sm tracking-wider border-b border-white/10 pb-4">
+                                <Settings size={14} /> {t.lab.params}
+                            </h4>
+                            
+                            <div className="space-y-8">
+                                {/* Initial Balance */}
+                                <div>
+                                    <div className="flex justify-between mb-2 text-xs font-medium">
+                                        <span className="text-gray-400">{t.lab.init_bal}</span>
+                                        <span className="text-white">${mcInitialBalance.toLocaleString()}</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="1000" max="100000" step="1000"
+                                        value={mcInitialBalance}
+                                        onChange={(e) => setMcInitialBalance(Number(e.target.value))}
+                                        className="w-full"
+                                    />
+                                </div>
+
+                                {/* Expected Return */}
+                                <div>
+                                    <div className="flex justify-between mb-2 text-xs font-medium">
+                                        <span className="text-gray-400">{t.lab.exp_ret}</span>
+                                        <span className="text-[#22ab94]">{mcReturn}%</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="-20" max="100" step="1"
+                                        value={mcReturn}
+                                        onChange={(e) => setMcReturn(Number(e.target.value))}
+                                        className="w-full"
+                                    />
+                                </div>
+
+                                {/* Volatility */}
+                                <div>
+                                    <div className="flex justify-between mb-2 text-xs font-medium">
+                                        <span className="text-gray-400">{t.lab.volatility}</span>
+                                        <span className="text-[#f23645]">{mcVolatility}%</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="5" max="150" step="1"
+                                        value={mcVolatility}
+                                        onChange={(e) => setMcVolatility(Number(e.target.value))}
+                                        className="w-full"
+                                    />
+                                </div>
+
+                                {/* Time Horizon */}
+                                <div>
+                                    <div className="flex justify-between mb-2 text-xs font-medium">
+                                        <span className="text-gray-400">{t.lab.time}</span>
+                                        <span className="text-white">{mcTimeHorizon} Years</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="1" max="5" step="1"
+                                        value={mcTimeHorizon}
+                                        onChange={(e) => setMcTimeHorizon(Number(e.target.value))}
+                                        className="w-full"
+                                    />
+                                </div>
+
+                                {/* Simulations */}
+                                <div>
+                                    <div className="flex justify-between mb-2 text-xs font-medium">
+                                        <span className="text-gray-400">{t.lab.sims}</span>
+                                        <span className="text-white">{mcSimulations}</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="10" max="100" step="10"
+                                        value={mcSimulations}
+                                        onChange={(e) => setMcSimulations(Number(e.target.value))}
+                                        className="w-full"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* STATS CARD */}
+                        <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                            {/* Removed Activity Icon as requested */}
+                            <h4 className="text-white font-bold mb-6 flex items-center gap-2 text-sm tracking-wider border-b border-white/10 pb-4">
+                                {t.lab.stats}
+                            </h4>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg">
+                                    <span className="text-gray-400 text-xs">{t.lab.best_case}</span>
+                                    <span className="text-[#22ab94] font-bold font-mono">${Math.round(mcStats.best).toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg border-l-2 border-blue-400/50">
+                                    <span className="text-gray-400 text-xs">{t.lab.median}</span>
+                                    <span className="text-blue-200 font-bold font-mono">${Math.round(mcStats.median).toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg">
+                                    <span className="text-gray-400 text-xs">{t.lab.worst_case}</span>
+                                    <span className="text-[#f23645] font-bold font-mono">${Math.round(mcStats.worst).toLocaleString()}</span>
+                                </div>
+                                <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                                    <span className="text-gray-400 text-xs font-bold uppercase">{t.lab.prob_loss}</span>
+                                    <span className={`font-bold ${mcStats.probLoss > 50 ? 'text-[#f23645]' : 'text-white'}`}>{mcStats.probLoss.toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* CHART VISUALIZATION */}
+                    <div className="lg:col-span-2 h-[500px] bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col relative overflow-hidden">
+                         <div className="absolute top-4 right-4 z-10 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                            <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">GBM Model • {mcSimulations} Sims</span>
+                         </div>
+                         <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={mcChartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                                <XAxis dataKey="step" hide />
+                                <YAxis 
+                                    domain={['auto', 'auto']} 
+                                    orientation="right" 
+                                    tick={{fill: '#666', fontSize: 11}} 
+                                    tickFormatter={(val) => `$${val/1000}k`}
+                                    axisLine={false} 
+                                    tickLine={false}
+                                />
+                                <Tooltip 
+                                    contentStyle={{backgroundColor: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontFamily: 'Inter'}}
+                                    itemStyle={{fontSize: '12px'}}
+                                    labelStyle={{color: '#888', marginBottom: '5px'}}
+                                    formatter={(value) => [`$${Math.round(value).toLocaleString()}`, '']}
+                                />
+                                {/* Cloud of Simulations */}
+                                {Array.from({length: mcSimulations}).map((_, i) => (
+                                    <Line 
+                                        key={i}
+                                        type="monotone" 
+                                        dataKey={`sim${i}`} 
+                                        stroke="#555" 
+                                        strokeWidth={1} 
+                                        strokeOpacity={0.15} 
+                                        dot={false}
+                                        isAnimationActive={false} // Performance optimization
+                                    />
+                                ))}
+                                {/* Key Percentiles */}
+                                <Line type="monotone" dataKey="p95" stroke="#22ab94" strokeWidth={3} dot={false} />
+                                <Line type="monotone" dataKey="p50" stroke="#60a5fa" strokeWidth={3} dot={false} />
+                                <Line type="monotone" dataKey="p05" stroke="#f23645" strokeWidth={3} dot={false} />
+                            </LineChart>
+                         </ResponsiveContainer>
+                         <div className="flex justify-center gap-6 mt-2 text-xs font-bold">
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#22ab94]"></span> P95 (Best)</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#60a5fa]"></span> P50 (Median)</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#f23645]"></span> P05 (Worst)</div>
+                         </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-gray-500 max-w-2xl mx-auto text-center justify-center mb-16">
+                    <Info size={12} /> {t.lab.disclaimer}
+                </div>
+
+                {/* --- PSYCHOLOGY ENGINE SECTION --- */}
+                <div className="border-t border-white/10 pt-16 mt-8 animate-fade-in-up">
+                    <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div>
+                            <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-2xl font-bold text-white font-eth">
+                                    {t.lab.psy_title}
+                                </h3>
+                            </div>
+                            <p className="text-gray-400 text-sm max-w-xl italic opacity-80">{t.lab.psy_subtitle}</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* CONTROLS */}
+                        <div className="lg:col-span-1 bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between">
+                             <div>
+                                <h4 className="text-white font-bold mb-6 flex items-center gap-2 text-sm tracking-wider border-b border-white/10 pb-4">
+                                    {t.lab.psy_slider}
+                                </h4>
+                                <div className="mb-8">
+                                    <div className="flex justify-center mb-4 text-xs font-bold font-mono">
+                                        <span className="text-gray-400">{psyLevel}%</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="0" max="100" step="1"
+                                        value={psyLevel}
+                                        onChange={(e) => handlePsyChange(e.target.value)}
+                                        className="w-full accent-gray-500 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                                    />
+                                </div>
+                             </div>
+                             
+                             <div className="bg-gray-900/10 border border-gray-500/20 rounded-xl p-4 text-center">
+                                 <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-2">{t.lab.psy_status}</div>
+                                 <div className="text-lg font-bold text-white font-mono animate-pulse">{psyStatus}</div>
+                             </div>
+                        </div>
+
+                        {/* MEME CHART */}
+                        <div className="lg:col-span-2 h-[400px] bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 relative overflow-hidden group">
+                             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/10 to-transparent pointer-events-none"></div>
+                             <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={psyChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+                                    <XAxis dataKey="step" hide />
+                                    <YAxis hide domain={['dataMin', 'dataMax']} />
+                                    <Line 
+                                        type="stepAfter" 
+                                        dataKey="val" 
+                                        stroke="#f23645" 
+                                        strokeWidth={2} 
+                                        dot={false}
+                                        isAnimationActive={true}
+                                        animationDuration={300}
+                                    />
+                                    <ReferenceLine y={0} stroke="#333" strokeDasharray="3 3" />
+                                </LineChart>
+                             </ResponsiveContainer>
+                             
+                             <div className="absolute bottom-4 left-4 text-xs font-mono text-gray-500">
+                                 PNL_OVERLAY_V2.0 // EMOTIONAL_DAMAGE_MODE
+                             </div>
+                        </div>
+                    </div>
+
+                    {/* FOOTER QUOTE */}
+                    <div className="mt-12 p-8 border border-white/5 rounded-2xl bg-gradient-to-r from-black via-white/5 to-black text-center">
+                        <p className="text-gray-400 text-sm font-medium leading-relaxed max-w-3xl mx-auto">
+                            {t.lab.psy_quote_title} {t.lab.psy_quote_desc}
+                        </p>
+                    </div>
+                </div>
 
               </div>
             )}
