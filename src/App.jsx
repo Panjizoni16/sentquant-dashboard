@@ -6,9 +6,7 @@ import {
 import { 
   Menu, X, ChevronDown, Lock, User, ArrowUp, Activity, TrendingUp, AlertTriangle, Globe, FlaskConical, Play, RefreshCw, Settings, Info, Brain
 } from 'lucide-react';
-
-// --- MOCK ANALYTICS (To ensure compatibility in preview environment) ---
-const Analytics = () => null;
+import { Analytics } from "@vercel/analytics/react";
 
 // --- LOGO DATA ---
 const LOGO_PATHS = [
@@ -1027,8 +1025,8 @@ export default function App() {
      const fakeData = [];
      let val = 100;
      for(let i=0; i<20; i++) {
-        val = val * (1 + (Math.random() * 0.05)); // Go up
-        fakeData.push({ step: i, val });
+       val = val * (1 + (Math.random() * 0.05)); // Go up
+       fakeData.push({ step: i, val });
      }
      setPsyChartData(fakeData);
 
@@ -1479,10 +1477,10 @@ export default function App() {
                             <div>
                                <div className="flex items-center gap-2">
                                   <h3 className="text-white font-medium font-sans text-lg tracking-wider">Sentquant</h3>
-                                </div>
+                               </div>
                             </div>
                           </div>
-                           
+                          
                           {/* UPDATED: History & Live Buttons - Gray, No Icons */}
                           <div className="flex flex-col md:flex-row gap-2">
                              <button onClick={() => handleTabChange('historical')} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors flex items-center justify-center">
@@ -1555,7 +1553,7 @@ export default function App() {
                                 ) : (
                                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
                                        <User size={20} className="text-white" />
-                                     </div>
+                                    </div>
                                 )}
                                 <h4 className="text-white font-bold font-eth tracking-wide">{item.name}</h4>
                               </div>
