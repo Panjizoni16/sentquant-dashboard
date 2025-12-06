@@ -1,12 +1,20 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
-  BarChart as RechartsBarChart, Bar, Cell, LineChart, Line, CartesianGrid
+  BarChart as RechartsBarChart, Bar, Cell, LineChart, Line, CartesianGrid, Legend
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Lock, User, ArrowUp, Activity, TrendingUp, AlertTriangle, Globe, FlaskConical, Play, RefreshCw, Settings, Info, Brain
+  Menu, X, ChevronDown, Lock, User, ArrowUp, Activity, TrendingUp, AlertTriangle, 
+  Globe, FlaskConical, Play, RefreshCw, Settings, Info, Brain, Eye, EyeOff, ArrowRight,
+  Wallet, HelpCircle 
 } from 'lucide-react';
-import { Analytics } from "@vercel/analytics/react";
+
+// --- UTILITY: Fetch or Fallback ---
+const fetchOrFallback = async (url, fallback) => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(fallback), 500); 
+  });
+};
 
 // --- LOGO DATA ---
 const LOGO_PATHS = [
@@ -22,7 +30,7 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
     width={size} 
     height={size} 
     viewBox="0 0 1024 1024"
-    className={`animate-fade-in-up ${!withBg ? 'drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]' : ''}`}
+    className={`animate-fade-in-up ${!withBg ? 'drop-shadow-[0_0_35px_rgba(34,171,148,0.4)]' : ''}`}
   >
     {withBg && <rect x="0" y="0" width="1024" height="1024" fill="#000000" />}
     <g transform="translate(512, 512) scale(1.4) translate(-512, -512)">
@@ -33,83 +41,169 @@ const SentquantLogo = ({ size = 120, withBg = false }) => (
   </svg>
 );
 
+// --- CONFIGURATION & MOCK DATA ---
+const STRATEGIES_CONFIG = [
+  { id: 'sentquant', name: 'Sentquant', color: '#22ab94', status: 'Offline', return: '25,516%', dd: '-29.20%', sharpe: 1.44, tvl: 8200000, apr: '1,224%' },
+  { id: 'alpha_hunter', name: 'Alpha Hunter', color: '#3b82f6', status: 'Live', return: '12,450%', dd: '-18.50%', sharpe: 1.82, tvl: 3500000, apr: '850%' },
+  { id: 'momentum_pro', name: 'Momentum Pro', color: '#f59e0b', status: 'Live', return: '8,320%', dd: '-22.10%', sharpe: 1.35, tvl: 2100000, apr: '620%' },
+  { id: 'mean_revert', name: 'Mean Revert', color: '#8b5cf6', status: 'Offline', return: '5,680%', dd: '-15.30%', sharpe: 1.95, tvl: 1400000, apr: '410%' },
+  { id: 'volatility_edge', name: 'Volatility Edge', color: '#ec4899', status: 'Live', return: '4,200%', dd: '-12.80%', sharpe: 2.15, tvl: 800200, apr: '320%' },
+  { id: 'trend_follower', name: 'Trend Follower', color: '#6366f1', status: 'Offline', return: '3,850%', dd: '-19.40%', sharpe: 1.58, tvl: 500000, apr: '280%' }
+];
+
+// Helper to format currency
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+};
+
+// Helper for compact currency (e.g. $8.2M)
+const formatCompactCurrency = (value) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    notation: "compact",
+    maximumFractionDigits: 1
+  }).format(value);
+};
+
+// UPDATED: More organic curve generation
+const generateStrategyData = () => {
+  const benchmarkData = [];
+  let values = STRATEGIES_CONFIG.map(() => 1000); 
+  
+  const strategyBehaviors = [
+    { drift: 0.008, vol: 0.02 },  
+    { drift: 0.005, vol: 0.035 }, 
+    { drift: 0.004, vol: 0.015 }, 
+    { drift: 0.003, vol: 0.04 },  
+    { drift: 0.002, vol: 0.025 }, 
+    { drift: 0.001, vol: 0.05 }   
+  ];
+
+  for (let i = 0; i < 200; i++) {
+    const point = { date: `Day ${i}` };
+    values = values.map((val, idx) => {
+      const { drift, vol } = strategyBehaviors[idx];
+      const changePercent = drift + (Math.random() - 0.5) * vol; 
+      return Math.max(100, val * (1 + changePercent)); 
+    });
+    
+    STRATEGIES_CONFIG.forEach((strat, idx) => {
+      point[strat.id] = values[idx];
+    });
+    benchmarkData.push(point);
+  }
+
+  const strategiesDetails = {};
+  STRATEGIES_CONFIG.forEach((strat, stratIdx) => {
+    let currentLiveVal = 1000;
+    const { drift, vol } = strategyBehaviors[stratIdx];
+    
+    const liveData = Array.from({ length: 150 }, (_, i) => {
+      const change = currentLiveVal * (drift + (Math.random() - 0.5) * vol * 1.5);
+      currentLiveVal = Math.max(500, currentLiveVal + change);
+      return {
+        date: i,
+        value: currentLiveVal,
+        drawdown: -(Math.abs(Math.random() * (vol * 1000)))
+      };
+    });
+
+    let currentHistVal = 1000; 
+    const historicalData = Array.from({ length: 365 }, (_, i) => {
+      const change = currentHistVal * (drift + (Math.random() - 0.5) * vol);
+      currentHistVal = Math.max(100, currentHistVal + change);
+      return {
+        date: i,
+        value: currentHistVal,
+        drawdown: -(Math.abs(Math.random() * (vol * 800)))
+      };
+    });
+
+    strategiesDetails[strat.id] = {
+      ...strat,
+      liveData,
+      historicalData,
+      heatmap: Array.from({ length: 5 }, (_, y) => ({
+        year: (2025 - y).toString(),
+        months: Array.from({ length: 12 }, () => (Math.random() * 20 - 5).toFixed(1)).map(Number)
+      })),
+      topDrawdowns: [
+        { rank: 1, startDate: '2022-01', endDate: '2022-03', depth: parseFloat(strat.dd), duration: 60, recovery: 20 },
+        { rank: 2, startDate: '2021-05', endDate: '2021-06', depth: -10.5, duration: 30, recovery: 15 },
+        { rank: 3, startDate: '2023-08', endDate: '2023-09', depth: -8.2, duration: 25, recovery: 10 },
+        { rank: 4, startDate: '2020-03', endDate: '2020-04', depth: -5.5, duration: 15, recovery: 5 },
+        { rank: 5, startDate: '2024-01', endDate: '2024-02', depth: -3.1, duration: 10, recovery: 2 },
+      ],
+      annualReturns: [
+        { year: '2021', value: Math.random() * 60 - 10 },
+        { year: '2022', value: Math.random() * 40 - 15 },
+        { year: '2023', value: Math.random() * 80 + 10 },
+        { year: '2024', value: Math.random() * 50 + 5 },
+        { year: '2025', value: Math.random() * 30 }
+      ],
+      stats: {
+        totalReturn: parseFloat(strat.return.replace(/,/g, '')),
+        maxDrawdown: parseFloat(strat.dd),
+        sharpe: strat.sharpe,
+        sortino: (strat.sharpe * 1.5).toFixed(2),
+        winRate: (50 + Math.random() * 20).toFixed(2),
+        cagr: (20 + Math.random() * 15).toFixed(2),
+        apr: (100 + Math.random() * 500).toFixed(2),
+        expectedValue: 0.15,
+        volatility: 15.5
+      }
+    };
+  });
+
+  return { benchmarkData, strategiesDetails };
+};
+
+const { benchmarkData: MOCK_BENCHMARK_DATA, strategiesDetails: MOCK_STRATEGIES_DETAILS } = generateStrategyData();
+
 // --- TRANSLATIONS ---
 const TRANSLATIONS = {
   en: {
-    nav: { home: "Home", historical: "Historical", live: "Live", stats: "Stats", terminal: "Terminal", lab: "Lab", about: "About" },
+    nav: { home: "Home", live: "Live", terminal: "Terminal", about: "About" },
     join: "Join",
     home: { 
       subtitle_1: "If CoinMarketCap tracks assets,",
-      subtitle_2: "Sentquant tracks strategy performance."
+      subtitle_2: "Sentquant tracks strategy performance.",
+      tagline: "Sentquant", 
+      manifesto: "Sentquant is the place where every trader can track the quality of strategies and education before spending a single dollar.",
+      launch: "Launch Terminal"
     },
     terminal: {
-      elite_trader: "ELITE TRADER",
+      title: "Benchmark Comparison",
+      live_view: "Live View",
       total_return: "TOTAL RETURN",
-      win_rate: "WIN RATE",
-      avg_mth: "AVG MTH",
-      status: "STATUS",
-      live: "LIVE",
-      offline: "OFFLINE",
+      max_dd: "MAX DD",
+      sharpe: "SHARPE",
+      apr: "APR",
+      total_tvl_label: "TOTAL TRACKED TVL",
+      tvl_sub: "Across 6 Strategies",
       history: "History",
       live_btn: "Live",
-      more_trader: "MORE TRADER SOON",
-      return: "Return",
-      drawdown: "Drawdown",
-      sharpe: "Sharpe"
-    },
-    lab: {
-      title: "Monte Carlo Engine",
-      subtitle: "", 
-      run_sim: "RUN SIMULATION",
-      params: "PARAMETERS",
-      init_bal: "Initial Balance",
-      exp_ret: "Expected Annual Return",
-      volatility: "Annual Volatility (Risk)",
-      time: "Time Horizon (Years)",
-      sims: "Number of Simulations",
-      stats: "SIMULATION OUTCOME",
-      best_case: "Best Case (P95)",
-      median: "Median Outcome (P50)",
-      worst_case: "Worst Case (P05)",
-      prob_loss: "Probability of Loss",
-      disclaimer: "Simulations based on Geometric Brownian Motion. Past performance is not indicative of future results.",
-      psy_title: "Psychology Engine",
-      psy_subtitle: "Visualizing the impact of emotions on P&L",
-      psy_slider: "Psychology level",
-      psy_status: "Trader Status",
-      psy_quote_title: "It’s never about your psychology, you just don’t have profitable strategies, peace.",
-      psy_quote_desc: "Psychology matters only when you already have something profitable. So focus on the right method, not your feelings."
-    },
-    historical: {
-      title: "Historical Performance",
-      filter: "FILTER",
-      sentquant_model: "Sentquant Model",
-      heatmap_title: "Monthly Returns Heatmap",
-      top_drawdowns: "Top 5 Drawdowns",
-      rank: "Rank",
-      start_date: "Start Date",
-      end_date: "End Date",
-      depth: "Depth",
-      duration: "Duration (Days)",
-      recovery: "Recovery (Days)",
-      positive: "Positive",
-      negative: "Negative"
+      tvl_tooltip: "Total verified liquidity tracked across external execution protocol. Sentquant acts purely as a analytics layer and does not hold funds."
     },
     live: {
       title: "Live on LIGHTER",
       offline_status: "Offline",
-      live_drawdown: "Live Drawdown"
+      live_drawdown: "Live Drawdown",
+      historical_title: "Historical Performance",
+      stats_title: "Statistics & Metrics"
     },
     stats: {
       annual_returns: "Annual Returns",
       about_models: "ABOUT THE MODELS",
-      model_desc_1: "The Framework is for exploiting structural inefficiencies in commodity and cryptocurrency markets.",
-      model_desc_2: "We run O-U mean reversion on commodities and microstructure on crypto. two strategies, zero overlap, naturally uncorrelated.",
-      model_desc_3: "Regimes shift? No problem. We use 3 state HMM dynamically reallocates risk so the model always adapts.",
-      model_desc_4: "IN SAMPLE/OUT OF SAMPLE backtest , with 30%+ CAGR , 1.44 Sharpe , 27.77% APR in 21 years, Kurtosis 54.5 yeah, it’s fat-tail territory but chill we tame the tails with EVT + CVaR hedging.",
-      model_desc_infra: "Infrastructure use : Python, C++, Wolfram",
-      model_desc_nerd: "But enough with the nerd stuff.",
-      model_desc_edge: "If it has edge, you’ll see it. If it doesn’t, you’ll see that too. on Lighter.",
+      model_desc_1: "The Framework is for exploiting structural inefficiencies.",
+      model_desc_2: "Strategies run on O-U mean reversion and microstructure.",
+      model_desc_3: "Regimes shift? No problem. Dynamic risk reallocation.",
       section_return: "RETURN METRICS",
       section_drawdown: "DRAWDOWN METRICS",
       section_risk_adj: "RISK-ADJUSTED RETURN METRICS",
@@ -128,15 +222,7 @@ const TRANSLATIONS = {
       cmc_analogy_1: "If CoinMarketCap tracks assets,",
       cmc_analogy_2: "Sentquant tracks strategy performance.",
       cant_lie: "Because performance can’t lie, people can.",
-      no_sell_courses: "Sentquant doesn't sell courses.",
-      no_sell_signals: "Sentquant doesn’t sell signals.",
-      no_sell_vip: "Sentquant doesn’t sell VIP Group",
-      arena: "Sentquant is the arena where every claim is tested.",
       era_ends: "The era of fake trading gurus ends here.",
-      every_trader: "EVERY TRADER",
-      every_strategy: "EVERY STRATEGY",
-      every_claim: "EVERY CLAIM",
-      proven: "PROVEN ON-CHAIN",
       join_movement: "Join Movement"
     },
     metrics_labels: {
@@ -144,144 +230,62 @@ const TRANSLATIONS = {
       cagr: "CAGR (Annualized)",
       apr: "APR (Simple Annual)",
       ann_vol: "Annualized Volatility",
-      daily_mean: "Daily Return (Mean)",
-      daily_median: "Daily Return (Median)",
-      years: "Years Analyzed",
       max_dd: "Max Drawdown",
-      avg_dd: "Average Drawdown",
-      max_dd_dur: "Max DD Duration",
-      avg_dd_dur: "Average DD Duration",
-      num_dd: "Number of Drawdowns",
-      dd_freq: "Drawdown Frequency",
-      ulcer: "Ulcer Index",
       sharpe: "Sharpe Ratio",
       sortino: "Sortino Ratio",
-      calmar: "Calmar Ratio",
-      mar: "MAR Ratio",
-      sterling: "Sterling Ratio",
-      burke: "Burke Ratio",
-      daily_std: "Daily Std Deviation",
-      daily_var: "Daily Variance",
-      ann_vol_simple: "Annual Volatility",
-      downside_dev: "Downside Deviation",
-      upside_dev: "Upside Deviation",
-      semi_var: "Semi-Variance",
-      var_95: "VaR (95%)",
-      cvar: "CVaR (Expected Shortfall)",
-      max_loss: "Max Daily Loss",
-      max_gain: "Max Daily Gain",
-      skew: "Skewness",
-      kurt_exc: "Kurtosis (Excess)",
-      kurt_raw: "Kurtosis (Raw)",
-      p05: "5th Percentile",
-      p95: "95th Percentile",
-      q1: "25th Percentile (Q1)",
-      q3: "75th Percentile (Q3)",
-      iqr: "IQR",
-      jb_stat: "Jarque-Bera Statistic",
-      jb_p: "Jarque-Bera p-value",
-      normal: "Normal Distribution?",
-      win_rate: "Win Rate (Daily)",
-      loss_rate: "Loss Rate (Daily)",
-      win_days: "Winning Days",
-      loss_days: "Losing Days",
-      neutral_days: "Neutral Days",
-      avg_win: "Average Win",
-      avg_loss: "Average Loss",
-      largest_win: "Largest Win",
-      largest_loss: "Largest Loss",
-      win_loss_ratio: "Win/Loss Ratio",
-      profit_factor: "Profit Factor",
-      expectancy: "Expectancy",
-      gross_profit: "Gross Profit",
-      gross_loss: "Gross Loss",
-      max_con_wins: "Max Consecutive Wins",
-      max_con_loss: "Max Consecutive Losses",
-      pos_months: "Positive Months",
-      neg_months: "Negative Months",
-      mth_win_rate: "Monthly Win Rate",
-      rec_factor: "Recovery Factor",
-      r_sq: "R-Squared (Stability)",
-      avg_pos_mth: "Avg Positive Months/Year",
+      win_rate: "Win Rate",
       expected_val_short: "Expected Value",
       volatility_short: "Volatility"
+    },
+    historical: {
+      heatmap_title: "Monthly Returns Heatmap",
+      top_drawdowns: "Top 5 Drawdowns",
+      rank: "Rank",
+      start_date: "Start Date",
+      end_date: "End Date",
+      depth: "Depth",
+      duration: "Duration",
+      recovery: "Recovery",
+      positive: "Positive",
+      negative: "Negative"
     }
   },
   id: {
-    nav: { home: "Beranda", historical: "Historis", live: "Langsung", stats: "Statistik", terminal: "Terminal", lab: "Lab", about: "Tentang" },
+    nav: { home: "Beranda", live: "Langsung", terminal: "Terminal", about: "Tentang" },
     join: "Gabung",
     home: { 
       subtitle_1: "Jika CoinMarketCap melacak aset,",
-      subtitle_2: "Sentquant melacak kinerja strategi."
+      subtitle_2: "Sentquant melacak kinerja strategi.",
+      tagline: "Sentquant", 
+      manifesto: "Sentquant adalah tempat di mana setiap trader dapat melacak kualitas strategi dan edukasi sebelum mengeluarkan uang sepeser pun.",
+      launch: "Buka Terminal"
     },
     terminal: {
-      elite_trader: "TRADER ELIT",
-      total_return: "TOTAL PENGEMBALIAN",
-      win_rate: "TINGKAT KEMENANGAN",
-      avg_mth: "RATA-RATA BLN",
-      status: "STATUS",
-      live: "LANGSUNG",
-      offline: "OFFLINE",
+      title: "Perbandingan Benchmark",
+      live_view: "Lihat Langsung",
+      total_return: "TOTAL RETURN",
+      max_dd: "MAX DD",
+      sharpe: "SHARPE",
+      apr: "APR",
+      total_tvl_label: "TOTAL TVL TERLACAK",
+      tvl_sub: "Di Seluruh 6 Strategi",
       history: "Riwayat",
       live_btn: "Langsung",
-      more_trader: "LEBIH BANYAK TRADER SEGERA",
-      return: "Return",
-      drawdown: "Drawdown",
-      sharpe: "Sharpe"
-    },
-    lab: {
-      title: "Mesin Monte Carlo",
-      subtitle: "", 
-      run_sim: "JALANKAN SIMULASI",
-      params: "PARAMETER",
-      init_bal: "Saldo Awal",
-      exp_ret: "Ekspektasi Return Tahunan",
-      volatility: "Volatilitas Tahunan (Risiko)",
-      time: "Cakupan Waktu (Tahun)",
-      sims: "Jumlah Simulasi",
-      stats: "HASIL SIMULASI",
-      best_case: "Skenario Terbaik (P95)",
-      median: "Skenario Median (P50)",
-      worst_case: "Skenario Terburuk (P05)",
-      prob_loss: "Probabilitas Rugi",
-      disclaimer: "Simulasi berdasarkan Geometric Brownian Motion. Kinerja masa lalu tidak menjamin hasil masa depan.",
-      psy_title: "Mesin Psikologi",
-      psy_subtitle: "Visualisasi dampak emosi pada P&L",
-      psy_slider: "Level Psikologi",
-      psy_status: "Status Trader",
-      psy_quote_title: "Ini bukan soal psikologi lo, lo cuma gak punya strategi yang profitable, peace",
-      psy_quote_desc: "Psikologi cuma ngaruh kalau lo udah punya sesuatu yang profitable. Jadi fokus ke metode yang bener, bukan perasaan lo."
-    },
-    historical: {
-      title: "Kinerja Historis",
-      filter: "FILTER",
-      sentquant_model: "Model Sentquant",
-      heatmap_title: "Peta Panas Pengembalian Bulanan",
-      top_drawdowns: "5 Drawdown Teratas",
-      rank: "Peringkat",
-      start_date: "Tanggal Mulai",
-      end_date: "Tanggal Akhir",
-      depth: "Kedalaman",
-      duration: "Durasi (Hari)",
-      recovery: "Pemulihan (Hari)",
-      positive: "Positif",
-      negative: "Negatif"
+      tvl_tooltip: "Total likuiditas terverifikasi yang dilacak di seluruh protokol eksekusi eksternal. Sentquant murni bertindak sebagai lapisan analitik dan tidak memegang dana."
     },
     live: {
       title: "Langsung di LIGHTER",
       offline_status: "Offline",
-      live_drawdown: "Drawdown Langsung"
+      live_drawdown: "Drawdown Langsung",
+      historical_title: "Kinerja Historis",
+      stats_title: "Statistik & Metrik"
     },
     stats: {
       annual_returns: "Pengembalian Tahunan",
       about_models: "TENTANG MODEL",
-      model_desc_1: "Kerangka kerja ini memanfaatkan inefisiensi struktural di comodities dan crypto.",
-      model_desc_2: "Kami menjalankan proses O-U mean reversion pada komoditas dan struktur mikro pada kripto. Dua strategi, tidak berkorelasi secara alami.",
-      model_desc_3: "Pergeseran rezim? Tidak masalah. Kami menggunakan HMM 3 state yang secara dinamis mengalokasikan risiko sehingga model selalu beradaptasi.",
-      model_desc_4: "Backtest IN SAMPLE/OUT OF SAMPLE, dengan 30%+ CAGR, 1.44 Sharpe, 27.77% APR dalam 21 tahun, Kurtosis 54.5 ya, itu wilayah fat-tail tapi sans kami jinakkan ekornya dengan hedge EVT + CVaR.",
-      model_desc_infra: "Infrastruktur yang digunakan: Python, C++, Wolfram",
-      model_desc_nerd: "Cukup ngebacot nya.",
-      model_desc_edge: "Jika ada edge, kalian akan melihatnya. Jika tidak, kalian juga akan melihatnya. di Lighter.",
+      model_desc_1: "Kerangka kerja ini memanfaatkan inefisiensi struktural.",
+      model_desc_2: "Strategi berjalan pada O-U mean reversion dan mikrostruktur.",
+      model_desc_3: "Pergeseran rezim? Tidak masalah. Realokasi risiko dinamis.",
       section_return: "METRIK PENGEMBALIAN",
       section_drawdown: "METRIK DRAWDOWN",
       section_risk_adj: "METRIK PENGEMBALIAN DISESUAIKAN RISIKO",
@@ -300,15 +304,7 @@ const TRANSLATIONS = {
       cmc_analogy_1: "Jika CoinMarketCap melacak aset,",
       cmc_analogy_2: "Sentquant melacak kinerja strategi.",
       cant_lie: "Karena kinerja tidak bisa berbohong, orang bisa.",
-      no_sell_courses: "Sentquant tidak menjual kursus.",
-      no_sell_signals: "Sentquant tidak menjual sinyal.",
-      no_sell_vip: "Sentquant tidak menjual Grup VIP",
-      arena: "Sentquant adalah arena di mana setiap klaim dibuka, agar terlihat mana yang punya edge, mana yang cuma bacot marketing.",
       era_ends: "Era trading guru palsu berakhir di sini.",
-      every_trader: "SETIAP TRADER",
-      every_strategy: "SETIAP STRATEGI",
-      every_claim: "SETIAP KLAIM",
-      proven: "DIBUKTIKAN ON-CHAIN",
       join_movement: "Gabung Gerakan"
     },
     metrics_labels: {
@@ -316,119 +312,138 @@ const TRANSLATIONS = {
       cagr: "CAGR (Disetahunkan)",
       apr: "APR (Bunga Sederhana)",
       ann_vol: "Volatilitas Disetahunkan",
-      daily_mean: "Return Harian (Rata-rata)",
-      daily_median: "Return Harian (Median)",
-      years: "Tahun Dianalisis",
       max_dd: "Max Drawdown",
-      avg_dd: "Rata-rata Drawdown",
-      max_dd_dur: "Durasi Max DD",
-      avg_dd_dur: "Durasi Rata-rata DD",
-      num_dd: "Jumlah Drawdown",
-      dd_freq: "Frekuensi Drawdown",
-      ulcer: "Indeks Ulcer",
       sharpe: "Rasio Sharpe",
       sortino: "Rasio Sortino",
-      calmar: "Rasio Calmar",
-      mar: "Rasio MAR",
-      sterling: "Rasio Sterling",
-      burke: "Rasio Burke",
-      daily_std: "Deviasi Std Harian",
-      daily_var: "Varians Harian",
-      ann_vol_simple: "Volatilitas Tahunan",
-      downside_dev: "Deviasi Sisi Bawah",
-      upside_dev: "Deviasi Sisi Atas",
-      semi_var: "Semi-Varians",
-      var_95: "VaR (95%)",
-      cvar: "CVaR (Expected Shortfall)",
-      max_loss: "Rugi Harian Maks",
-      max_gain: "Untung Harian Maks",
-      skew: "Skewness",
-      kurt_exc: "Kurtosis (Excess)",
-      kurt_raw: "Kurtosis (Raw)",
-      p05: "Persentil ke-5",
-      p95: "Persentil ke-95",
-      q1: "Persentil ke-25 (Q1)",
-      q3: "Persentil ke-75 (Q3)",
-      iqr: "IQR",
-      jb_stat: "Statistik Jarque-Bera",
-      jb_p: "Nilai-p Jarque-Bera",
-      normal: "Distribusi Normal?",
-      win_rate: "Tingkat Menang (Harian)",
-      loss_rate: "Tingkat Kalah (Harian)",
-      win_days: "Hari Menang",
-      loss_days: "Hari Kalah",
-      neutral_days: "Hari Netral",
-      avg_win: "Rata-rata Menang",
-      avg_loss: "Rata-rata Kalah",
-      largest_win: "Kemenangan Terbesar",
-      largest_loss: "Kekalahan Terbesar",
-      win_loss_ratio: "Rasio Menang/Kalah",
-      profit_factor: "Faktor Profit",
-      expectancy: "Ekspektasi",
-      gross_profit: "Laba Kotor",
-      gross_loss: "Rugi Kotor",
-      max_con_wins: "Menang Beruntun Maks",
-      max_con_loss: "Kalah Beruntun Maks",
-      pos_months: "Bulan Positif",
-      neg_months: "Bulan Negatif",
-      mth_win_rate: "Tingkat Menang Bulanan",
-      rec_factor: "Faktor Pemulihan",
-      r_sq: "R-Squared (Stabilitas)",
-      avg_pos_mth: "Rata-rata Bulan Positif/Tahun",
+      win_rate: "Tingkat Menang",
       expected_val_short: "Nilai Harapan",
       volatility_short: "Volatilitas"
+    },
+    historical: {
+      heatmap_title: "Peta Panas Pengembalian Bulanan",
+      top_drawdowns: "5 Drawdown Teratas",
+      rank: "Peringkat",
+      start_date: "Tanggal Mulai",
+      end_date: "Tanggal Akhir",
+      depth: "Kedalaman",
+      duration: "Durasi",
+      recovery: "Pemulihan",
+      positive: "Positif",
+      negative: "Negatif"
     }
   }
 };
 
-// --- VAULT DATA ---
-const VAULT_ITEMS = [
-  { 
-    id: 1, 
-    name: "ANON", 
-    type: "user", 
-    metrics: { ret: "450%", dd: "-12.5%", sharpe: "2.5" } 
-  },
-  { 
-    id: 2, 
-    name: "SENTQUANT", 
-    type: "logo", 
-    metrics: { ret: "25,516%", dd: "-29.20%", sharpe: "1.44" } 
-  },
-  { 
-    id: 3, 
-    name: "RIV", 
-    type: "user", 
-    metrics: { ret: "45%", dd: "-12.5%", sharpe: "2.5" } 
-  },
-  { 
-    id: 4, 
-    name: "PURE", 
-    type: "user", 
-    metrics: { ret: "12%", dd: "-12.5%", sharpe: "2.5" } 
-  }
-];
+// --- COMPONENT: KEY METRICS GRID (NEW) ---
+const KeyMetricsGrid = ({ stats, t, isLive }) => {
+  const metrics = [
+    { label: t.metrics_labels.total_return, value: `${stats.totalReturn.toLocaleString()}%`, color: stats.totalReturn >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]' },
+    { label: t.metrics_labels.max_dd, value: `${stats.maxDrawdown}%`, color: 'text-[#f23645]' },
+    { label: t.metrics_labels.cagr, value: `${stats.cagr}%`, color: 'text-white' },
+    { label: t.metrics_labels.apr, value: `${stats.apr}%`, color: 'text-white' },
+    { label: t.metrics_labels.expected_val_short, value: `${stats.expectedValue}%`, color: 'text-white' },
+    { label: t.metrics_labels.volatility_short, value: `${stats.volatility}%`, color: 'text-white' },
+    { label: t.metrics_labels.sharpe, value: stats.sharpe, color: 'text-white' },
+    { label: t.metrics_labels.sortino, value: stats.sortino, color: 'text-white' }
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 px-4 py-4">
+      {metrics.map((m, i) => (
+        <div key={i} className="flex flex-col">
+          <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">{m.label}</span>
+          <span className={`text-xl font-bold font-eth ${m.color}`}>{m.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// --- COMPONENT: STRATEGY CHARTS (STACKED) ---
+const StrategyCharts = ({ data, color, name, title }) => (
+  <div className="flex flex-col space-y-2 mt-4">
+    {/* TOP: EQUITY CHART */}
+    <div className="h-[300px] md:h-[400px] rounded-t-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative border border-white/5 border-b-0">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{top:10, left:0, right:0, bottom:0}}>
+          <defs>
+            <linearGradient id={`equityGradient-${name}-${title}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
+              <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="date" hide />
+          <YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
+          <Tooltip 
+            separator=" " 
+            contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} 
+            itemStyle={{color: '#22ab94'}} 
+            formatter={(value) => [value.toLocaleString(), 'NAV']} 
+            labelStyle={{color: '#fff', fontFamily: 'Inter'}} 
+          />
+          <Area 
+            type="monotone" 
+            dataKey="value" 
+            stroke="#22ab94" 
+            strokeWidth={2} 
+            fill={`url(#equityGradient-${name}-${title})`} 
+            dot={false} 
+            animationDuration={1500} 
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+      <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg">
+        <span className="p-1 text-gray-300 text-xs font-bold">{name} Model</span>
+      </div>
+    </div>
+
+    {/* BOTTOM: DRAWDOWN CHART */}
+    <div className="h-[180px] rounded-b-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative border border-white/5 border-t-0">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{top:5, left:0, right:0, bottom:0}}>
+          <defs>
+            <linearGradient id={`drawdownGradient-${name}-${title}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#f23645" stopOpacity={0.4}/>
+              <stop offset="95%" stopColor="#f23645" stopOpacity={0.05}/>
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="date" hide />
+          <YAxis orientation="right" tick={{fill: '#a1a1aa', fontSize: 10}} axisLine={false} tickLine={false} />
+          <Tooltip 
+            contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} 
+            itemStyle={{color: '#f23645'}} 
+            formatter={(value) => [`${value.toFixed(2)}%`, 'Drawdown']} 
+            labelStyle={{color: '#fff', fontFamily: 'Inter'}} 
+          />
+          <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
+          <Area 
+            type="stepAfter" 
+            dataKey="drawdown" 
+            stroke="#f23645" 
+            strokeWidth={1.5} 
+            fill={`url(#drawdownGradient-${name}-${title})`} 
+            dot={false} 
+            animationDuration={1500} 
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+);
 
 // --- COMPONENT: DETAILED STAT CARD ---
 const DetailedStatCard = ({ section }) => (
-  <div className="rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden h-full flex flex-col">
+  <div className="rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden h-full flex flex-col border border-white/5">
     <div className="bg-white/5 px-5 py-4">
-      <h3 className="font-bold text-white font-eth text-xl">{section.title}</h3>
+      <h3 className="font-bold text-white font-eth text-xs md:text-sm tracking-widest">{section.title}</h3>
     </div>
-    
     <div className="p-0 overflow-x-auto">
       <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="bg-white/5 text-gray-400 text-xs uppercase tracking-wider">
-            <th className="px-5 py-3 font-semibold">Metric</th>
-            <th className="px-5 py-3 font-semibold text-right">Value</th>
-          </tr>
-        </thead>
-        <tbody>
+        <tbody className="divide-y divide-white/5">
           {section.metrics.map((item, idx) => (
             <tr key={idx} className="hover:bg-white/5 transition-colors">
-              <td className="px-5 py-3 font-medium text-gray-300">{item.l}</td>
-              <td className="px-5 py-3 text-right text-white font-bold">{item.v}</td>
+              <td className="px-5 py-3 font-medium text-gray-400 text-xs">{item.l}</td>
+              <td className="px-5 py-3 text-right text-white font-bold text-xs">{item.v}</td>
             </tr>
           ))}
         </tbody>
@@ -438,84 +453,46 @@ const DetailedStatCard = ({ section }) => (
 );
 
 // --- COMPONENT: MONTHLY HEATMAP ---
-const MonthlyHeatmap = ({ data, enableFilter = false, t }) => {
-  const [selectedRange, setSelectedRange] = useState('2020-2025');
-  const filterRanges = ['2020-2025', '2015-2019', '2010-2014', '2005-2009'];
-
-  const filteredData = useMemo(() => {
-    if (!enableFilter) return data;
-    const [start, end] = selectedRange.split('-').map(Number);
-    return data.filter(row => {
-      const year = parseInt(row.year);
-      return year >= start && year <= end;
-    });
-  }, [data, enableFilter, selectedRange]);
-
+const MonthlyHeatmap = ({ data, t }) => {
   return (
-    <div className="mb-10 animate-fade-in-up mt-8">
+    <div className="mb-10 mt-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-          <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">{t.heatmap_title}</h3>
-          {enableFilter ? (
-            <div className="flex flex-wrap gap-2">
-              {filterRanges.map((range) => (
-                <button
-                  key={range}
-                  onClick={() => setSelectedRange(range)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all border border-white/10 
-                    ${selectedRange === range 
-                      ? 'bg-[#22ab94] text-black shadow-[0_0_10px_rgba(34,171,148,0.4)] border-transparent' 
-                      : 'bg-black/40 text-gray-400 hover:text-white hover:bg-white/10'
-                    }`}
-                >
-                  {range}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> {t.positive}</span>
-              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> {t.negative}</span>
-            </div>
-          )}
+          <h3 className="text-xl font-bold text-white drop-shadow-md font-eth">{t.heatmap_title}</h3>
+          <div className="flex gap-2">
+            <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> {t.positive}</span>
+            <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> {t.negative}</span>
+          </div>
       </div>
 
-      <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2">
-          <table className="w-full text-sm border-collapse min-w-[800px]">
+      <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2 border border-white/5">
+          <table className="w-full text-xs md:text-sm border-collapse min-w-[800px]">
             <thead>
                 <tr>
                   <th className="text-left text-gray-400 font-medium py-3 px-2">Year</th>
                   {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
                       <th key={m} className="text-center text-gray-400 font-medium py-3 px-2">{m}</th>
                   ))}
-                  <th className="text-center text-gray-400 font-medium py-3 px-2">Annual</th>
+                  <th className="text-center text-gray-400 font-medium py-3 px-2">Ann</th>
                 </tr>
             </thead>
             <tbody>
-                {filteredData.length > 0 ? (
-                  filteredData.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-white/5 transition-colors rounded-lg">
-                        <td className="text-left font-bold text-white py-4 px-2">{row.year}</td>
-                        {row.months.map((val, i) => (
-                          <td key={i} className="text-center py-4 px-2">
-                              {val !== null ? (
-                                <span className={`px-2 py-1 rounded font-medium backdrop-blur-md ${val >= 0 ? 'text-[#22ab94] bg-[#22ab94]/20' : 'text-[#f23645] bg-[#f23645]/20'}`}>
-                                      {val > 0 ? '+' : ''}{val}%
-                                </span>
-                              ) : <span className="text-gray-600">-</span>}
-                          </td>
-                        ))}
-                        <td className="text-center py-4 px-2 font-bold text-white">
-                          {row.months.reduce((acc, curr) => acc + (curr || 0), 0).toFixed(1)}%
+                {data.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-white/5 transition-colors rounded-lg">
+                      <td className="text-left font-bold text-white py-4 px-2">{row.year}</td>
+                      {row.months.map((val, i) => (
+                        <td key={i} className="text-center py-4 px-2">
+                            {val !== null ? (
+                              <span className={`px-2 py-1 rounded font-medium backdrop-blur-md ${val >= 0 ? 'text-[#22ab94] bg-[#22ab94]/20' : 'text-[#f23645] bg-[#f23645]/20'}`}>
+                                    {val > 0 ? '+' : ''}{val}%
+                              </span>
+                            ) : <span className="text-gray-600">-</span>}
                         </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="14" className="text-center py-8 text-gray-500 italic">
-                      Data not available for period {selectedRange}
-                    </td>
+                      ))}
+                      <td className="text-center py-4 px-2 font-bold text-white">
+                        {row.months.reduce((acc, curr) => acc + (curr || 0), 0).toFixed(1)}%
+                      </td>
                   </tr>
-                )}
+                ))}
             </tbody>
           </table>
       </div>
@@ -525,12 +502,12 @@ const MonthlyHeatmap = ({ data, enableFilter = false, t }) => {
 
 // --- COMPONENT: TOP 5 DRAWDOWNS TABLE ---
 const TopDrawdownsTable = ({ data, t }) => (
-  <div className="mb-10 animate-fade-in-up mt-8">
+  <div className="mb-10 mt-8">
     <div className="flex items-center justify-between mb-6">
-      <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">{t.top_drawdowns}</h3>
+      <h3 className="text-xl font-bold text-white drop-shadow-md font-eth">{t.top_drawdowns}</h3>
     </div>
-    <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2">
-      <table className="w-full text-sm border-collapse min-w-[800px]">
+    <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2 border border-white/5">
+      <table className="w-full text-xs md:text-sm border-collapse min-w-[600px]">
         <thead>
           <tr className="text-left text-gray-400 font-medium border-b border-white/5">
             <th className="py-3 px-4">{t.rank}</th>
@@ -552,8 +529,8 @@ const TopDrawdownsTable = ({ data, t }) => (
               <td className="py-3 px-4 text-gray-300 font-mono text-xs">{row.startDate}</td>
               <td className="py-3 px-4 text-gray-300 font-mono text-xs">{row.endDate}</td>
               <td className="py-3 px-4 text-right font-bold text-[#f23645]">{row.depth.toFixed(2)}%</td>
-              <td className="py-3 px-4 text-right text-white font-mono">{row.duration}</td>
-              <td className="py-3 px-4 text-right text-[#22ab94] font-mono">{row.recovery}</td>
+              <td className="py-3 px-4 text-right text-white font-mono">{row.duration} days</td>
+              <td className="py-3 px-4 text-right text-[#22ab94] font-mono">{row.recovery} days</td>
             </tr>
           ))}
         </tbody>
@@ -564,1551 +541,512 @@ const TopDrawdownsTable = ({ data, t }) => (
 
 // --- COMPONENT: ABOUT MODELS CARD ---
 const AboutModelsCard = ({ t }) => (
-  <div className="mb-8 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden flex flex-col">
+  <div className="mb-8 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden flex flex-col border border-white/5">
     <div className="bg-white/5 px-5 py-4">
-      <h3 className="font-bold text-white font-eth text-xl">{t.about_models}</h3>
+      <h3 className="font-bold text-white font-eth text-lg">{t.about_models}</h3>
     </div>
-    
-    <div className="p-5 md:p-6 space-y-4 text-white text-sm font-medium leading-relaxed font-sans">
+    <div className="p-5 md:p-6 space-y-4 text-white text-sm font-medium leading-relaxed font-sans text-gray-300">
       <p>{t.model_desc_1}</p>
       <p>{t.model_desc_2}</p>
       <p>{t.model_desc_3}</p>
-      <p>{t.model_desc_4}</p>
-      <p className="pt-2">{t.model_desc_infra}</p>
-      
-      <div className="mt-6 pt-6 opacity-100 font-sans">
-        <p>{t.model_desc_nerd}</p>
-        <p>{t.model_desc_edge}</p>
-      </div>
     </div>
   </div>
 );
 
-// --- COMPONENT: WARP/STARFIELD BACKGROUND ---
+// --- COMPONENT: WARP BACKGROUND ---
 const WarpBackground = () => {
   const canvasRef = useRef(null);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
     let w, h;
     let animationFrameId;
-    
     let stars = [];
-    const numStars = 200;
-    const speed = 2; // Warp speed
-
-    let lastWidth = window.innerWidth;
-
-    const resize = () => {
-      if (window.innerWidth !== lastWidth) {
-        w = canvas.width = window.innerWidth;
-        h = canvas.height = window.innerHeight;
-        lastWidth = window.innerWidth;
-      } else {
-        w = canvas.width = window.innerWidth;
-        h = canvas.height = window.innerHeight;
-      }
-    };
-    // Initial size
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-    
+    const numStars = 150;
+    const speed = 1.5;
+    const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
+    resize();
     window.addEventListener('resize', resize);
-
-    // Initialize stars
-    for(let i=0; i<numStars; i++){
-      stars.push({
-        x: Math.random() * w - w/2,
-        y: Math.random() * h - h/2,
-        z: Math.random() * w
-      });
-    }
-
+    for(let i=0; i<numStars; i++){ stars.push({ x: Math.random() * w - w/2, y: Math.random() * h - h/2, z: Math.random() * w }); }
     const draw = () => {
       if(!ctx) return;
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, w, h);
-      
-      const cx = w/2;
-      const cy = h/2;
-
+      const cx = w/2; const cy = h/2;
       stars.forEach(star => {
         star.z -= speed;
-        if(star.z <= 0) {
-          star.x = Math.random() * w - w/2;
-          star.y = Math.random() * h - h/2;
-          star.z = w;
-        }
-
+        if(star.z <= 0) { star.x = Math.random() * w - w/2; star.y = Math.random() * h - h/2; star.z = w; }
         const x = (star.x / star.z) * w + cx;
         const y = (star.y / star.z) * h + cy;
-        
-        const size = Math.max(0, (1 - star.z / w) * 3);
+        const size = Math.max(0, (1 - star.z / w) * 2.5);
         const alpha = Math.max(0, Math.min(1, (1 - star.z / w)));
-
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI*2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI*2); ctx.fill();
       });
-
       animationFrameId = requestAnimationFrame(draw);
     };
     draw();
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrameId);
-    };
+    return () => { window.removeEventListener('resize', resize); cancelAnimationFrame(animationFrameId); };
   }, []);
-
   return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
 };
 
-// --- MOCK DATA ---
-const MOCK_HISTORICAL = Array.from({ length: 100 }, (_, i) => ({
-    date: `2024-01-${i + 1}`,
-    year: '2024',
-    value: 1000 + Math.random() * 500 + i * 10,
-    drawdown: -(Math.random() * 10)
-}));
-
-const MOCK_LIVE = [
-    { date: 'Start', value: 100, drawdown: 0 }
-];
-
-const generateMockHeatmap = () => {
-  const years = [];
-  for (let y = 2025; y >= 2005; y--) {
-    const months = Array.from({length: 12}, () => (Math.random() * 10 - 4).toFixed(1)).map(Number);
-    years.push({ year: y.toString(), months });
-  }
-  return years;
-};
-const MOCK_HEATMAP = generateMockHeatmap();
-
-const MOCK_LIVE_HEATMAP = [
-  { year: '2025', months: Array(12).fill(null) },
-  { year: '2026', months: Array(12).fill(null) },
-  { year: '2027', months: Array(12).fill(null) },
-  { year: '2028', months: Array(12).fill(null) },
-  { year: '2029', months: Array(12).fill(null) }
-];
-
-const MOCK_ANNUAL = [
-    { year: '2021', value: 25.4 },
-    { year: '2022', value: -5.2 },
-    { year: '2023', value: 18.7 },
-    { year: '2024', value: 12.1 },
-    { year: '2025', value: 8.5 },
-];
-const MOCK_STATS = { sharpe: 3.18, sortino: 4.22, maxDD: -12.45, winRate: 68.5 };
-
-const MOCK_LIVE_STATS = { 
-  totalReturn: null, 
-  maxDrawdown: null, 
-  sharpe: null, 
-  sortino: null, 
-  winRate: null, 
-  apr: null, 
-  cagr: null, 
-  expectedValue: null, 
-  volatility: null 
-};
-
-const MOCK_TOP_DRAWDOWNS = [
-  { rank: 1, startDate: '2022-01-05', endDate: '2022-06-15', depth: -12.45, duration: 161, recovery: 45 },
-  { rank: 2, startDate: '2021-09-10', endDate: '2021-10-05', depth: -8.32, duration: 25, recovery: 12 },
-  { rank: 3, startDate: '2023-03-12', endDate: '2023-04-18', depth: -6.15, duration: 37, recovery: 15 },
-  { rank: 4, startDate: '2020-11-02', endDate: '2020-11-20', depth: -4.80, duration: 18, recovery: 8 },
-  { rank: 5, startDate: '2024-08-01', endDate: '2024-08-15', depth: -3.20, duration: 14, recovery: 5 },
-];
-
-// --- MOCK DATA FOR TERMINAL ---
-const MOCK_BENCHMARK_ORIGIN = Array.from({ length: 50 }, (_, i) => ({
-  date: i,
-  value: 100 + (i * 4) + (Math.random() * 10 - 5) // Steady linear growth
-}));
-
-const MOCK_BENCHMARK_HANSOLAR = Array.from({ length: 50 }, (_, i) => ({
-  date: i,
-  value: 100 + (i * 2) + (Math.pow(i, 2) * 0.15) + (Math.random() * 100 - 50) // Volatile exponential growth
-}));
-
-
-// --- MAIN APPLICATION ---
-
+// --- MAIN APP ---
 export default function App() {
-  const [fullData, setFullData] = useState([]);
-  const [liveData, setLiveData] = useState([]);
-  const [heatmapData, setHeatmapData] = useState([]);
-  const [liveHeatmapData, setLiveHeatmapData] = useState([]);
-  const [annualReturnsData, setAnnualReturnsData] = useState([]);
-  const [statsData, setStatsData] = useState(null);
-  const [liveStatsData, setLiveStatsData] = useState(null);
-  const [topDrawdownsData, setTopDrawdownsData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedYear, setSelectedYear] = useState('5Y');
-  const [filteredChartData, setFilteredChartData] = useState([]);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('home'); // Default to home
+  const [selectedStrategyId, setSelectedStrategyId] = useState('sentquant');
+  const [visibleStrategies, setVisibleStrategies] = useState(
+    STRATEGIES_CONFIG.reduce((acc, strat) => ({ ...acc, [strat.id]: true }), {})
+  );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('home');
-  const [language, setLanguage] = useState('en'); // Default to English
-  
-  // --- MONTE CARLO STATE ---
-  const [mcInitialBalance, setMcInitialBalance] = useState(10000);
-  const [mcReturn, setMcReturn] = useState(15);
-  const [mcVolatility, setMcVolatility] = useState(20);
-  const [mcTimeHorizon, setMcTimeHorizon] = useState(1);
-  const [mcSimulations, setMcSimulations] = useState(50);
-  const [mcChartData, setMcChartData] = useState([]);
-  const [mcStats, setMcStats] = useState({ best: 0, median: 0, worst: 0, probLoss: 0 });
+  const [language, setLanguage] = useState('en');
 
-  // --- PSYCHOLOGY ENGINE STATE ---
-  const [psyLevel, setPsyLevel] = useState(50);
-  const [psyStatus, setPsyStatus] = useState("Calibrating Mindset...");
-  const [psyChartData, setPsyChartData] = useState([]);
-  const crashTimerRef = useRef(null);
-
-  const toggleLanguage = () => {
-    setLanguage(prev => prev === 'en' ? 'id' : 'en');
-  };
-
-  // Get current translation object
   const t = TRANSLATIONS[language];
-  
-  // Scroll to top logic
-  const mainScrollRef = useRef(null);
-  const [showScrollTop, setShowScrollTop] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (mainScrollRef.current) {
-        setShowScrollTop(mainScrollRef.current.scrollTop > 400);
-      }
-    };
-
-    const scrollContainer = mainScrollRef.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll);
-    }
-
-    return () => {
-      if (scrollContainer) {
-        scrollContainer.removeEventListener('scroll', handleScroll);
-      }
-    };
+  // Calculate Total TVL dynamically
+  const totalTVL = useMemo(() => {
+    return STRATEGIES_CONFIG.reduce((acc, curr) => acc + curr.tvl, 0);
   }, []);
 
-  const scrollToTop = () => {
-    mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  // Helper to toggle strategy visibility
+  const toggleStrategyVisibility = (id) => {
+    setVisibleStrategies(prev => ({ ...prev, [id]: !prev[id] }));
   };
-  
-  const yearsList = ['ALL', ...Array.from({length: 26}, (_, i) => (2025 - i).toString())];
-  // UPDATED: Changed '2020-2024' to '2020-2025' to be consistent with Heatmap and include 2025
-  const manualRanges = ['2020-2025', '2015-2019', '2010-2014', '2005-2009'];
-  
-  // UPDATED: Nav items with Terminal as 5th tab
-  const navItems = [
-    { id: 'home', label: t.nav.home },
-    { id: 'historical', label: t.nav.historical },
-    { id: 'live', label: t.nav.live },
-    { id: 'stats', label: t.nav.stats },
-    { id: 'terminal', label: t.nav.terminal }, 
-    { id: 'lab', label: t.nav.lab }, // Added Lab Tab
-    { id: 'about', label: t.nav.about }
-  ];
 
-  // Dynamic detailed stats sections based on language
+  // Helper to switch to live view
+  const handleLiveView = (id) => {
+    setSelectedStrategyId(id);
+    setActiveTab('live');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Derived data
+  const currentStrategy = MOCK_STRATEGIES_DETAILS[selectedStrategyId];
+  const currentStats = currentStrategy.stats;
+
+  // Generate detailed stats sections dynamically
   const detailedStatsSections = useMemo(() => [
     {
       title: t.stats.section_return,
       metrics: [
-        { l: t.metrics_labels.total_return, v: "25,516.42%" },
-        { l: t.metrics_labels.cagr, v: "30.50%" },
-        { l: t.metrics_labels.apr, v: "1,224.85%" },
-        { l: t.metrics_labels.ann_vol, v: "17.16%" },
-        { l: t.metrics_labels.daily_mean, v: "0.1100%" },
-        { l: t.metrics_labels.daily_median, v: "-0.0800%" },
-        { l: t.metrics_labels.years, v: "20.83" }
+        { l: t.metrics_labels.total_return, v: `${currentStats.totalReturn.toLocaleString()}%` },
+        { l: t.metrics_labels.cagr, v: `${currentStats.cagr}%` },
+        { l: t.metrics_labels.apr, v: `${currentStats.apr}%` },
       ]
     },
     {
       title: t.stats.section_drawdown,
       metrics: [
-        { l: t.metrics_labels.max_dd, v: "-29.20%" },
-        { l: t.metrics_labels.avg_dd, v: "-1.82%" },
-        { l: t.metrics_labels.max_dd_dur, v: "563 days" },
-        { l: t.metrics_labels.avg_dd_dur, v: "12 days" },
-        { l: t.metrics_labels.num_dd, v: "361" },
-        { l: t.metrics_labels.dd_freq, v: "6.77%" },
-        { l: t.metrics_labels.ulcer, v: "5.33%" }
+        { l: t.metrics_labels.max_dd, v: `${currentStats.maxDrawdown}%` },
       ]
     },
     {
       title: t.stats.section_risk_adj,
       metrics: [
-        { l: t.metrics_labels.sharpe, v: "1.44" },
-        { l: t.metrics_labels.sortino, v: "2.35" },
-        { l: t.metrics_labels.calmar, v: "1.04" },
-        { l: t.metrics_labels.mar, v: "1.04" },
-        { l: t.metrics_labels.sterling, v: "16.74" },
-        { l: t.metrics_labels.burke, v: "0.47" }
+        { l: t.metrics_labels.sharpe, v: currentStats.sharpe },
+        { l: t.metrics_labels.sortino, v: currentStats.sortino },
       ]
     },
     {
       title: t.stats.section_volatility,
       metrics: [
-        { l: t.metrics_labels.daily_std, v: "1.0808%" },
-        { l: t.metrics_labels.daily_var, v: "1.168221" },
-        { l: t.metrics_labels.ann_vol_simple, v: "17.16%" },
-        { l: t.metrics_labels.downside_dev, v: "0.6631%" },
-        { l: t.metrics_labels.upside_dev, v: "1.0759%" },
-        { l: t.metrics_labels.semi_var, v: "0.439702" },
-        { l: t.metrics_labels.var_95, v: "-1.06%" },
-        { l: t.metrics_labels.cvar, v: "-1.77%" },
-        { l: t.metrics_labels.max_loss, v: "-23.42%" },
-        { l: t.metrics_labels.max_gain, v: "10.44%" }
-      ]
-    },
-    {
-      title: t.stats.section_distribution,
-      metrics: [
-        { l: t.metrics_labels.skew, v: "-0.0399" },
-        { l: t.metrics_labels.kurt_exc, v: "54.4915" },
-        { l: t.metrics_labels.kurt_raw, v: "57.4915" },
-        { l: t.metrics_labels.p05, v: "-1.06%" },
-        { l: t.metrics_labels.p95, v: "1.83%" },
-        { l: t.metrics_labels.q1, v: "-0.34%" },
-        { l: t.metrics_labels.q3, v: "0.39%" },
-        { l: t.metrics_labels.iqr, v: "0.7275%" },
-        { l: t.metrics_labels.jb_stat, v: "659,315.33" },
-        { l: t.metrics_labels.jb_p, v: "0.000000" },
-        { l: t.metrics_labels.normal, v: "No" }
+        { l: t.metrics_labels.ann_vol, v: `${currentStats.volatility}%` },
       ]
     },
     {
       title: t.stats.section_win_loss,
       metrics: [
-        { l: t.metrics_labels.win_rate, v: "42.84%" },
-        { l: t.metrics_labels.loss_rate, v: "56.60%" },
-        { l: t.metrics_labels.win_days, v: "2,283" },
-        { l: t.metrics_labels.loss_days, v: "3,016" },
-        { l: t.metrics_labels.neutral_days, v: "30" },
-        { l: t.metrics_labels.avg_win, v: "0.8606%" },
-        { l: t.metrics_labels.avg_loss, v: "-0.4571%" },
-        { l: t.metrics_labels.largest_win, v: "10.44%" },
-        { l: t.metrics_labels.largest_loss, v: "-23.42%" },
-        { l: t.metrics_labels.win_loss_ratio, v: "1.88" },
-        { l: t.metrics_labels.profit_factor, v: "1.43" },
-        { l: t.metrics_labels.expectancy, v: "0.1100%" },
-        { l: t.metrics_labels.gross_profit, v: "1,964.74%" },
-        { l: t.metrics_labels.gross_loss, v: "1,378.65%" }
+        { l: t.metrics_labels.win_rate, v: `${currentStats.winRate}%` },
       ]
     },
     {
       title: t.stats.section_consistency,
       metrics: [
-        { l: t.metrics_labels.max_con_wins, v: "8" },
-        { l: t.metrics_labels.max_con_loss, v: "18" },
-        { l: t.metrics_labels.pos_months, v: "174" },
-        { l: t.metrics_labels.neg_months, v: "77" },
-        { l: t.metrics_labels.mth_win_rate, v: "69.32%" },
-        { l: t.metrics_labels.rec_factor, v: "873.93" },
-        { l: t.metrics_labels.r_sq, v: "0.6848" },
-        { l: t.metrics_labels.avg_pos_mth, v: "8.4" }
+        { l: t.metrics_labels.expected_val_short, v: `${currentStats.expectedValue}%` },
       ]
     }
-  ], [language, t]); // Depend on language
+  ], [language, selectedStrategyId]); // Recompute when strategy or language changes
 
-  // --- MONTE CARLO LOGIC ---
-  const runMonteCarlo = () => {
-    const steps = 252 * mcTimeHorizon;
-    const dt = 1 / 252;
-    const mu = mcReturn / 100;
-    const sigma = mcVolatility / 100;
-    
-    // Arrays to hold simulation data
-    // Format: [{ step: 0, sim0: 100, sim1: 100, ... }, ...]
-    let data = [];
-    
-    // Initialize Step 0
-    let initialStep = { step: 0, p95: mcInitialBalance, p50: mcInitialBalance, p05: mcInitialBalance };
-    for(let s=0; s<mcSimulations; s++) {
-      initialStep[`sim${s}`] = mcInitialBalance;
-    }
-    data.push(initialStep);
-
-    // Run Simulations
-    // Temporary array to store current values for each simulation
-    let currentValues = Array(mcSimulations).fill(mcInitialBalance);
-    
-    // Helper for box-muller transform (Gaussian random)
-    const randn_bm = () => {
-      let u = 0, v = 0;
-      while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
-      while(v === 0) v = Math.random();
-      return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
-    };
-
-    let finalValues = [];
-
-    for(let t=1; t<=steps; t++) {
-      let stepData = { step: t };
-      let stepValues = [];
-
-      for(let s=0; s<mcSimulations; s++) {
-        const drift = (mu - 0.5 * sigma * sigma) * dt;
-        const shock = sigma * Math.sqrt(dt) * randn_bm();
-        const change = Math.exp(drift + shock);
-        
-        currentValues[s] = currentValues[s] * change;
-        stepData[`sim${s}`] = currentValues[s];
-        stepValues.push(currentValues[s]);
-      }
-
-      // Calculate Percentiles for this step
-      stepValues.sort((a,b) => a-b);
-      const p05Index = Math.floor(stepValues.length * 0.05);
-      const p50Index = Math.floor(stepValues.length * 0.50);
-      const p95Index = Math.floor(stepValues.length * 0.95);
-      
-      stepData.p05 = stepValues[p05Index];
-      stepData.p50 = stepValues[p50Index];
-      stepData.p95 = stepValues[p95Index];
-      
-      data.push(stepData);
-
-      if(t === steps) finalValues = stepValues;
-    }
-
-    // Reduce data points for chart performance if steps > 500
-    if (data.length > 500) {
-      data = data.filter((_, i) => i % Math.ceil(data.length / 500) === 0);
-    }
-
-    setMcChartData(data);
-
-    // Calculate Stats
-    finalValues.sort((a,b) => a-b);
-    const best = finalValues[Math.floor(finalValues.length * 0.95)];
-    const median = finalValues[Math.floor(finalValues.length * 0.50)];
-    const worst = finalValues[Math.floor(finalValues.length * 0.05)];
-    const lossCount = finalValues.filter(v => v < mcInitialBalance).length;
-    const probLoss = (lossCount / mcSimulations) * 100;
-
-    setMcStats({ best, median, worst, probLoss });
-  };
-
-  // Run initial simulation on mount
+  // Simulate initial loading
   useEffect(() => {
-    runMonteCarlo();
-  }, []); // Run once on load
-
-  // --- PSYCHOLOGY ENGINE LOGIC ---
-  const handlePsyChange = (newVal) => {
-     setPsyLevel(Number(newVal));
-     
-     // Sarcastic Messages Logic
-     const messages = [
-         "Manifesting alpha...", "Aligning chakras...", "Eliminating fear...",
-         "Visualizing lambo...", "Suppressing emotions...", "Entering flow state...",
-         "Trusting the gut...", "Reading tea leaves...", "Ignoring macro...",
-         "Vibrating higher..."
-     ];
-     setPsyStatus(messages[Math.floor(Math.random() * messages.length)]);
-
-     // Chart Animation Logic: Up only, then crash
-     // Generate fake uptrend data
-     const fakeData = [];
-     let val = 100;
-     for(let i=0; i<20; i++) {
-       val = val * (1 + (Math.random() * 0.05)); // Go up
-       fakeData.push({ step: i, val });
-     }
-     setPsyChartData(fakeData);
-
-     // Clear existing crash
-     if(crashTimerRef.current) clearTimeout(crashTimerRef.current);
-
-     // Schedule crash
-     crashTimerRef.current = setTimeout(() => {
-         const crashData = [...fakeData];
-         // Append crash points
-         crashData.push({ step: 20, val: val });
-         crashData.push({ step: 21, val: 0 }); // Crash to 0 (-100%)
-         setPsyChartData(crashData);
-         
-         const crashMessages = [
-             "Liquidation Cascade.", "Emotions Don't Hedge.", "Margin Call.", 
-             "Market DGAF.", "Oof.", "Rekt.", "Psychology < Math."
-         ];
-         setPsyStatus(crashMessages[Math.floor(Math.random() * crashMessages.length)]);
-     }, 600); // Crash 600ms after slider stops moving
-  };
-  
-  // Initial load for Psychology Engine
-  useEffect(() => {
-      handlePsyChange(50);
+    setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  useEffect(() => {
-    const fetchOrFallback = async (url, fallback) => {
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Status ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            return fallback;
-        }
-    };
-
-    const fetchAllData = async () => {
-      try {
-        const [hist, live, heatmap, annual, stats, liveStats, liveHeatmap, topDrawdowns] = await Promise.all([
-            fetchOrFallback('/data/equity-historical.json', MOCK_HISTORICAL),
-            fetchOrFallback('/data/equity-live.json', MOCK_LIVE),
-            fetchOrFallback('/data/heatmap-data.json', MOCK_HEATMAP),
-            fetchOrFallback('/data/annual-returns.json', MOCK_ANNUAL),
-            fetchOrFallback('/data/stats-data.json', MOCK_STATS),
-            fetchOrFallback('/data/live-stats-data.json', MOCK_LIVE_STATS),
-            fetchOrFallback('/data/live-heatmap-data.json', MOCK_LIVE_HEATMAP),
-            fetchOrFallback('/data/top-drawdowns.json', MOCK_TOP_DRAWDOWNS),
-        ]);
-        
-        setFullData(hist);
-        const currentYear = 2025;
-        // UPDATED: Changed logic to y >= (currentYear - 5) to INCLUDE 2020 in the 5Y view
-        const initialFiltered = hist.filter(d => {
-            const y = parseInt(d.year);
-            return y >= (currentYear - 5) && y <= currentYear;
-        });
-        setFilteredChartData(initialFiltered);
-
-        setLiveData(live);
-        setHeatmapData(heatmap);
-        setLiveHeatmapData(liveHeatmap);
-        setTopDrawdownsData(topDrawdowns);
-        setAnnualReturnsData(annual);
-        setStatsData(stats);
-        setLiveStatsData(liveStats);
-        setLoading(false);
-      } catch (error) {
-        console.error('Critical error in data loading:', error);
-        setLoading(false);
-      }
-    };
-    fetchAllData();
-  }, []);
-
-  useEffect(() => {
-    const updateFavicons = async () => {
-      document.title = "Sentquant";
-      // UPDATED: Reverted scale to 1.5 (original size) but kept rounded corners (rx, ry)
-      const svgString = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-          <rect x="0" y="0" width="1024" height="1024" fill="black" rx="220" ry="220"/>
-          <g transform="translate(512, 512) scale(1.5) translate(-512, -512)"> 
-            ${LOGO_PATHS.map(d => `<path fill="#FFFFFF" d="${d}" />`).join('')}
-          </g>
-        </svg>
-      `;
-
-      const generatePngIcon = (size) => {
-        return new Promise((resolve) => {
-          const canvas = document.createElement('canvas');
-          canvas.width = size;
-          canvas.height = size;
-          const ctx = canvas.getContext('2d');
-          const img = new Image();
-          img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
-          
-          img.onload = () => {
-            ctx.drawImage(img, 0, 0, size, size);
-            resolve(canvas.toDataURL('image/png'));
-          };
-          img.onerror = () => {
-             resolve('');
-          }
-        });
-      };
-
-      try {
-        const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
-        let linkIcon = document.querySelector("link[rel~='icon']");
-        if (!linkIcon) {
-            linkIcon = document.createElement('link');
-            linkIcon.rel = 'icon';
-            document.head.appendChild(linkIcon);
-        }
-        linkIcon.href = svgUrl;
-
-        const appleTouchIconUrl = await generatePngIcon(180);
-        if(appleTouchIconUrl) {
-            let linkApple = document.querySelector("link[rel='apple-touch-icon']");
-            if (!linkApple) {
-                linkApple = document.createElement('link');
-                linkApple.rel = 'apple-touch-icon';
-                document.head.appendChild(linkApple);
-            }
-            linkApple.href = appleTouchIconUrl;
-        }
-      } catch (e) {
-          console.log("Favicon generation skipped due to environment restrictions");
-      }
-    };
-
-    updateFavicons();
-  }, []);
-
-  const handleTabChange = (tabId) => {
-      setActiveTab(tabId);
-      setIsMenuOpen(false);
-  };
-
-  const stats = useMemo(() => {
-    if (!filteredChartData || filteredChartData.length === 0) return {
-        totalReturn: 0, maxDrawdown: 0, cagr: 0, apr: 0, expectedValue: 0, volatility: 0, sharpe: 0, sortino: 0
-    };
-    const startVal = filteredChartData[0].value;
-    const endVal = filteredChartData[filteredChartData.length - 1].value;
-    const totalReturn = ((endVal - startVal) / startVal) * 100;
-    const maxDrawdown = Math.min(...filteredChartData.map(d => d.drawdown));
-    const dailyReturns = [];
-    for (let i = 1; i < filteredChartData.length; i++) {
-        const r = (filteredChartData[i].value - filteredChartData[i-1].value) / filteredChartData[i-1].value;
-        dailyReturns.push(r);
-    }
-    const tradingDays = 252;
-    const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
-    const annualizedReturn = meanDailyReturn * tradingDays;
-    const startDate = new Date(filteredChartData[0].date);
-    const endDate = new Date(filteredChartData[filteredChartData.length - 1].date);
-    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.01);
-    const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
-    const apr = annualizedReturn * 100;
-    const expectedValue = meanDailyReturn * 100;
-    const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDailyReturn, 2), 0) / (dailyReturns.length - 1);
-    const stdDev = Math.sqrt(variance);
-    const volatility = stdDev * Math.sqrt(tradingDays) * 100;
-    const sharpe = (volatility !== 0) ? (apr / volatility) : 0;
-    const downsideReturns = dailyReturns.filter(r => r < 0);
-    const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length;
-    const downsideDev = Math.sqrt(downsideVariance);
-    const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
-    const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
-    return { totalReturn, maxDrawdown, cagr, apr, expectedValue, volatility, sharpe, sortino };
-  }, [filteredChartData]);
-
-  const fmt = (val, suffix = '') => (val !== null && val !== undefined) ? `${val > 0 && suffix === '%' ? '+' : ''}${val.toLocaleString(undefined, {maximumFractionDigits: 2})} ${suffix}` : '-';
-  const colorClass = (val) => val >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]';
-
-  useEffect(() => {
-    if (selectedYear === 'ALL') {
-        setFilteredChartData(fullData);
-    } else if (selectedYear === '5Y') {
-        const currentYear = 2025;
-        // UPDATED: Changed logic to y >= (currentYear - 5) to INCLUDE 2020
-        const filtered = fullData.filter(d => {
-            const y = parseInt(d.year);
-            return y >= (currentYear - 5) && y <= currentYear;
-        });
-        setFilteredChartData(filtered);
-    } else if (selectedYear.includes('-')) {
-        const [start, end] = selectedYear.split('-').map(Number);
-        const filtered = fullData.filter(d => {
-            const y = parseInt(d.year);
-            return y >= start && y <= end;
-        });
-        setFilteredChartData(filtered);
-    } else {
-        const filtered = fullData.filter(d => d.year === selectedYear);
-        setFilteredChartData(filtered);
-    }
-  }, [selectedYear, fullData]);
-
-  const [showSplash, setShowSplash] = useState(true);
-  const [fadeOutSplash, setFadeOutSplash] = useState(false);
-  const [slideInTitle, setSlideInTitle] = useState(false);
-
-  useEffect(() => {
-    const timerSlide = setTimeout(() => setSlideInTitle(true), 100);
-    const timerFade = setTimeout(() => setFadeOutSplash(true), 2500);
-    const timerRemove = setTimeout(() => setShowSplash(false), 3500);
-    return () => { clearTimeout(timerSlide); clearTimeout(timerFade); clearTimeout(timerRemove); };
-  }, []);
-
-  if (loading && !showSplash) return <div className="h-screen bg-black text-white flex items-center justify-center">Loading Data...</div>;
+  if (loading) return <div className="h-screen bg-black text-white flex items-center justify-center font-mono">INITIALIZING SYSTEM...</div>;
 
   return (
     <div className="flex flex-col h-[100dvh] text-[#d1d4dc] font-sans overflow-hidden relative bg-black">
-      <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap');
-          .font-eth { font-family: 'Montserrat', sans-serif; }
-          body, .font-sans { font-family: 'Inter', sans-serif; }
-          .splash-title { font-family: 'Montserrat', sans-serif; }
-          .no-scrollbar::-webkit-scrollbar { display: none; }
-          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-          .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 4px; }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.6); }
-          .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
-          @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          
-          /* FIX: FORCE BLACK BACKGROUND AND DISABLE OVERSCROLL BOUNCE */
-          html, body {
-            background-color: #000000 !important;
-            margin: 0;
-            padding: 0;
-            overscroll-behavior: none; /* Prevents pull-to-refresh white space */
-            overscroll-behavior-y: none;
-            height: 100%;
-            width: 100%;
-          }
-          #root {
-            height: 100%;
-            width: 100%;
-            background-color: #000000;
-          }
-          
-          /* Range Slider Styling */
-          input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-          }
-          input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: #22ab94;
-            cursor: pointer;
-            margin-top: -6px;
-          }
-          input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-          }
-        `}
-      </style>
-
-      {/* SPLASH SCREEN */}
-      {showSplash && (
-        <div className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-1000 ease-in-out ${fadeOutSplash ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div className={`text-center overflow-hidden flex items-center justify-center transition-all duration-1000 ease-out transform ${slideInTitle ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
-             <SentquantLogo size={600} />
-          </div>
-        </div>
-      )}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+        .font-eth { font-family: 'Montserrat', sans-serif; }
+        body, .font-sans { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
 
       {/* HEADER */}
-      <header 
-        className="h-[60px] flex-none flex items-center justify-between px-4 bg-transparent z-50 relative"
-        style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
-      >
+      <header className="h-[60px] flex-none flex items-center justify-between px-4 md:px-8 bg-black/50 backdrop-blur-md z-50 border-b border-white/5">
         <div className="flex items-center gap-6">
-          {/* MOBILE LOGO */}
-          <div className="flex items-center gap-2 md:hidden">
-             <SentquantLogo size={80} />
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('home')}>
+             <SentquantLogo size={32} />
+             <span className="font-eth font-bold text-white tracking-wide hidden md:block">SENTQUANT</span>
           </div>
-
-          <div className="hidden md:block">
-             <nav className="flex items-center gap-8 text-sm font-semibold text-[#d1d4dc]">
-              {navItems.map(item => (
-                <button 
-                  key={item.id} 
-                  onClick={() => handleTabChange(item.id)}
-                  className={`hover:text-white transition-colors drop-shadow-sm ${activeTab === item.id ? 'text-white' : 'text-[#d1d4dc]/60'}`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-          </div>
+          <div className="hidden md:block h-6 w-px bg-white/10 mx-2"></div>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <button onClick={() => setActiveTab('home')} className={`transition-colors ${activeTab === 'home' ? 'text-[#22ab94]' : 'text-gray-400 hover:text-white'}`}>{t.nav.home}</button>
+            <button onClick={() => setActiveTab('terminal')} className={`transition-colors ${activeTab === 'terminal' ? 'text-[#22ab94]' : 'text-gray-400 hover:text-white'}`}>{t.nav.terminal}</button>
+            <button onClick={() => setActiveTab('live')} className={`transition-colors ${activeTab === 'live' ? 'text-[#22ab94]' : 'text-gray-400 hover:text-white'}`}>{t.nav.live}</button>
+            <button onClick={() => setActiveTab('about')} className={`transition-colors ${activeTab === 'about' ? 'text-[#22ab94]' : 'text-gray-400 hover:text-white'}`}>{t.nav.about}</button>
+          </nav>
         </div>
-        <div className="flex items-center gap-4 ml-auto">
-          {/* LANGUAGE TOGGLE */}
-          <button 
-            onClick={toggleLanguage}
-            className="p-2 rounded-full hover:bg-white/10 transition-colors text-sm font-bold text-white"
-            title={language === 'en' ? "Switch to Indonesian" : "Switch to English"}
-          >
-            {language === 'en' ? 'EN' : 'ID'}
-          </button>
-
-          <button className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors backdrop-blur-md flex items-center gap-2">
-            {t.join} <Lock size={14} />
-          </button>
-          {/* MOBILE MENU TOGGLE */}
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="block md:hidden hover:bg-white/10 p-2 rounded-full transition-colors text-white z-[60] relative"
-            aria-label="Toggle Menu"
-            style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+        <div className="flex items-center gap-4">
+          <button onClick={() => setLanguage(l => l === 'en' ? 'id' : 'en')} className="text-xs font-bold text-gray-400 hover:text-white transition-colors">{language === 'en' ? 'EN' : 'ID'}</button>
+          <button className="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-colors flex items-center gap-2">{t.join} <Lock size={12} /></button>
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-white">{isMenuOpen ? <X size={24}/> : <Menu size={24}/>}</button>
         </div>
       </header>
 
+      {/* MOBILE MENU */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl pt-24 px-6 md:hidden flex flex-col gap-6 animate-fade-in-up">
-            {navItems.map(item => (
-                <button key={item.id} onClick={() => handleTabChange(item.id)} className={`text-2xl font-bold text-left py-2 border-b border-white/10 ${activeTab === item.id ? 'text-white' : 'text-gray-500'}`}>{item.label}</button>
-            ))}
+        <div className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl pt-24 px-6 md:hidden flex flex-col gap-6 animate-fade-in-up">
+            <button onClick={() => { setActiveTab('home'); setIsMenuOpen(false); }} className={`text-xl font-bold text-left py-3 border-b border-white/10 ${activeTab === 'home' ? 'text-[#22ab94]' : 'text-gray-400'}`}>{t.nav.home}</button>
+            <button onClick={() => { setActiveTab('terminal'); setIsMenuOpen(false); }} className={`text-xl font-bold text-left py-3 border-b border-white/10 ${activeTab === 'terminal' ? 'text-[#22ab94]' : 'text-gray-400'}`}>{t.nav.terminal}</button>
+            <button onClick={() => { setActiveTab('live'); setIsMenuOpen(false); }} className={`text-xl font-bold text-left py-3 border-b border-white/10 ${activeTab === 'live' ? 'text-[#22ab94]' : 'text-gray-400'}`}>{t.nav.live}</button>
+            <button onClick={() => { setActiveTab('about'); setIsMenuOpen(false); }} className={`text-xl font-bold text-left py-3 border-b border-white/10 ${activeTab === 'about' ? 'text-[#22ab94]' : 'text-gray-400'}`}>{t.nav.about}</button>
         </div>
       )}
 
-      {/* MAIN CONTENT AREA */}
-      <div className="flex flex-1 overflow-hidden relative z-10">
-        <div className="fixed inset-0 z-[-10] bg-black pointer-events-none"></div>
-
-        <main ref={mainScrollRef} className="flex-1 overflow-y-auto custom-scrollbar relative">
+      {/* MAIN CONTENT */}
+      <div className="flex-1 overflow-hidden relative z-10">
+        <WarpBackground />
+        <main className="flex-1 h-full overflow-y-auto custom-scrollbar relative z-10 p-4 md:p-8 max-w-[1600px] mx-auto">
           
-          <WarpBackground />
+          {/* --- HOME PAGE --- */}
+          {activeTab === 'home' && (
+            <div className="animate-fade-in-up flex flex-col items-center justify-center min-h-[70vh] text-center max-w-4xl mx-auto space-y-8">
+               {/* Logo with Glow */}
+               <div className="relative">
+                  <div className="absolute inset-0 bg-[#22ab94] blur-[100px] opacity-20 rounded-full w-full h-full transform scale-150"></div>
+                  <SentquantLogo size={160} />
+               </div>
+               
+               {/* Tagline */}
+               <h1 className="text-4xl md:text-6xl font-eth font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400 tracking-tight leading-tight">
+                 {t.home.tagline}
+               </h1>
 
-          <div className={`max-w-[1584px] mx-auto px-4 sm:px-6 py-8 pb-20 relative z-10 ${activeTab === 'about' ? 'h-[calc(100vh-60px)]' : ''}`}> 
-            
-            {/* HOME */}
-            {activeTab === 'home' && (
-              <div className="animate-fade-in-up flex flex-col items-center justify-center h-[70vh]">
-                  <h1 className="text-7xl md:text-9xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl mb-6">
-                    Sentquant
-                  </h1>
-                  <p className="text-gray-400 text-sm md:text-base font-light tracking-wide text-center max-w-lg">
-                    {t.home.subtitle_1}<br />{t.home.subtitle_2}
-                  </p>
-              </div>
-            )}
+               {/* Manifesto */}
+               <p className="text-gray-400 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto">
+                 {t.home.manifesto}
+               </p>
 
-            {/* THE TERMINAL (FORMERLY BENCHMARK) */}
-            {activeTab === 'terminal' && (
-              <div className="animate-fade-in-up px-4 md:px-8 py-8">
-                 {/* Header */}
-                 <div className="mb-12 flex flex-col items-center justify-center text-center w-full">
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 mb-4">
-                      <SentquantLogo size={80} />
-                      <span className="text-3xl md:text-4xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl">Sentquant</span>
-                    </div>
+               {/* CTA Button */}
+               <button 
+                 onClick={() => setActiveTab('terminal')}
+                 className="mt-8 px-10 py-4 bg-[#22ab94] hover:bg-[#1fa08a] text-black font-bold rounded-full text-lg transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(34,171,148,0.4)] flex items-center gap-3"
+               >
+                 {t.home.launch} <ArrowRight size={20} />
+               </button>
+            </div>
+          )}
+
+          {/* --- TERMINAL: BENCHMARK COMPARISON --- */}
+          {activeTab === 'terminal' && (
+            <div className="animate-fade-in-up space-y-8 pb-20">
+              
+              {/* TOTAL TVL BANNER */}
+              <div className="w-full bg-black/20 backdrop-blur-md border border-white/10 rounded-3xl p-8 text-center flex flex-col items-center justify-center space-y-2 shadow-2xl relative overflow-hidden">
+                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#22ab94] to-transparent opacity-50"></div>
+                 
+                 {/* ADDED LOGO */}
+                 <div className="mb-2">
+                    <SentquantLogo size={48} /> 
                  </div>
 
-                 {/* Cards Grid */}
-                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
-                    {/* Left Card: Human Alpha (ANON) - WITH BLUR AND OVERLAY */}
-                    <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden flex flex-col h-[600px]">
-                        
-                        {/* BLUR OVERLAY & "ELITE TRADER" TEXT */}
-                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                           <h3 className="text-4xl md:text-5xl font-bold text-white font-eth tracking-tighter drop-shadow-2xl text-center px-4 border-2 border-white/20 py-4 rounded-xl bg-black/50">
-                               {t.terminal.elite_trader}
-                           </h3>
-                        </div>
-
-                        {/* Content below overlay (Blurred) */}
-                        <div className="filter blur-[6px] opacity-50 flex flex-col h-full pointer-events-none">
-                            <div className="bg-white/5 p-6 flex items-center justify-between mb-0 relative z-10">
-                              <div className="flex items-center gap-3">
-                                <div className="w-[56px] h-[56px] rounded-full bg-white/5 flex items-center justify-center">
-                                   <User size={32} className="text-white" />
-                                </div>
-                                <div>
-                                   <h3 className="text-white font-medium font-sans text-lg tracking-wider">ANON</h3>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="p-6 pt-0 flex flex-col flex-grow relative z-10">
-                                <div className="mb-0 mt-4">
-                                   <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">450%</div>
-                                   <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">{t.terminal.total_return}</div>
-                                </div>
-
-                                <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
-                                  <ResponsiveContainer width="100%" height="100%">
-                                      <AreaChart data={MOCK_BENCHMARK_HANSOLAR} margin={{top:10, left:0, right:0, bottom:0}}>
-                                          <defs>
-                                              <linearGradient id="colorHansolar" x1="0" y1="0" x2="0" y2="1">
-                                                  <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
-                                                  <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
-                                              </linearGradient>
-                                          </defs>
-                                          <XAxis dataKey="date" hide />
-                                          <YAxis orientation="right" domain={['auto', 'auto']} hide />
-                                          <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={3} fill="url(#colorHansolar)" dot={false} />
-                                      </AreaChart>
-                                  </ResponsiveContainer>
-                                </div>
-
-                                <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
-                                  <div>
-                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t.terminal.win_rate}</div>
-                                     <div className="text-white text-sm font-bold">78%</div>
-                                  </div>
-                                  <div>
-                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t.terminal.avg_mth}</div>
-                                     <div className="text-white text-sm font-bold">+15%</div>
-                                  </div>
-                                  <div>
-                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t.terminal.status}</div>
-                                     <div className="text-amber-400 text-sm font-bold">{t.terminal.live}</div>
-                                  </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Card: Machine Alpha (SENTQUANT) - TRANSPARENT BLUR, REDUCED FONT SIZE */}
-                    <div className="relative group bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-white/20 transition-all duration-500 flex flex-col h-[600px]">
-                        {/* Header: Icon + Name + Buttons */}
-                        <div className="bg-white/5 p-6 flex items-center justify-between mb-0"> 
-                          <div className="flex items-center gap-3">
-                            <SentquantLogo size={56} withBg={true} />
-                            <div>
-                               <div className="flex items-center gap-2">
-                                  <h3 className="text-white font-medium font-sans text-lg tracking-wider">Sentquant</h3>
-                               </div>
-                            </div>
-                          </div>
-                          
-                          {/* UPDATED: History & Live Buttons - Gray, No Icons */}
-                          <div className="flex flex-col md:flex-row gap-2">
-                             <button onClick={() => handleTabChange('historical')} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors flex items-center justify-center">
-                               {t.terminal.history}
-                             </button>
-                             <button onClick={() => handleTabChange('live')} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors flex items-center justify-center">
-                               {t.terminal.live_btn}
-                             </button>
-                          </div>
-                        </div>
-                        
-                        <div className="p-6 pt-0 flex flex-col flex-grow">
-                           {/* Hero Metric - UPDATED FONT SIZE */}
-                           <div className="mb-0 mt-4">
-                               <div className="text-[#22ab94] text-4xl font-bold tracking-tighter leading-none">0%</div>
-                               <div className="text-gray-500 text-sm font-medium mt-1 tracking-wide">{t.terminal.total_return}</div>
-                           </div>
-
-                           {/* CHART AREA */}
-                           <div className="flex-grow relative w-full mb-6 -ml-2 mt-4">
-                              <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart data={MOCK_BENCHMARK_ORIGIN} margin={{top:10, left:0, right:0, bottom:0}}>
-                                      <defs>
-                                          <linearGradient id="colorOrigin" x1="0" y1="0" x2="0" y2="1">
-                                              <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
-                                              <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
-                                          </linearGradient>
-                                      </defs>
-                                      <XAxis dataKey="date" hide />
-                                      <YAxis orientation="right" domain={['auto', 'auto']} hide />
-                                      <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(val) => [val.toFixed(2), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
-                                      <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={3} fill="url(#colorOrigin)" dot={false} />
-                                  </AreaChart>
-                              </ResponsiveContainer>
-                           </div>
-
-                           {/* BOTTOM STATS */}
-                           <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-4 text-center">
-                             <div>
-                                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">APR</div>
-                                <div className="text-white text-sm font-bold">0%</div>
-                             </div>
-                             <div>
-                                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">MAX DD</div>
-                                <div className="text-white text-sm font-bold">0%</div>
-                             </div>
-                             <div>
-                                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">SHARPE</div>
-                                <div className="text-white text-sm font-bold">0</div>
-                             </div>
-                           </div>
-                        </div>
-                    </div>
-                 </div>
-
-                 {/* --- MORE TRADER SOON SECTION --- */}
-                 <div className="mb-8 rounded-xl bg-black/20 backdrop-blur-sm overflow-hidden flex flex-col">
-                    <div className="bg-white/5 px-5 py-4 border-b border-white/5">
-                      <h3 className="font-bold text-white font-eth text-xl">{t.terminal.more_trader}</h3>
-                    </div>
-                    {/* Added blur, opacity, and disabled interactions */}
-                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 filter blur-sm opacity-50 pointer-events-none select-none">
-                       {VAULT_ITEMS.map((item) => (
-                          <div key={item.id} className="bg-black/20 border border-white/5 rounded-xl p-5 flex flex-col justify-between h-full">
-                              <div className="flex items-center gap-3 mb-6">
-                                {item.type === 'logo' ? (
-                                    <div className="w-10 h-10 flex items-center justify-center">
-                                      <SentquantLogo size={36} withBg={true} />
-                                    </div>
-                                ) : (
-                                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
-                                       <User size={20} className="text-white" />
-                                    </div>
-                                )}
-                                <h4 className="text-white font-bold font-eth tracking-wide">{item.name}</h4>
-                              </div>
-                              
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                   <span className="text-xs text-gray-500 font-bold uppercase">{t.terminal.return}</span>
-                                   <span className="text-[#22ab94] font-bold font-mono text-sm">{item.metrics.ret}</span>
-                                </div>
-                                <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                   <span className="text-xs text-gray-500 font-bold uppercase">{t.terminal.drawdown}</span>
-                                   <span className="text-[#f23645] font-bold font-mono text-sm">{item.metrics.dd}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                   <span className="text-xs text-gray-500 font-bold uppercase">{t.terminal.sharpe}</span>
-                                   <span className="text-white font-bold font-mono text-sm">{item.metrics.sharpe}</span>
-                                </div>
-                              </div>
-                          </div>
-                       ))}
-                    </div>
-                 </div>
-
-              </div>
-            )}
-
-            {/* LAB (MONTE CARLO & PSYCHOLOGY) */}
-            {activeTab === 'lab' && (
-              <div className="animate-fade-in-up px-4 md:px-8 py-8">
-                {/* Lab Header */}
-                <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-2xl font-bold text-white font-eth drop-shadow-md">{t.lab.title}</h3>
-                        </div>
-                        {/* Subtitle removed per request */}
-                    </div>
-                    <button 
-                        onClick={runMonteCarlo}
-                        className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-3 rounded-full text-sm font-bold transition-all shadow-[0_0_20px_rgba(107,114,128,0.3)] flex items-center gap-2"
-                    >
-                        <Play size={16} fill="currentColor" /> {t.lab.run_sim}
-                    </button>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-                    {/* INPUTS PANEL */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-                            <h4 className="text-white font-bold mb-6 flex items-center gap-2 text-sm tracking-wider border-b border-white/10 pb-4">
-                                <Settings size={14} /> {t.lab.params}
-                            </h4>
-                            
-                            <div className="space-y-8">
-                                {/* Initial Balance */}
-                                <div>
-                                    <div className="flex justify-between mb-2 text-xs font-medium">
-                                        <span className="text-gray-400">{t.lab.init_bal}</span>
-                                        <span className="text-white">${mcInitialBalance.toLocaleString()}</span>
-                                    </div>
-                                    <input 
-                                        type="range" min="1000" max="100000" step="1000"
-                                        value={mcInitialBalance}
-                                        onChange={(e) => setMcInitialBalance(Number(e.target.value))}
-                                        className="w-full"
-                                    />
-                                </div>
-
-                                {/* Expected Return */}
-                                <div>
-                                    <div className="flex justify-between mb-2 text-xs font-medium">
-                                        <span className="text-gray-400">{t.lab.exp_ret}</span>
-                                        <span className="text-[#22ab94]">{mcReturn}%</span>
-                                    </div>
-                                    <input 
-                                        type="range" min="-20" max="100" step="1"
-                                        value={mcReturn}
-                                        onChange={(e) => setMcReturn(Number(e.target.value))}
-                                        className="w-full"
-                                    />
-                                </div>
-
-                                {/* Volatility */}
-                                <div>
-                                    <div className="flex justify-between mb-2 text-xs font-medium">
-                                        <span className="text-gray-400">{t.lab.volatility}</span>
-                                        <span className="text-[#f23645]">{mcVolatility}%</span>
-                                    </div>
-                                    <input 
-                                        type="range" min="5" max="150" step="1"
-                                        value={mcVolatility}
-                                        onChange={(e) => setMcVolatility(Number(e.target.value))}
-                                        className="w-full"
-                                    />
-                                </div>
-
-                                {/* Time Horizon */}
-                                <div>
-                                    <div className="flex justify-between mb-2 text-xs font-medium">
-                                        <span className="text-gray-400">{t.lab.time}</span>
-                                        <span className="text-white">{mcTimeHorizon} Years</span>
-                                    </div>
-                                    <input 
-                                        type="range" min="1" max="5" step="1"
-                                        value={mcTimeHorizon}
-                                        onChange={(e) => setMcTimeHorizon(Number(e.target.value))}
-                                        className="w-full"
-                                    />
-                                </div>
-
-                                {/* Simulations */}
-                                <div>
-                                    <div className="flex justify-between mb-2 text-xs font-medium">
-                                        <span className="text-gray-400">{t.lab.sims}</span>
-                                        <span className="text-white">{mcSimulations}</span>
-                                    </div>
-                                    <input 
-                                        type="range" min="10" max="100" step="10"
-                                        value={mcSimulations}
-                                        onChange={(e) => setMcSimulations(Number(e.target.value))}
-                                        className="w-full"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* STATS CARD */}
-                        <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-                            {/* Removed Activity Icon as requested */}
-                            <h4 className="text-white font-bold mb-6 flex items-center gap-2 text-sm tracking-wider border-b border-white/10 pb-4">
-                                {t.lab.stats}
-                            </h4>
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg">
-                                    <span className="text-gray-400 text-xs">{t.lab.best_case}</span>
-                                    <span className="text-[#22ab94] font-bold font-mono">${Math.round(mcStats.best).toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg border-l-2 border-blue-400/50">
-                                    <span className="text-gray-400 text-xs">{t.lab.median}</span>
-                                    <span className="text-blue-200 font-bold font-mono">${Math.round(mcStats.median).toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg">
-                                    <span className="text-gray-400 text-xs">{t.lab.worst_case}</span>
-                                    <span className="text-[#f23645] font-bold font-mono">${Math.round(mcStats.worst).toLocaleString()}</span>
-                                </div>
-                                <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                                    <span className="text-gray-400 text-xs font-bold uppercase">{t.lab.prob_loss}</span>
-                                    <span className={`font-bold ${mcStats.probLoss > 50 ? 'text-[#f23645]' : 'text-white'}`}>{mcStats.probLoss.toFixed(1)}%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* CHART VISUALIZATION */}
-                    <div className="lg:col-span-2 h-[500px] bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col relative overflow-hidden">
-                         <div className="absolute top-4 right-4 z-10 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                            <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">GBM Model • {mcSimulations} Sims</span>
-                         </div>
-                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={mcChartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                                <XAxis dataKey="step" hide />
-                                <YAxis 
-                                    domain={['auto', 'auto']} 
-                                    orientation="right" 
-                                    tick={{fill: '#666', fontSize: 11}} 
-                                    tickFormatter={(val) => `$${val/1000}k`}
-                                    axisLine={false} 
-                                    tickLine={false}
-                                />
-                                <Tooltip 
-                                    contentStyle={{backgroundColor: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontFamily: 'Inter'}}
-                                    itemStyle={{fontSize: '12px'}}
-                                    labelStyle={{color: '#888', marginBottom: '5px'}}
-                                    formatter={(value) => [`$${Math.round(value).toLocaleString()}`, '']}
-                                />
-                                {/* Cloud of Simulations */}
-                                {Array.from({length: mcSimulations}).map((_, i) => (
-                                    <Line 
-                                        key={i}
-                                        type="monotone" 
-                                        dataKey={`sim${i}`} 
-                                        stroke="#555" 
-                                        strokeWidth={1} 
-                                        strokeOpacity={0.15} 
-                                        dot={false}
-                                        isAnimationActive={false} // Performance optimization
-                                    />
-                                ))}
-                                {/* Key Percentiles */}
-                                <Line type="monotone" dataKey="p95" stroke="#22ab94" strokeWidth={3} dot={false} />
-                                <Line type="monotone" dataKey="p50" stroke="#60a5fa" strokeWidth={3} dot={false} />
-                                <Line type="monotone" dataKey="p05" stroke="#f23645" strokeWidth={3} dot={false} />
-                            </LineChart>
-                         </ResponsiveContainer>
-                         <div className="flex justify-center gap-6 mt-2 text-xs font-bold">
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#22ab94]"></span> P95 (Best)</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#60a5fa]"></span> P50 (Median)</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#f23645]"></span> P05 (Worst)</div>
-                         </div>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-gray-500 max-w-2xl mx-auto text-center justify-center mb-16">
-                    <Info size={12} /> {t.lab.disclaimer}
-                </div>
-
-                {/* --- PSYCHOLOGY ENGINE SECTION --- */}
-                <div className="border-t border-white/10 pt-16 mt-8 animate-fade-in-up">
-                    <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                        <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-2xl font-bold text-white font-eth">
-                                    {t.lab.psy_title}
-                                </h3>
-                            </div>
-                            <p className="text-gray-400 text-sm max-w-xl italic opacity-80">{t.lab.psy_subtitle}</p>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* CONTROLS */}
-                        <div className="lg:col-span-1 bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between">
-                             <div>
-                                <h4 className="text-white font-bold mb-6 flex items-center gap-2 text-sm tracking-wider border-b border-white/10 pb-4">
-                                    {t.lab.psy_slider}
-                                </h4>
-                                <div className="mb-8">
-                                    <div className="flex justify-center mb-4 text-xs font-bold font-mono">
-                                        <span className="text-gray-400">{psyLevel}%</span>
-                                    </div>
-                                    <input 
-                                        type="range" min="0" max="100" step="1"
-                                        value={psyLevel}
-                                        onChange={(e) => handlePsyChange(e.target.value)}
-                                        className="w-full accent-gray-500 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                                    />
-                                </div>
-                             </div>
-                             
-                             <div className="bg-gray-900/10 border border-gray-500/20 rounded-xl p-4 text-center">
-                                 <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-2">{t.lab.psy_status}</div>
-                                 <div className="text-lg font-bold text-white font-mono animate-pulse">{psyStatus}</div>
-                             </div>
-                        </div>
-
-                        {/* MEME CHART */}
-                        <div className="lg:col-span-2 h-[400px] bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 relative overflow-hidden group">
-                             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/10 to-transparent pointer-events-none"></div>
-                             <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={psyChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
-                                    <XAxis dataKey="step" hide />
-                                    <YAxis hide domain={['dataMin', 'dataMax']} />
-                                    <Line 
-                                        type="stepAfter" 
-                                        dataKey="val" 
-                                        stroke="#f23645" 
-                                        strokeWidth={2} 
-                                        dot={false}
-                                        isAnimationActive={true}
-                                        animationDuration={300}
-                                    />
-                                    <ReferenceLine y={0} stroke="#333" strokeDasharray="3 3" />
-                                </LineChart>
-                             </ResponsiveContainer>
-                             
-                             <div className="absolute bottom-4 left-4 text-xs font-mono text-gray-500">
-                                 PNL_OVERLAY_V2.0 // EMOTIONAL_DAMAGE_MODE
-                             </div>
-                        </div>
-                    </div>
-
-                    {/* FOOTER QUOTE */}
-                    <div className="mt-12 p-8 border border-white/5 rounded-2xl bg-gradient-to-r from-black via-white/5 to-black text-center">
-                        <p className="text-gray-400 text-sm font-medium leading-relaxed max-w-3xl mx-auto">
-                            {t.lab.psy_quote_title} {t.lab.psy_quote_desc}
-                        </p>
-                    </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* HISTORICAL */}
-            {activeTab === 'historical' && (
-              <>
-                <div className="mb-10 animate-fade-in-up">
-                  <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
-                    <div className="flex items-center gap-4">
-                      <h3 className="text-xl font-bold flex items-center gap-2 text-white font-eth drop-shadow-md">
-                          {t.historical.title}
-                      </h3>
-                    </div>
-                    <div className="relative flex gap-2 items-center">
-                        <button onClick={() => { setSelectedYear('5Y'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === '5Y' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>5Y</button>
-                        <button onClick={() => { setSelectedYear('ALL'); setIsFilterOpen(false); }} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedYear === 'ALL' ? 'bg-[#22ab94] text-black shadow-[0_0_15px_rgba(34,171,148,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>ALL</button>
-                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${selectedYear !== 'ALL' && selectedYear !== '5Y' ? 'bg-gray-600 text-white shadow-[0_0_15px_rgba(75,85,99,0.5)]' : 'bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white backdrop-blur-sm'}`}>
-                          {selectedYear !== 'ALL' && selectedYear !== '5Y' ? selectedYear : t.historical.filter} <ChevronDown size={14} className={`transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        {isFilterOpen && (
-                          <div className="absolute top-full right-0 mt-2 w-40 max-h-60 overflow-y-auto bg-[#0a0a0a] rounded-xl shadow-xl z-50 p-2 custom-scrollbar backdrop-blur-md">
-                              <div className="mb-2 pb-2 border-b border-white/10">
-                                {manualRanges.map(range => (
-                                    <button key={range} onClick={() => { setSelectedYear(range); setIsFilterOpen(false); }} className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors mb-1 ${selectedYear === range ? 'bg-[#22ab94]/20 text-[#22ab94]' : 'text-gray-300 hover:bg-white/10'}`}>{range}</button>
-                                ))}
-                              </div>
-                              {yearsList.map((year) => (
-                                  <button key={year} onClick={() => { setSelectedYear(year); setIsFilterOpen(false); }} className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors mb-1 ${selectedYear === year ? 'bg-white/20 text-white' : 'text-gray-300 hover:bg-white/10'}`}>{year}</button>
-                              ))}
-                          </div>
-                        )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                    <div className="p-4 flex flex-col justify-center transition-colors"> 
-                       <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.total_return}</div>
-                             <div className={`text-lg font-bold drop-shadow-sm ${colorClass(stats.totalReturn)}`}>{fmt(stats.totalReturn, '%')}</div>
-                          </div>
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.max_dd}</div>
-                             <div className="text-lg font-bold text-[#f23645] drop-shadow-sm">{fmt(stats.maxDrawdown, '%')}</div>
-                          </div>
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.cagr}</div>
-                             <div className="text-lg font-bold drop-shadow-sm text-white">{fmt(stats.cagr, '%')}</div>
-                          </div>
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.apr}</div>
-                             <div className="text-lg font-bold drop-shadow-sm text-white">{fmt(stats.apr, '%')}</div>
-                          </div>
+                 {/* UPDATED: LABEL WITH TOOLTIP */}
+                 <div className="flex items-center gap-2 justify-center mb-1">
+                    <h2 className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">{t.terminal.total_tvl_label}</h2>
+                    <div className="relative group">
+                       <HelpCircle size={14} className="text-gray-500 cursor-help hover:text-[#22ab94] transition-colors" />
+                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-black/90 border border-white/10 rounded-lg text-xs text-gray-300 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-sm">
+                          {t.terminal.tvl_tooltip}
                        </div>
                     </div>
-                    <div className="p-4 flex flex-col justify-center transition-colors">
-                       <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.expected_val_short}</div>
-                             <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(stats.expectedValue, '%')}</div>
-                          </div>
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.volatility_short}</div>
-                             <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(stats.volatility, '%')}</div>
-                          </div>
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.sharpe}</div>
-                             <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(stats.sharpe)}</div>
-                          </div>
-                          <div>
-                             <div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.sortino}</div>
-                             <div className="text-lg font-bold text-white drop-shadow-sm">{fmt(stats.sortino)}</div>
-                          </div>
-                       </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col space-y-2">
-                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={filteredChartData} margin={{top:10, left:0, right:0, bottom:0}}>
-                            <defs>
-                              <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
-                                <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
-                              </linearGradient>
-                            </defs>
-                            <XAxis dataKey="date" hide />
-                            <YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
-                            <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(value) => [value.toLocaleString(), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
-                            <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorGradient)" isAnimationActive={selectedYear !== 'ALL'} animationDuration={500} dot={false} />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                        <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold cursor-pointer hover:text-white">{t.historical.sentquant_model}</span></div>
-                      </div>
-                      <div className="h-[180px] rounded-b-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={filteredChartData} margin={{top:5, left:0, right:0, bottom:0}}>
-                            <defs>
-                              <linearGradient id="colorDrawdown" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#f23645" stopOpacity={0.4}/>
-                                <stop offset="95%" stopColor="#f23645" stopOpacity={0.05}/>
-                              </linearGradient>
-                            </defs>
-                            <XAxis dataKey="date" hide />
-                            <YAxis orientation="right" tick={{fill: '#a1a1aa', fontSize: 10}} axisLine={false} tickLine={false} />
-                            <Tooltip contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#f23645'}} formatter={(value) => [`${value}%`, 'Drawdown']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
-                            <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
-                            <Area type="stepAfter" dataKey="drawdown" stroke="#f23645" strokeWidth={1.5} fill="url(#colorDrawdown)" isAnimationActive={selectedYear !== 'ALL'} dot={false} />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                  </div>
-                  <MonthlyHeatmap data={heatmapData} enableFilter={true} t={t.historical} />
-                  <TopDrawdownsTable data={topDrawdownsData} t={t.historical} />
-                </div>
-              </>
-            )}
-
-            {/* LIVE */}
-            {activeTab === 'live' && (
-              <div className="animate-fade-in-up">
-                <div className="mb-10">
-                  <div className="flex items-center gap-4 mb-4">
-                    <h3 className="text-xl font-bold flex items-center gap-2 text-white font-eth drop-shadow-md">{t.live.title}</h3>
-                    <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-500 text-xs backdrop-blur-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>{t.live.offline_status}</div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                      <div className="p-4 flex flex-col justify-center transition-colors backdrop-blur-sm rounded-xl bg-black/10"> 
-                          <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.total_return}</div><div className={`text-lg font-bold drop-shadow-sm ${colorClass(liveStatsData?.totalReturn)}`}>{fmt(liveStatsData?.totalReturn, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.max_dd}</div><div className="text-lg font-bold text-[#f23645] drop-shadow-sm">{fmt(liveStatsData?.maxDrawdown, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.cagr}</div><div className="text-lg font-bold drop-shadow-sm text-white">{fmt(liveStatsData?.cagr, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.apr}</div><div className="text-lg font-bold drop-shadow-sm text-white">{fmt(liveStatsData?.apr, '%')}</div></div>
-                          </div>
-                      </div>
-                      <div className="p-4 flex flex-col justify-center transition-colors backdrop-blur-sm rounded-xl bg-black/10">
-                          <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.expected_val_short}</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.expectedValue, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.volatility_short}</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.volatility, '%')}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.sharpe}</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.sharpe)}</div></div>
-                              <div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-semibold">{t.metrics_labels.sortino}</div><div className="text-lg font-bold text-white drop-shadow-sm">{fmt(liveStatsData?.sortino)}</div></div>
-                          </div>
-                      </div>
-                  </div>
-                  <div className="flex flex-col space-y-2">
-                      <div className="h-[300px] md:h-[400px] rounded-t-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={liveData} margin={{top:10, left:0, right:0, bottom:0}}>
-                            <defs><linearGradient id="colorLive" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/><stop offset="95%" stopColor="#22ab94" stopOpacity={0}/></linearGradient></defs>
-                            <XAxis dataKey="date" hide /><YAxis orientation="right" domain={['auto', 'auto']} tick={{fill: '#a1a1aa', fontSize: 11}} axisLine={false} tickLine={false} />
-                            <Tooltip separator=" " contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#22ab94'}} formatter={(value) => [value.toLocaleString(), 'NAV']} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
-                            <Area type="monotone" dataKey="value" stroke="#22ab94" strokeWidth={2} fill="url(#colorLive)" animationDuration={1500} dot={false} />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                        <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg"><span className="p-1 text-gray-300 text-xs font-bold">{t.historical.sentquant_model}</span></div>
-                      </div>
-                      <div className="h-[180px] rounded-b-xl bg-[#020202] backdrop-blur-sm overflow-hidden relative">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={liveData} margin={{top:5, left:0, right:0, bottom:0}}>
-                            <defs><linearGradient id="colorDrawdownLive" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f23645" stopOpacity={0.4}/><stop offset="95%" stopColor="#f23645" stopOpacity={0.05}/></linearGradient></defs>
-                            <XAxis dataKey="date" hide /><YAxis orientation="right" tick={{fill: '#a1a1aa', fontSize: 10}} axisLine={false} tickLine={false} />
-                            <Tooltip contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} itemStyle={{color: '#f23645'}} formatter={(value) => [`${value}%`, t.live.live_drawdown]} labelStyle={{color: '#fff', fontFamily: 'Inter'}} />
-                            <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
-                            <Area type="stepAfter" dataKey="drawdown" stroke="#f23645" strokeWidth={1.5} fill="url(#colorDrawdownLive)" animationDuration={1500} dot={false} />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                  </div>
-                  <MonthlyHeatmap data={liveHeatmapData} enableFilter={false} t={t.historical} />
-                </div>
+                 </div>
+                 
+                 {/* REDUCED FONT SIZE: text-4xl md:text-6xl -> text-3xl md:text-5xl */}
+                 <div className="text-3xl md:text-5xl font-eth font-bold text-white tracking-tight drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
+                    {formatCurrency(totalTVL)}
+                 </div>
+                 <p className="text-sm text-gray-500 font-medium">{t.terminal.tvl_sub}</p>
               </div>
-            )}
 
-            {/* STATS */}
-            {activeTab === 'stats' && (
-              <div className="animate-fade-in-up">
-                <div className="mb-10">
-                  <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth">{t.stats.annual_returns}</h3>
-                  </div>
-                  <div className="h-[300px] rounded-xl bg-black/20 backdrop-blur-sm p-4 relative">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RechartsBarChart data={annualReturnsData}>
-                           <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(5px)', fontFamily: 'Inter'}} itemStyle={{color: '#fff'}} />
-                           <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#a1a1aa', fontSize: 12}} dy={10} />
-                           <YAxis hide />
-                           <Bar dataKey="value" radius={[4, 4, 4, 4]}>
-                              {annualReturnsData.map((entry, index) => (
-                                 <Cell key={`cell-${index}`} fill={entry.value >= 0 ? '#22ab94' : '#f23645'} />
-                              ))}
-                           </Bar>
-                        </RechartsBarChart>
-                      </ResponsiveContainer>
-                  </div>
-                </div>
-                <AboutModelsCard t={t.stats} />
-                <div className="mb-20 grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {detailedStatsSections.map((section, idx) => (
-                      <DetailedStatCard key={idx} section={section} />
+              {/* BENCHMARK CHART SECTION */}
+              <div className="space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <h1 className="text-2xl md:text-3xl font-eth font-bold text-white">{t.terminal.title}</h1>
+                  
+                  {/* Visibility Toggles */}
+                  <div className="flex flex-wrap gap-2">
+                    {STRATEGIES_CONFIG.map(strat => (
+                      <button 
+                        key={strat.id}
+                        onClick={() => toggleStrategyVisibility(strat.id)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${visibleStrategies[strat.id] ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-gray-500'}`}
+                      >
+                        {visibleStrategies[strat.id] ? <Eye size={12} style={{color: strat.color}} /> : <EyeOff size={12} />}
+                        {strat.name}
+                      </button>
                     ))}
+                  </div>
+                </div>
+
+                <div className="h-[400px] md:h-[500px] w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={MOCK_BENCHMARK_DATA} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
+                      <defs>
+                        {STRATEGIES_CONFIG.map(strat => (
+                          <linearGradient key={strat.id} id={`color-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={strat.color} stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor={strat.color} stopOpacity={0}/>
+                          </linearGradient>
+                        ))}
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                      <XAxis dataKey="date" hide />
+                      <YAxis domain={['dataMin', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
+                      <Tooltip 
+                        contentStyle={{backgroundColor: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px'}} 
+                        itemStyle={{fontSize: '12px', fontWeight: 'bold'}}
+                        labelStyle={{color: '#888', marginBottom: '5px'}}
+                      />
+                      {STRATEGIES_CONFIG.map(strat => (
+                        visibleStrategies[strat.id] && (
+                          <Area 
+                            key={strat.id}
+                            type="monotone" 
+                            dataKey={strat.id} 
+                            stroke={strat.color} 
+                            strokeWidth={2}
+                            fill={`url(#color-${strat.id})`}
+                            dot={false}
+                            activeDot={{r: 4, strokeWidth: 0}}
+                          />
+                        )
+                      ))}
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
-            )}
 
-            {/* ABOUT */}
-            {activeTab === 'about' && (
-              <div className="animate-fade-in-up flex flex-col items-start justify-start h-full relative z-10 px-4 pt-0 md:pt-8 pl-4 md:pl-20">
-                  <div className="max-w-3xl text-left">
-                    <h2 className="text-2xl md:text-3xl font-medium text-gray-400 font-eth mb-4">{t.about.broken}</h2>
-                    <div className="text-white text-sm font-medium leading-relaxed font-sans space-y-4 max-w-xl">
-                        <p>{t.about.fake_gurus}</p>
-                        <p>{t.about.cant_verify}</p>
-                        <p>{t.about.misled}</p>
-                        <p>{t.about.talks}</p>
-                        <p>{t.about.no_data}</p>
-                    </div>
-                    <div className="text-2xl md:text-3xl font-medium text-gray-400 font-eth leading-tight space-y-2 mt-12 max-w-2xl">
-                        <p>{t.about.cmc_analogy_1}</p>
-                        <p>{t.about.cmc_analogy_2}</p>
-                        <p>{t.about.cant_lie}</p>
-                    </div>
-                    <div className="mt-12 space-y-12 pb-20">
-                        <div className="text-white text-sm font-medium leading-relaxed font-sans space-y-4 max-w-xl text-left">
-                            <p>{t.about.no_sell_courses}</p>
-                            <p>{t.about.no_sell_signals}</p>
-                            <p>{t.about.no_sell_vip}</p>
-                            <p>{t.about.arena}</p>
+              {/* STRATEGY CARDS GRID - REDESIGNED */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {STRATEGIES_CONFIG.map(strat => (
+                  // The card container matches the visual style: Dark bg, rounded corners, border
+                  <div key={strat.id} className="relative bg-[#0E0E0E] border border-white/10 rounded-3xl p-6 flex flex-col h-[450px] overflow-hidden group hover:border-white/20 transition-all duration-300">
+                    
+                    {/* Header: Icon, Name, Buttons */}
+                    <div className="flex justify-between items-start mb-2 z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/5">
+                           {strat.id === 'sentquant' ? <SentquantLogo size={24} /> : <Activity size={20} style={{color: strat.color}} />}
                         </div>
-                        <div className="flex flex-col items-start text-left w-full max-w-4xl pt-4">
-                            <div className="py-2"><span className="text-2xl md:text-3xl font-medium text-gray-400 font-eth block">{t.about.era_ends}</span></div>
-                            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 border-t border-b border-white/10 py-6 my-8">
-                                <div className="flex flex-wrap justify-start gap-3 md:gap-6 text-[11px] md:text-[13px] font-mono text-blue-400 tracking-widest">
-                                    <span>{t.about.every_trader}</span>
-                                    <span>{t.about.every_strategy}</span>
-                                    <span>{t.about.every_claim}</span>
-                                    <span className="whitespace-nowrap">{t.about.proven}</span>
-                                </div>
-                                <button className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full text-sm md:text-base font-bold transition-colors backdrop-blur-md flex items-center gap-2 group border border-white/5">
-                                    {t.about.join_movement} <Lock size={18} />
-                                </button>
-                            </div>
+                        <div>
+                           <h3 className="font-bold text-white font-eth text-lg tracking-wide">{strat.name}</h3>
                         </div>
+                      </div>
+                      <div className="flex gap-2">
+                         <button onClick={() => handleLiveView(strat.id)} className="px-3 py-1 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-[10px] font-bold text-gray-300 transition-colors">
+                           {t.terminal.history}
+                         </button>
+                         <button onClick={() => handleLiveView(strat.id)} className="px-3 py-1 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-[10px] font-bold text-white transition-colors">
+                           {t.terminal.live_btn}
+                         </button>
+                      </div>
+                    </div>
+
+                    {/* Main Metric: Big Total Return - FORCED GREEN */}
+                    <div className="mt-4 z-10">
+                       <div className="text-5xl font-bold font-eth tracking-tighter text-[#22ab94]">
+                          {strat.return}
+                       </div>
+                       <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
+                          {t.terminal.total_return}
+                       </div>
+                    </div>
+
+                    {/* Chart Area: Fills middle - FORCED GREEN */}
+                    <div className="absolute inset-x-0 top-[120px] bottom-[80px] w-full opacity-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={MOCK_STRATEGIES_DETAILS[strat.id].liveData}>
+                            <defs>
+                              <linearGradient id={`cardGradient-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#22ab94" stopOpacity={0.2}/>
+                                <stop offset="100%" stopColor="#22ab94" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <Tooltip 
+                                contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(4px)'}}
+                                itemStyle={{color: '#22ab94'}}
+                                cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
+                                formatter={(val) => [val.toFixed(2), 'NAV']}
+                                labelStyle={{display: 'none'}}
+                            />
+                            <Area 
+                              type="monotone" 
+                              dataKey="value" 
+                              stroke="#22ab94" 
+                              strokeWidth={2} 
+                              fill={`url(#cardGradient-${strat.id})`} 
+                              dot={false}
+                              activeDot={{ r: 4, fill: '#22ab94', stroke: '#fff' }}
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Footer Metrics: APR, Max DD, Sharpe */}
+                    <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
+                       <div className="text-center">
+                          <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
+                          <div className="text-sm font-bold text-white">{strat.apr}</div>
+                       </div>
+                       <div className="text-center relative">
+                          {/* Divider lines */}
+                          <div className="absolute left-0 top-1 bottom-1 w-px bg-white/5"></div>
+                          <div className="absolute right-0 top-1 bottom-1 w-px bg-white/5"></div>
+                          <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.max_dd}</div>
+                          <div className="text-sm font-bold text-white">{strat.dd}</div>
+                       </div>
+                       <div className="text-center">
+                          <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.sharpe}</div>
+                          <div className="text-sm font-bold text-white">{strat.sharpe}</div>
+                       </div>
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* --- LIVE: UNIFIED DASHBOARD --- */}
+          {activeTab === 'live' && (
+            <div className="animate-fade-in-up space-y-12 pb-20">
+              
+              {/* SECTION 1: LIVE TRADING STATUS */}
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/5 border border-white/10">
+                       {currentStrategy.id === 'sentquant' ? <SentquantLogo size={32} /> : <Activity size={24} style={{color: currentStrategy.color}} />}
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-eth font-bold text-white">{currentStrategy.name}</h1>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`w-2 h-2 rounded-full ${currentStrategy.status === 'Live' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{currentStrategy.status} TRADING</span>
+                      </div>
                     </div>
                   </div>
-              </div>
-            )}
-
-            {/* FOOTER */}
-            {activeTab !== 'about' && (
-                <footer className="pt-12 pb-8 bg-black/20 backdrop-blur-md rounded-xl mt-10 border-t border-white/5">
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12 text-sm text-gray-400 px-6">
-                    <div className="col-span-2 lg:col-span-2 pr-8">
-                        <div className="flex items-center gap-2 mb-4"><span className="text-xl font-bold text-white font-eth">Sentquant</span></div>
-                        <p className="mb-4">{t.about.era_ends}</p>
-                    </div>
                 </div>
-                </footer>
-            )}
 
-          </div>
+                {/* KEY METRICS GRID (ADDED ABOVE CHARTS) */}
+                <KeyMetricsGrid stats={currentStats} t={t} isLive={true} />
+
+                {/* LIVE CHARTS (STACKED) */}
+                <StrategyCharts 
+                  data={currentStrategy.liveData} 
+                  color={currentStrategy.color} 
+                  name={currentStrategy.name} 
+                  title="Live" 
+                />
+              </div>
+
+              {/* SECTION 2: HISTORICAL PERFORMANCE */}
+              <div>
+                <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
+                  <span className="w-1 h-6 bg-[#22ab94] rounded-full"></span>
+                  <h2 className="text-xl font-eth font-bold text-white">{t.live.historical_title}</h2>
+                </div>
+                
+                {/* HISTORICAL KEY METRICS GRID (ADDED) */}
+                <KeyMetricsGrid stats={currentStats} t={t} isLive={false} />
+
+                {/* HISTORICAL CHARTS (ADDED) */}
+                <StrategyCharts 
+                  data={currentStrategy.historicalData} 
+                  color={currentStrategy.color} 
+                  name={currentStrategy.name} 
+                  title="Historical" 
+                />
+
+                <MonthlyHeatmap data={currentStrategy.heatmap} t={t.historical} />
+                <TopDrawdownsTable data={currentStrategy.topDrawdowns} t={t.historical} />
+              </div>
+
+              {/* SECTION 3: STATISTICS & METRICS */}
+              <div>
+                <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
+                  <span className="w-1 h-6 bg-[#22ab94] rounded-full"></span>
+                  <h2 className="text-xl font-eth font-bold text-white">{t.live.stats_title}</h2>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                  {/* Annual Returns Bar Chart */}
+                  <div className="lg:col-span-2 h-[300px] bg-black/20 border border-white/5 rounded-xl p-4">
+                    <h3 className="text-sm font-bold text-white mb-4 font-eth">{t.stats.annual_returns}</h3>
+                    <ResponsiveContainer width="100%" height="90%">
+                      <RechartsBarChart data={currentStrategy.annualReturns}>
+                        <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 12}} />
+                        <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{backgroundColor: '#000', border: 'none'}} />
+                        <Bar dataKey="value" radius={[4, 4, 4, 4]}>
+                          {currentStrategy.annualReturns.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.value >= 0 ? currentStrategy.color : '#f23645'} />
+                          ))}
+                        </Bar>
+                      </RechartsBarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  
+                  {/* About Model */}
+                  <div className="lg:col-span-1">
+                    <AboutModelsCard t={t.stats} />
+                  </div>
+                </div>
+
+                {/* Detailed Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {detailedStatsSections.map((section, idx) => (
+                    <DetailedStatCard key={idx} section={section} />
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* --- ABOUT --- */}
+          {activeTab === 'about' && (
+            <div className="animate-fade-in-up flex flex-col items-center justify-center min-h-[60vh] text-center max-w-2xl mx-auto">
+               <SentquantLogo size={100} />
+               <h2 className="text-3xl font-eth font-bold text-white mt-8 mb-4">{t.about.broken}</h2>
+               <p className="text-gray-400 leading-relaxed mb-8">{t.about.fake_gurus} {t.about.misled} {t.about.era_ends}</p>
+               <button className="px-8 py-3 bg-[#22ab94] text-black font-bold rounded-full hover:bg-[#1fa08a] transition-colors">
+                 {t.about.join_movement}
+               </button>
+            </div>
+          )}
+
         </main>
-        
-        {/* SCROLL TO TOP BUTTON */}
-        <button
-          onClick={scrollToTop}
-          className={`fixed bottom-8 right-8 z-50 p-3 rounded-full bg-gray-500/80 hover:bg-gray-600 text-white shadow-lg backdrop-blur-sm transition-all duration-500 transform ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
-          aria-label="Scroll to top"
-        >
-          <ArrowUp size={24} />
-        </button>
       </div>
-
-      {/* VERCEL ANALYTICS */}
-      <Analytics />
     </div>
   );
 }
