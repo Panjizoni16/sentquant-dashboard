@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
-  BarChart as RechartsBarChart, Bar, Cell, LineChart, Line, CartesianGrid, Legend
+  BarChart as RechartsBarChart, Bar, Cell, CartesianGrid
 } from 'recharts';
 import { 
-  Menu, X, ChevronDown, Lock, User, ArrowUp, Activity, TrendingUp, AlertTriangle, 
-  Globe, FlaskConical, Play, RefreshCw, Settings, Info, Brain, Eye, EyeOff, ArrowRight,
-  Wallet, HelpCircle 
+  Menu, X, Lock, Activity, Eye, EyeOff, ArrowRight, HelpCircle 
 } from 'lucide-react';
 
 // --- UTILITY: Fetch or Fallback ---
@@ -24,13 +22,14 @@ const LOGO_PATHS = [
 ];
 
 // --- COMPONENT: CUSTOM Q LOGO ---
-const SentquantLogo = ({ size = 120, withBg = false }) => (
+// animate prop set to false by default to ensure stability
+const SentquantLogo = ({ size = 120, withBg = false, animate = false }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
     width={size} 
     height={size} 
     viewBox="0 0 1024 1024"
-    className={`animate-fade-in-up ${!withBg ? 'drop-shadow-[0_0_35px_rgba(34,171,148,0.4)]' : ''}`}
+    className={`${animate ? 'animate-fade-in-up' : ''} ${!withBg ? 'drop-shadow-[0_0_35px_rgba(34,171,148,0.4)]' : ''}`}
   >
     {withBg && <rect x="0" y="0" width="1024" height="1024" fill="#000000" />}
     <g transform="translate(512, 512) scale(1.4) translate(-512, -512)">
@@ -58,16 +57,6 @@ const formatCurrency = (value) => {
     currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }).format(value);
-};
-
-// Helper for compact currency (e.g. $8.2M)
-const formatCompactCurrency = (value) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    notation: "compact",
-    maximumFractionDigits: 1
   }).format(value);
 };
 
@@ -483,7 +472,7 @@ const MonthlyHeatmap = ({ data, t }) => {
                         <td key={i} className="text-center py-4 px-2">
                             {val !== null ? (
                               <span className={`px-2 py-1 rounded font-medium backdrop-blur-md ${val >= 0 ? 'text-[#22ab94] bg-[#22ab94]/20' : 'text-[#f23645] bg-[#f23645]/20'}`}>
-                                    {val > 0 ? '+' : ''}{val}%
+                                      {val > 0 ? '+' : ''}{val}%
                               </span>
                             ) : <span className="text-gray-600">-</span>}
                         </td>
@@ -679,9 +668,9 @@ export default function App() {
   return (
     <div className="flex flex-col h-[100dvh] text-[#d1d4dc] font-sans overflow-hidden relative bg-black">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=block');
         .font-eth { font-family: 'Montserrat', sans-serif; }
-        body, .font-sans { font-family: 'Inter', sans-serif; }
+        body, .font-sans { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -730,11 +719,13 @@ export default function App() {
           
           {/* --- HOME PAGE --- */}
           {activeTab === 'home' && (
-            <div className="animate-fade-in-up flex flex-col items-center justify-center min-h-[70vh] text-center max-w-4xl mx-auto space-y-8">
+            // REMOVED: animate-fade-in-up to prevent "glitch" effect
+            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center max-w-4xl mx-auto space-y-8">
                {/* Logo with Glow */}
                <div className="relative">
                   <div className="absolute inset-0 bg-[#22ab94] blur-[100px] opacity-20 rounded-full w-full h-full transform scale-150"></div>
-                  <SentquantLogo size={160} />
+                  {/* FIXED: Added animate={false} to ensure it stays static */}
+                  <SentquantLogo size={160} animate={false} />
                </div>
                
                {/* Tagline */}
@@ -742,10 +733,14 @@ export default function App() {
                  {t.home.tagline}
                </h1>
 
-               {/* Manifesto */}
-               <p className="text-gray-400 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto">
-                 {t.home.manifesto}
-               </p>
+               {/* Manifesto Box */}
+               {/* Removed backdrop-blur-sm to prevent jitter against moving canvas, increased bg opacity */}
+               <div className="bg-[#050505]/90 border border-white/10 rounded-2xl p-6 md:p-8 max-w-3xl mx-auto relative overflow-hidden shadow-2xl z-20">
+                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#22ab94]/50 to-transparent"></div>
+                 <p className="text-gray-300 text-lg md:text-xl font-medium leading-relaxed font-sans antialiased">
+                   {t.home.manifesto}
+                 </p>
+               </div>
 
                {/* CTA Button */}
                <button 
