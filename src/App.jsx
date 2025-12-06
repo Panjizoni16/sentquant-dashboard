@@ -28,7 +28,8 @@ const SentquantLogo = ({ size = 120, withBg = false, animate = false }) => (
     width={size} 
     height={size} 
     viewBox="0 0 1024 1024"
-    className={`${animate ? 'animate-fade-in-up' : ''} ${!withBg ? 'drop-shadow-[0_0_35px_rgba(34,171,148,0.4)]' : ''}`}
+    // Keep Shadow Grey (Base Website Theme)
+    className={`${animate ? 'animate-fade-in-up' : ''} ${!withBg ? 'drop-shadow-[0_0_35px_rgba(163,163,163,0.4)]' : ''}`}
   >
     {withBg && <rect x="0" y="0" width="1024" height="1024" fill="#000000" />}
     <g transform="translate(512, 512) scale(1.4) translate(-512, -512)">
@@ -41,6 +42,7 @@ const SentquantLogo = ({ size = 120, withBg = false, animate = false }) => (
 
 // --- CONFIGURATION & MOCK DATA ---
 const STRATEGIES_CONFIG = [
+  // REVERTED: Sentquant color back to Teal (#22ab94) for Card/Strategy Identity
   { id: 'sentquant', name: 'Sentquant', color: '#22ab94', status: 'Offline', return: '25,516%', dd: '-29.20%', sharpe: 1.44, tvl: 8200000, apr: '1,224%' },
   { id: 'alpha_hunter', name: 'Alpha Hunter', color: '#3b82f6', status: 'Live', return: '12,450%', dd: '-18.50%', sharpe: 1.82, tvl: 3500000, apr: '850%' },
   { id: 'momentum_pro', name: 'Momentum Pro', color: '#f59e0b', status: 'Live', return: '8,320%', dd: '-22.10%', sharpe: 1.35, tvl: 2100000, apr: '620%' },
@@ -325,6 +327,7 @@ const TRANSLATIONS = {
 // --- COMPONENT: KEY METRICS GRID (NEW) ---
 const KeyMetricsGrid = ({ stats, t, isLive }) => {
   const metrics = [
+    // REVERTED: Positive value color to Teal (#22ab94) for stats
     { label: t.metrics_labels.total_return, value: `${stats.totalReturn.toLocaleString()}%`, color: stats.totalReturn >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]' },
     { label: t.metrics_labels.max_dd, value: `${stats.maxDrawdown}%`, color: 'text-[#f23645]' },
     { label: t.metrics_labels.cagr, value: `${stats.cagr}%`, color: 'text-white' },
@@ -356,8 +359,9 @@ const StrategyCharts = ({ data, color, name, title }) => (
         <AreaChart data={data} margin={{top:10, left:0, right:0, bottom:0}}>
           <defs>
             <linearGradient id={`equityGradient-${name}-${title}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22ab94" stopOpacity={0.4}/>
-              <stop offset="95%" stopColor="#22ab94" stopOpacity={0}/>
+              {/* REVERTED: Uses 'color' prop (Teal for Sentquant) instead of hardcoded Grey */}
+              <stop offset="5%" stopColor={color} stopOpacity={0.4}/>
+              <stop offset="95%" stopColor={color} stopOpacity={0}/>
             </linearGradient>
           </defs>
           <XAxis dataKey="date" hide />
@@ -365,14 +369,14 @@ const StrategyCharts = ({ data, color, name, title }) => (
           <Tooltip 
             separator=" " 
             contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(10px)', fontFamily: 'Inter'}} 
-            itemStyle={{color: '#22ab94'}} 
+            itemStyle={{color: color}} 
             formatter={(value) => [value.toLocaleString(), 'NAV']} 
             labelStyle={{color: '#fff', fontFamily: 'Inter'}} 
           />
           <Area 
             type="monotone" 
             dataKey="value" 
-            stroke="#22ab94" 
+            stroke={color} 
             strokeWidth={2} 
             fill={`url(#equityGradient-${name}-${title})`} 
             dot={false} 
@@ -447,6 +451,7 @@ const MonthlyHeatmap = ({ data, t }) => {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <h3 className="text-xl font-bold text-white drop-shadow-md font-eth">{t.heatmap_title}</h3>
           <div className="flex gap-2">
+            {/* REVERTED: Legend color to Teal (#22ab94) */}
             <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> {t.positive}</span>
             <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> {t.negative}</span>
           </div>
@@ -470,8 +475,9 @@ const MonthlyHeatmap = ({ data, t }) => {
                       {row.months.map((val, i) => (
                         <td key={i} className="text-center py-4 px-2">
                             {val !== null ? (
+                              // REVERTED: Value colors back to Teal (#22ab94)
                               <span className={`px-2 py-1 rounded font-medium backdrop-blur-md ${val >= 0 ? 'text-[#22ab94] bg-[#22ab94]/20' : 'text-[#f23645] bg-[#f23645]/20'}`}>
-                                      {val > 0 ? '+' : ''}{val}%
+                                        {val > 0 ? '+' : ''}{val}%
                               </span>
                             ) : <span className="text-gray-600">-</span>}
                         </td>
@@ -518,6 +524,7 @@ const TopDrawdownsTable = ({ data, t }) => (
               <td className="py-3 px-4 text-gray-300 font-mono text-xs">{row.endDate}</td>
               <td className="py-3 px-4 text-right font-bold text-[#f23645]">{row.depth.toFixed(2)}%</td>
               <td className="py-3 px-4 text-right text-white font-mono">{row.duration} days</td>
+              {/* REVERTED: Recovery days to Teal (#22ab94) */}
               <td className="py-3 px-4 text-right text-[#22ab94] font-mono">{row.recovery} days</td>
             </tr>
           ))}
@@ -685,14 +692,16 @@ export default function App() {
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('home')}>
              <SentquantLogo size={32} />
-             <span className="font-eth font-bold text-white tracking-wide hidden md:block">SENTQUANT</span>
+             {/* REMOVED: Text SENTQUANT removed as requested */}
           </div>
           <div className="hidden md:block h-6 w-px bg-white/10 mx-2"></div>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <button onClick={() => setActiveTab('home')} className={`transition-colors ${activeTab === 'home' ? 'text-[#22ab94]' : 'text-gray-400 hover:text-white'}`}>{t.nav.home}</button>
-            <button onClick={() => setActiveTab('terminal')} className={`transition-colors ${activeTab === 'terminal' ? 'text-[#22ab94]' : 'text-gray-400 hover:text-white'}`}>{t.nav.terminal}</button>
-            <button onClick={() => setActiveTab('live')} className={`transition-colors ${activeTab === 'live' ? 'text-[#22ab94]' : 'text-gray-400 hover:text-white'}`}>{t.nav.live}</button>
-            <button onClick={() => setActiveTab('about')} className={`transition-colors ${activeTab === 'about' ? 'text-[#22ab94]' : 'text-gray-400 hover:text-white'}`}>{t.nav.about}</button>
+          {/* UPDATED: Added font-eth directly to buttons for stronger specificity */}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-bold tracking-wider">
+            {/* KEPT: Active tab color to Grey (#A3A3A3) for Website Theme */}
+            <button onClick={() => setActiveTab('home')} className={`transition-colors font-eth ${activeTab === 'home' ? 'text-[#A3A3A3]' : 'text-gray-400 hover:text-white'}`}>{t.nav.home}</button>
+            <button onClick={() => setActiveTab('terminal')} className={`transition-colors font-eth ${activeTab === 'terminal' ? 'text-[#A3A3A3]' : 'text-gray-400 hover:text-white'}`}>{t.nav.terminal}</button>
+            <button onClick={() => setActiveTab('live')} className={`transition-colors font-eth ${activeTab === 'live' ? 'text-[#A3A3A3]' : 'text-gray-400 hover:text-white'}`}>{t.nav.live}</button>
+            <button onClick={() => setActiveTab('about')} className={`transition-colors font-eth ${activeTab === 'about' ? 'text-[#A3A3A3]' : 'text-gray-400 hover:text-white'}`}>{t.nav.about}</button>
           </nav>
         </div>
         <div className="flex items-center gap-4">
@@ -705,10 +714,11 @@ export default function App() {
       {/* MOBILE MENU */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl pt-24 px-6 md:hidden flex flex-col gap-6 animate-fade-in-up">
-            <button onClick={() => { setActiveTab('home'); setIsMenuOpen(false); }} className={`text-xl font-bold text-left py-3 border-b border-white/10 ${activeTab === 'home' ? 'text-[#22ab94]' : 'text-gray-400'}`}>{t.nav.home}</button>
-            <button onClick={() => { setActiveTab('terminal'); setIsMenuOpen(false); }} className={`text-xl font-bold text-left py-3 border-b border-white/10 ${activeTab === 'terminal' ? 'text-[#22ab94]' : 'text-gray-400'}`}>{t.nav.terminal}</button>
-            <button onClick={() => { setActiveTab('live'); setIsMenuOpen(false); }} className={`text-xl font-bold text-left py-3 border-b border-white/10 ${activeTab === 'live' ? 'text-[#22ab94]' : 'text-gray-400'}`}>{t.nav.live}</button>
-            <button onClick={() => { setActiveTab('about'); setIsMenuOpen(false); }} className={`text-xl font-bold text-left py-3 border-b border-white/10 ${activeTab === 'about' ? 'text-[#22ab94]' : 'text-gray-400'}`}>{t.nav.about}</button>
+            {/* KEPT: Active tab color to Grey (#A3A3A3) */}
+            <button onClick={() => { setActiveTab('home'); setIsMenuOpen(false); }} className={`text-xl font-bold font-eth tracking-wide text-left py-3 border-b border-white/10 ${activeTab === 'home' ? 'text-[#A3A3A3]' : 'text-gray-400'}`}>{t.nav.home}</button>
+            <button onClick={() => { setActiveTab('terminal'); setIsMenuOpen(false); }} className={`text-xl font-bold font-eth tracking-wide text-left py-3 border-b border-white/10 ${activeTab === 'terminal' ? 'text-[#A3A3A3]' : 'text-gray-400'}`}>{t.nav.terminal}</button>
+            <button onClick={() => { setActiveTab('live'); setIsMenuOpen(false); }} className={`text-xl font-bold font-eth tracking-wide text-left py-3 border-b border-white/10 ${activeTab === 'live' ? 'text-[#A3A3A3]' : 'text-gray-400'}`}>{t.nav.live}</button>
+            <button onClick={() => { setActiveTab('about'); setIsMenuOpen(false); }} className={`text-xl font-bold font-eth tracking-wide text-left py-3 border-b border-white/10 ${activeTab === 'about' ? 'text-[#A3A3A3]' : 'text-gray-400'}`}>{t.nav.about}</button>
         </div>
       )}
 
@@ -721,11 +731,12 @@ export default function App() {
           
           {/* --- HOME PAGE --- */}
           {activeTab === 'home' && (
-            // REMOVED: animate-fade-in-up to prevent "glitch" effect
-            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center max-w-4xl mx-auto space-y-8">
+            // UPDATED: Added animate-fade-in-up
+            <div className="animate-fade-in-up flex flex-col items-center justify-center min-h-[70vh] text-center max-w-4xl mx-auto space-y-8">
                {/* Logo with Glow */}
                <div className="relative">
-                  <div className="absolute inset-0 bg-[#22ab94] blur-[100px] opacity-20 rounded-full w-full h-full transform scale-150"></div>
+                  {/* KEPT: Glow color to Grey (Base Theme) */}
+                  <div className="absolute inset-0 bg-[#A3A3A3] blur-[100px] opacity-20 rounded-full w-full h-full transform scale-150"></div>
                   {/* FIXED: Added animate={false} to ensure it stays static */}
                   <SentquantLogo size={160} animate={false} />
                </div>
@@ -736,16 +747,19 @@ export default function App() {
                </h1>
 
                {/* Manifesto - WRAPPED IN DIV FOR STABILITY */}
+               {/* UPDATED: Changed font-sans to font-eth here */}
                <div className="relative z-20 px-4">
-                 <p className="text-gray-100 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto font-sans antialiased drop-shadow-lg">
+                 <p className="text-gray-100 text-lg md:text-xl font-medium font-eth leading-relaxed max-w-2xl mx-auto antialiased drop-shadow-lg">
                    {t.home.manifesto}
                  </p>
                </div>
 
                {/* CTA Button */}
+               {/* UPDATED: Added font-eth here */}
+               {/* KEPT: Button Background to Grey (#A3A3A3) and Hover to Darker Grey (#737373) (Base Theme) */}
                <button 
                  onClick={() => setActiveTab('terminal')}
-                 className="mt-8 px-10 py-4 bg-[#22ab94] hover:bg-[#1fa08a] text-black font-bold rounded-full text-lg transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(34,171,148,0.4)] flex items-center gap-3"
+                 className="mt-8 px-10 py-4 bg-[#A3A3A3] hover:bg-[#737373] text-black font-bold font-eth rounded-full text-lg transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(163,163,163,0.4)] flex items-center gap-3"
                >
                  {t.home.launch} <ArrowRight size={20} />
                </button>
@@ -758,7 +772,8 @@ export default function App() {
               
               {/* TOTAL TVL BANNER */}
               <div className="w-full bg-black/20 backdrop-blur-md border border-white/10 rounded-3xl p-8 text-center flex flex-col items-center justify-center space-y-2 shadow-2xl relative overflow-hidden">
-                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#22ab94] to-transparent opacity-50"></div>
+                 {/* KEPT: Gradient to Grey (Base Theme) */}
+                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#A3A3A3] to-transparent opacity-50"></div>
                  
                  {/* ADDED LOGO */}
                  <div className="mb-2">
@@ -769,7 +784,7 @@ export default function App() {
                  <div className="flex items-center gap-2 justify-center mb-1">
                     <h2 className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">{t.terminal.total_tvl_label}</h2>
                     <div className="relative group">
-                       <HelpCircle size={14} className="text-gray-500 cursor-help hover:text-[#22ab94] transition-colors" />
+                       <HelpCircle size={14} className="text-gray-500 cursor-help hover:text-[#A3A3A3] transition-colors" />
                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-black/90 border border-white/10 rounded-lg text-xs text-gray-300 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-sm">
                           {t.terminal.tvl_tooltip}
                        </div>
@@ -867,9 +882,9 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Main Metric: Big Total Return - FORCED GREEN */}
+                    {/* Main Metric: Big Total Return - REVERTED TO USE STRATEGY COLOR (TEAL FOR SENTQUANT) */}
                     <div className="mt-4 z-10">
-                       <div className="text-5xl font-bold font-eth tracking-tighter text-[#22ab94]">
+                       <div className="text-5xl font-bold font-eth tracking-tighter" style={{ color: strat.id === 'sentquant' ? '#22ab94' : '#22ab94' }}>
                           {strat.return}
                        </div>
                        <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
@@ -877,19 +892,19 @@ export default function App() {
                        </div>
                     </div>
 
-                    {/* Chart Area: Fills middle - FORCED GREEN */}
+                    {/* Chart Area: Fills middle - REVERTED TO USE STRATEGY COLOR (TEAL FOR SENTQUANT) */}
                     <div className="absolute inset-x-0 top-[120px] bottom-[80px] w-full opacity-80">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={MOCK_STRATEGIES_DETAILS[strat.id].liveData}>
                             <defs>
                               <linearGradient id={`cardGradient-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#22ab94" stopOpacity={0.2}/>
-                                <stop offset="100%" stopColor="#22ab94" stopOpacity={0}/>
+                                <stop offset="0%" stopColor={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} stopOpacity={0.2}/>
+                                <stop offset="100%" stopColor={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} stopOpacity={0}/>
                               </linearGradient>
                             </defs>
                             <Tooltip 
                                 contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(4px)'}}
-                                itemStyle={{color: '#22ab94'}}
+                                itemStyle={{color: strat.id === 'sentquant' ? '#22ab94' : '#22ab94'}}
                                 cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
                                 formatter={(val) => [val.toFixed(2), 'NAV']}
                                 labelStyle={{display: 'none'}}
@@ -897,11 +912,11 @@ export default function App() {
                             <Area 
                               type="monotone" 
                               dataKey="value" 
-                              stroke="#22ab94" 
+                              stroke={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} 
                               strokeWidth={2} 
                               fill={`url(#cardGradient-${strat.id})`} 
                               dot={false}
-                              activeDot={{ r: 4, fill: '#22ab94', stroke: '#fff' }}
+                              activeDot={{ r: 4, fill: strat.id === 'sentquant' ? '#22ab94' : '#22ab94', stroke: '#fff' }}
                             />
                           </AreaChart>
                         </ResponsiveContainer>
@@ -968,7 +983,8 @@ export default function App() {
               {/* SECTION 2: HISTORICAL PERFORMANCE */}
               <div>
                 <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
-                  <span className="w-1 h-6 bg-[#22ab94] rounded-full"></span>
+                  {/* CHANGED: Indicator to Grey (Base Theme) */}
+                  <span className="w-1 h-6 bg-[#A3A3A3] rounded-full"></span>
                   <h2 className="text-xl font-eth font-bold text-white">{t.live.historical_title}</h2>
                 </div>
                 
@@ -990,7 +1006,8 @@ export default function App() {
               {/* SECTION 3: STATISTICS & METRICS */}
               <div>
                 <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
-                  <span className="w-1 h-6 bg-[#22ab94] rounded-full"></span>
+                  {/* CHANGED: Indicator to Grey (Base Theme) */}
+                  <span className="w-1 h-6 bg-[#A3A3A3] rounded-full"></span>
                   <h2 className="text-xl font-eth font-bold text-white">{t.live.stats_title}</h2>
                 </div>
                 
@@ -1034,7 +1051,8 @@ export default function App() {
                <SentquantLogo size={100} />
                <h2 className="text-3xl font-eth font-bold text-white mt-8 mb-4">{t.about.broken}</h2>
                <p className="text-gray-400 leading-relaxed mb-8">{t.about.fake_gurus} {t.about.misled} {t.about.era_ends}</p>
-               <button className="px-8 py-3 bg-[#22ab94] text-black font-bold rounded-full hover:bg-[#1fa08a] transition-colors">
+               {/* CHANGED: Button to Grey (Base Theme) */}
+               <button className="px-8 py-3 bg-[#A3A3A3] text-black font-bold rounded-full hover:bg-[#737373] transition-colors">
                  {t.about.join_movement}
                </button>
             </div>
