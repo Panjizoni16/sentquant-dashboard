@@ -100,7 +100,7 @@ export default function App() {
         {/* Subtitle / Description */}
         <div className="space-y-4">
             <p className="text-lg md:text-xl text-gray-400 font-medium leading-relaxed">
-              Sistem Sentquant sedang menjalani pemeliharaan terjadwal untuk meningkatkan performa dan keamanan.
+              Sentquant Systems is undergoing scheduled maintenance to improve performance and security.
             </p>
             
             <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#22ab94] to-transparent mx-auto my-6 opacity-50"></div>
