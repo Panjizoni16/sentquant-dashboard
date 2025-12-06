@@ -735,19 +735,19 @@ export default function App() {
             <div className="animate-fade-in-up flex flex-col items-center justify-center min-h-[70vh] text-center max-w-5xl mx-auto space-y-12">
                
                {/* FLEX CONTAINER: Logo & Title Side-by-Side (Mobile & Desktop) */}
-               {/* UPDATED: Changed gap and direction to always be row, adjusted gap for mobile */}
-               <div className="flex flex-row items-center justify-center gap-4 md:gap-12">
+               {/* UPDATED: Added w-full and px-2 to ensure it centers correctly within screen bounds */}
+               <div className="w-full px-2 flex flex-row items-center justify-center gap-3 md:gap-12">
                    {/* Logo with Glow - RESPONSIVE SIZING */}
-                   {/* UPDATED: Increased mobile size to w-24 h-24 (was w-16), kept desktop size w-40 */}
-                   <div className="relative flex-shrink-0 w-24 h-24 md:w-40 md:h-40">
+                   {/* UPDATED: Kept mobile size large (w-20/w-24) but ensures it fits with text */}
+                   <div className="relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 md:w-40 md:h-40">
                       {/* REMOVED: Glow background div removed as requested */}
                       {/* FIXED: Added animate={false} to ensure it stays static */}
                       <SentquantLogo size="100%" animate={false} />
                    </div>
                    
                    {/* Tagline - Now to the right of logo on mobile too */}
-                   {/* UPDATED: Increased mobile text to 5xl (was 3xl), Decreased desktop text to 7xl (was 8xl) */}
-                   <h1 className="relative z-20 text-5xl md:text-7xl font-eth font-extrabold text-white tracking-tight leading-tight drop-shadow-2xl">
+                   {/* UPDATED: Adjusted mobile text to text-4xl (safer for centering) up to text-5xl on slightly larger screens, kept desktop at 7xl */}
+                   <h1 className="relative z-20 text-4xl sm:text-5xl md:text-7xl font-eth font-extrabold text-white tracking-tight leading-tight drop-shadow-2xl whitespace-nowrap">
                      {t.home.tagline}
                    </h1>
                </div>
