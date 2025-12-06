@@ -732,19 +732,26 @@ export default function App() {
           {/* --- HOME PAGE --- */}
           {activeTab === 'home' && (
             // UPDATED: Added animate-fade-in-up
-            <div className="animate-fade-in-up flex flex-col items-center justify-center min-h-[70vh] text-center max-w-4xl mx-auto space-y-8">
-               {/* Logo with Glow */}
-               <div className="relative">
-                  {/* KEPT: Glow color to Grey (Base Theme) */}
-                  <div className="absolute inset-0 bg-[#A3A3A3] blur-[100px] opacity-20 rounded-full w-full h-full transform scale-150"></div>
-                  {/* FIXED: Added animate={false} to ensure it stays static */}
-                  <SentquantLogo size={160} animate={false} />
-               </div>
+            <div className="animate-fade-in-up flex flex-col items-center justify-center min-h-[70vh] text-center max-w-5xl mx-auto space-y-12">
                
-               {/* Tagline */}
-               <h1 className="relative z-20 text-4xl md:text-6xl font-eth font-extrabold text-white tracking-tight leading-tight drop-shadow-2xl">
-                 {t.home.tagline}
-               </h1>
+               {/* FLEX CONTAINER: Logo & Title Side-by-Side (Mobile & Desktop) */}
+               {/* UPDATED: Changed gap and direction to always be row, adjusted gap for mobile */}
+               <div className="flex flex-row items-center justify-center gap-3 md:gap-12">
+                   {/* Logo with Glow - RESPONSIVE SIZING */}
+                   {/* UPDATED: Added w-16 h-16 for mobile and w-40 h-40 for desktop */}
+                   <div className="relative flex-shrink-0 w-16 h-16 md:w-40 md:h-40">
+                      {/* KEPT: Glow color to Grey (Base Theme) */}
+                      <div className="absolute inset-0 bg-[#A3A3A3] blur-[40px] md:blur-[100px] opacity-20 rounded-full w-full h-full transform scale-150"></div>
+                      {/* FIXED: Added animate={false} to ensure it stays static */}
+                      <SentquantLogo size="100%" animate={false} />
+                   </div>
+                   
+                   {/* Tagline - Now to the right of logo on mobile too */}
+                   {/* UPDATED: Changed text size for mobile to 3xl to fit side-by-side */}
+                   <h1 className="relative z-20 text-3xl md:text-8xl font-eth font-extrabold text-white tracking-tight leading-tight drop-shadow-2xl">
+                     {t.home.tagline}
+                   </h1>
+               </div>
 
                {/* Manifesto - WRAPPED IN DIV FOR STABILITY */}
                {/* UPDATED: Changed font-sans to font-eth here */}
@@ -759,7 +766,7 @@ export default function App() {
                {/* KEPT: Button Background to Grey (#A3A3A3) and Hover to Darker Grey (#737373) (Base Theme) */}
                <button 
                  onClick={() => setActiveTab('terminal')}
-                 className="mt-8 px-10 py-4 bg-[#A3A3A3] hover:bg-[#737373] text-black font-bold font-eth rounded-full text-lg transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(163,163,163,0.4)] flex items-center gap-3"
+                 className="mt-4 px-10 py-4 bg-[#A3A3A3] hover:bg-[#737373] text-black font-bold font-eth rounded-full text-lg transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(163,163,163,0.4)] flex items-center gap-3"
                >
                  {t.home.launch} <ArrowRight size={20} />
                </button>
