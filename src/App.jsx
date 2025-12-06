@@ -736,19 +736,18 @@ export default function App() {
                
                {/* FLEX CONTAINER: Logo & Title Side-by-Side (Mobile & Desktop) */}
                {/* UPDATED: Changed gap and direction to always be row, adjusted gap for mobile */}
-               <div className="flex flex-row items-center justify-center gap-3 md:gap-12">
+               <div className="flex flex-row items-center justify-center gap-4 md:gap-12">
                    {/* Logo with Glow - RESPONSIVE SIZING */}
-                   {/* UPDATED: Added w-16 h-16 for mobile and w-40 h-40 for desktop */}
-                   <div className="relative flex-shrink-0 w-16 h-16 md:w-40 md:h-40">
-                      {/* KEPT: Glow color to Grey (Base Theme) */}
-                      <div className="absolute inset-0 bg-[#A3A3A3] blur-[40px] md:blur-[100px] opacity-20 rounded-full w-full h-full transform scale-150"></div>
+                   {/* UPDATED: Increased mobile size to w-24 h-24 (was w-16), kept desktop size w-40 */}
+                   <div className="relative flex-shrink-0 w-24 h-24 md:w-40 md:h-40">
+                      {/* REMOVED: Glow background div removed as requested */}
                       {/* FIXED: Added animate={false} to ensure it stays static */}
                       <SentquantLogo size="100%" animate={false} />
                    </div>
                    
                    {/* Tagline - Now to the right of logo on mobile too */}
-                   {/* UPDATED: Changed text size for mobile to 3xl to fit side-by-side */}
-                   <h1 className="relative z-20 text-3xl md:text-8xl font-eth font-extrabold text-white tracking-tight leading-tight drop-shadow-2xl">
+                   {/* UPDATED: Increased mobile text to 5xl (was 3xl), Decreased desktop text to 7xl (was 8xl) */}
+                   <h1 className="relative z-20 text-5xl md:text-7xl font-eth font-extrabold text-white tracking-tight leading-tight drop-shadow-2xl">
                      {t.home.tagline}
                    </h1>
                </div>
