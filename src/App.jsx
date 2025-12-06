@@ -22,7 +22,6 @@ const LOGO_PATHS = [
 ];
 
 // --- COMPONENT: CUSTOM Q LOGO ---
-// animate prop set to false by default to ensure stability
 const SentquantLogo = ({ size = 120, withBg = false, animate = false }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -672,6 +671,7 @@ export default function App() {
         .font-eth { font-family: 'Montserrat', sans-serif; }
         body, .font-sans { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
@@ -712,10 +712,12 @@ export default function App() {
         </div>
       )}
 
-      {/* MAIN CONTENT */}
-      <div className="flex-1 overflow-hidden relative z-10">
+      {/* MAIN CONTENT WRAPPER - SCROLLS HERE, FULL WIDTH */}
+      <div className="flex-1 overflow-y-auto no-scrollbar relative z-10 h-full">
         <WarpBackground />
-        <main className="flex-1 h-full overflow-y-auto custom-scrollbar relative z-10 p-4 md:p-8 max-w-[1600px] mx-auto">
+        
+        {/* MAIN CONTENT CONSTRAINT */}
+        <main className="p-4 md:p-8 max-w-[1600px] mx-auto min-h-full">
           
           {/* --- HOME PAGE --- */}
           {activeTab === 'home' && (
@@ -729,15 +731,13 @@ export default function App() {
                </div>
                
                {/* Tagline */}
-               <h1 className="text-4xl md:text-6xl font-eth font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400 tracking-tight leading-tight">
+               <h1 className="relative z-20 text-4xl md:text-6xl font-eth font-extrabold text-white tracking-tight leading-tight drop-shadow-2xl">
                  {t.home.tagline}
                </h1>
 
-               {/* Manifesto Box */}
-               {/* Removed backdrop-blur-sm to prevent jitter against moving canvas, increased bg opacity */}
-               <div className="bg-[#050505]/90 border border-white/10 rounded-2xl p-6 md:p-8 max-w-3xl mx-auto relative overflow-hidden shadow-2xl z-20">
-                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#22ab94]/50 to-transparent"></div>
-                 <p className="text-gray-300 text-lg md:text-xl font-medium leading-relaxed font-sans antialiased">
+               {/* Manifesto - WRAPPED IN DIV FOR STABILITY */}
+               <div className="relative z-20 px-4">
+                 <p className="text-gray-100 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto font-sans antialiased drop-shadow-lg">
                    {t.home.manifesto}
                  </p>
                </div>
