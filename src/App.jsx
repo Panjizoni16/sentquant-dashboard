@@ -732,17 +732,14 @@ export default function App() {
 
   // 3. FETCHING DATA (Simulasi API)
 // 3. FETCHING DATA (Real data for Sentquant, Empty for others)
-  useEffect(() => {
+useEffect(() => {
     const initData = async () => {
       setLoading(true);
       
       const newData = {};
       
       for (const strat of STRATEGIES_CONFIG) {
-const { historicalData, heatmapData } = await fetchSentquantRealData();
-          
-          // ✅ CUMA SIMPAN RAW DATA, GAK HITUNG STATS
-         if (strat.id === 'sentquant') {
+        if (strat.id === 'sentquant') {
           const { historicalData, heatmapData } = await fetchSentquantRealData();
           
           newData[strat.id] = {
@@ -761,9 +758,6 @@ const { historicalData, heatmapData } = await fetchSentquantRealData();
             topDrawdowns: []
           };
         } else {
-          newData[strat.id] = generateEmptyStrategyData(strat);
-        }
-          // ✅ EMPTY DATA untuk strategy lain
           newData[strat.id] = generateEmptyStrategyData(strat);
         }
       }
