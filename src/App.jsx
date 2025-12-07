@@ -63,6 +63,84 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 
+// Helper: Calculate Metrics from Historical Data Array
+// Ini adalah otak kalkulasi dinamis
+const calculateMetricsFromData = (data) => {
+  if (!data || data.length < 2) {
+    return {
+      totalReturn: 0,
+      maxDrawdown: 0,
+      cagr: 0,
+      apr: 0,
+      volatility: 0,
+      sharpe: 0,
+      sortino: 0,
+      expectedValue: 0
+    };
+  }
+
+  const startValue = data[0].value;
+  const endValue = data[data.length - 1].value;
+  
+  // 1. Total Return
+  const totalReturn = ((endValue - startValue) / startValue) * 100;
+
+  // 2. Max Drawdown (Find min of drawdown values in the range)
+  // Asumsi field 'drawdown' di data adalah % drawdown pada hari itu dari peak sebelumnya
+  // Jika field drawdown belum ada, kita bisa hitung ulang, tapi untuk sekarang pakai data yang ada
+  const maxDrawdown = Math.min(...data.map(d => d.drawdown || 0));
+
+  // 3. Volatility (Annualized Standard Deviation of Daily Returns)
+  let sumReturns = 0;
+  let sumSqReturns = 0;
+  const returns = [];
+  
+  for (let i = 1; i < data.length; i++) {
+    const dailyReturn = (data[i].value - data[i-1].value) / data[i-1].value;
+    returns.push(dailyReturn);
+    sumReturns += dailyReturn;
+    sumSqReturns += dailyReturn * dailyReturn;
+  }
+  
+  const n = returns.length;
+  const meanReturn = sumReturns / n;
+  const variance = (sumSqReturns / n) - (meanReturn * meanReturn);
+  const stdDev = Math.sqrt(variance);
+  const annualizedVol = stdDev * Math.sqrt(365) * 100; // Crypto 365 days
+
+  // 4. CAGR & APR
+  const days = data.length; // Approximate days based on data points (assuming daily)
+  const years = days / 365;
+  
+  // CAGR = (End/Start)^(1/n) - 1
+  const cagr = years > 0 ? (Math.pow(endValue / startValue, 1 / years) - 1) * 100 : totalReturn;
+  
+  // Simple APR = (Total Return / Years)
+  const apr = years > 0 ? totalReturn / years : totalReturn;
+
+  // 5. Sharpe Ratio (Simplified: Return / Risk, assuming 0 risk free for simplicity)
+  // Sharpe = (Annualized Return - RiskFree) / Annualized Volatility
+  const sharpe = annualizedVol !== 0 ? (cagr / annualizedVol).toFixed(2) : 0;
+
+  // 6. Sortino (Simplified, downside deviation)
+  const downsideReturns = returns.filter(r => r < 0);
+  let sumSqDownside = 0;
+  downsideReturns.forEach(r => sumSqDownside += r * r);
+  const downsideDev = Math.sqrt(sumSqDownside / n) * Math.sqrt(365);
+  const sortino = downsideDev !== 0 ? (cagr / (downsideDev * 100)).toFixed(2) : 0;
+
+  return {
+    totalReturn: parseFloat(totalReturn.toFixed(2)),
+    maxDrawdown: parseFloat(maxDrawdown.toFixed(2)),
+    cagr: parseFloat(cagr.toFixed(2)),
+    apr: parseFloat(apr.toFixed(2)),
+    volatility: parseFloat(annualizedVol.toFixed(2)),
+    sharpe: parseFloat(sharpe),
+    sortino: parseFloat(sortino),
+    expectedValue: 0.15 // Placeholder for now or calc probability
+  };
+};
+
 // Helper: Generate Mock Benchmark Data (For Terminal Chart)
 // This fixes the "MOCK_BENCHMARK_DATA is not defined" error
 const generateBenchmarkData = () => {
@@ -114,7 +192,7 @@ const simulateApiData = (meta) => {
     return { date: i, value: currentVal, drawdown: -(Math.abs(Math.random() * 10)) };
   });
 
-  // Simulasi Stats Object
+  // Simulasi Stats Object (Ini untuk status 'Live' / 'All Time')
   const stats = {
     totalReturn: parseFloat(randomReturn),
     maxDrawdown: parseFloat(randomDD),
@@ -152,9 +230,9 @@ const simulateApiData = (meta) => {
   const endDate = new Date('2025-12-31');
   
   // Loop sederhana untuk simulasi data historis panjang
-  // Melompat 5 hari untuk efisiensi render di mock
-  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 5)) {
-      const change = currentHistVal * (0.001 + (Math.random() - 0.5) * 0.03);
+  // Melompat 2 hari agar datanya cukup padat tapi tidak terlalu berat
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 2)) {
+      const change = currentHistVal * (0.0005 + (Math.random() - 0.5) * 0.025); // Slight positive drift
       currentHistVal = Math.max(100, currentHistVal + change);
       historicalData.push({
         date: d.toISOString().split('T')[0], // YYYY-MM-DD
@@ -757,6 +835,21 @@ export default function App() {
     return data;
   }, [historicalChartData, chartTimeRange, chartYearFilter]);
 
+  // --- NEW: DYNAMIC METRICS CALCULATION ---
+  // Calculates metrics based on the FILTERED historical data
+  const dynamicHistoricalStats = useMemo(() => {
+    // If no filter is applied (or ALL), use the pre-calculated stats (which represent all-time)
+    // BUT user requested dynamic metrics based on the chart.
+    // So we should calculate from filteredHistoricalData.
+    
+    if (!filteredHistoricalData || filteredHistoricalData.length === 0) {
+       return currentStats; // Fallback to global stats
+    }
+
+    return calculateMetricsFromData(filteredHistoricalData);
+  }, [filteredHistoricalData, currentStats]);
+
+
   // Generate detailed stats sections dynamically
   const detailedStatsSections = useMemo(() => {
     // Jika data belum siap, return array kosong untuk menghindari error render
@@ -1249,7 +1342,7 @@ export default function App() {
                   </div>
                 </div>
                 
-                <KeyMetricsGrid stats={currentStats} t={t} isLive={false} />
+                <KeyMetricsGrid stats={dynamicHistoricalStats} t={t} isLive={false} />
 
                 {/* PASSING FILTERED DATA TO CHART */}
                 <StrategyCharts 
