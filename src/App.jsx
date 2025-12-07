@@ -855,7 +855,7 @@ export default function App() {
             tvl: 1250000,
             apr: `${realStats.apr.toFixed(0)}%`,
             status: 'Live',
-            liveData: historicalData.slice(-150),
+           liveData: [],
             historicalData: historicalData,
             heatmap: heatmapData,
             annualReturns: annualReturns,
@@ -920,7 +920,7 @@ export default function App() {
     } else if (chartTimeRange === 'FILTER' && chartYearFilter) {
         // Asumsi data JSON punya field 'year' atau kita parse dari 'date'
         data = data.filter(d => {
-            const y = d.year || new Date(d.date).getFullYear();
+           const y = parseInt(d.year) || new Date(d.date).getFullYear();
             return y === chartYearFilter;
         });
     }
