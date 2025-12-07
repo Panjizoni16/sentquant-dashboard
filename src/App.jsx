@@ -65,81 +65,7 @@ const formatCurrency = (value) => {
 
 // Helper: Calculate Metrics from Historical Data Array
 // Ini adalah otak kalkulasi dinamis
-const calculateMetricsFromData = (data) => {
-  if (!data || data.length < 2) {
-    return {
-      totalReturn: 0,
-      maxDrawdown: 0,
-      cagr: 0,
-      apr: 0,
-      volatility: 0,
-      sharpe: 0,
-      sortino: 0,
-      expectedValue: 0
-    };
-  }
 
-  const startValue = data[0].value;
-  const endValue = data[data.length - 1].value;
-  
-  // 1. Total Return
-  const totalReturn = ((endValue - startValue) / startValue) * 100;
-
-  // 2. Max Drawdown (Find min of drawdown values in the range)
-  // Asumsi field 'drawdown' di data adalah % drawdown pada hari itu dari peak sebelumnya
-  // Jika field drawdown belum ada, kita bisa hitung ulang, tapi untuk sekarang pakai data yang ada
-  const maxDrawdown = Math.min(...data.map(d => d.drawdown || 0));
-
-  // 3. Volatility (Annualized Standard Deviation of Daily Returns)
-  let sumReturns = 0;
-  let sumSqReturns = 0;
-  const returns = [];
-  
-  for (let i = 1; i < data.length; i++) {
-    const dailyReturn = (data[i].value - data[i-1].value) / data[i-1].value;
-    returns.push(dailyReturn);
-    sumReturns += dailyReturn;
-    sumSqReturns += dailyReturn * dailyReturn;
-  }
-  
-  const n = returns.length;
-  const meanReturn = sumReturns / n;
-  const variance = (sumSqReturns / n) - (meanReturn * meanReturn);
-  const stdDev = Math.sqrt(variance);
-  const annualizedVol = stdDev * Math.sqrt(365) * 100; // Crypto 365 days
-
-  // 4. CAGR & APR
-  const days = data.length; // Approximate days based on data points (assuming daily)
-  const years = days / 365;
-  
-  // CAGR = (End/Start)^(1/n) - 1
-  const cagr = years > 0 ? (Math.pow(endValue / startValue, 1 / years) - 1) * 100 : totalReturn;
-  
-  // Simple APR = (Total Return / Years)
-  const apr = years > 0 ? totalReturn / years : totalReturn;
-
-  // 5. Sharpe Ratio (Simplified: Return / Risk, assuming 0 risk free for simplicity)
-  // Sharpe = (Annualized Return - RiskFree) / Annualized Volatility
-  const sharpe = annualizedVol !== 0 ? (cagr / annualizedVol).toFixed(2) : 0;
-
-  // 6. Sortino (Simplified, downside deviation)
-  const downsideReturns = returns.filter(r => r < 0);
-  let sumSqDownside = 0;
-  downsideReturns.forEach(r => sumSqDownside += r * r);
-  const downsideDev = Math.sqrt(sumSqDownside / n) * Math.sqrt(365);
-  const sortino = downsideDev !== 0 ? (cagr / (downsideDev * 100)).toFixed(2) : 0;
-
-  return {
-    totalReturn: parseFloat(totalReturn.toFixed(2)),
-    maxDrawdown: parseFloat(maxDrawdown.toFixed(2)),
-    cagr: parseFloat(cagr.toFixed(2)),
-    apr: parseFloat(apr.toFixed(2)),
-    volatility: parseFloat(annualizedVol.toFixed(2)),
-    sharpe: parseFloat(sharpe),
-    sortino: parseFloat(sortino),
-    expectedValue: 0.15 // Placeholder for now or calc probability
-  };
-};
 
 // Helper: Generate Mock Benchmark Data (For Terminal Chart)
 // This fixes the "MOCK_BENCHMARK_DATA is not defined" error
@@ -813,54 +739,23 @@ export default function App() {
       const newData = {};
       
       for (const strat of STRATEGIES_CONFIG) {
-        if (strat.id === 'sentquant') {
-          // 🔥 FETCH REAL DATA untuk Sentquant
-          const { historicalData, heatmapData } = await fetchSentquantRealData();
+const { historicalData, heatmapData } = await fetchSentquantRealData();
           
-          // Calculate real metrics dari data lu
-          const realStats = calculateMetricsFromData(historicalData);
-          
-          // Calculate annual returns dari historical data
-          const yearlyReturns = {};
-          historicalData.forEach(d => {
-            const y = d.year.toString();
-            if (!yearlyReturns[y]) yearlyReturns[y] = { start: d.value, end: d.value };
-            yearlyReturns[y].end = d.value;
-          });
-          
-          const annualReturns = Object.entries(yearlyReturns).map(([year, data]) => ({
-            year,
-            value: ((data.end - data.start) / data.start) * 100
-          }));
-          
-          // Top 5 Drawdowns calculation (simplified)
-          const sortedDD = [...historicalData]
-            .sort((a, b) => a.drawdown - b.drawdown)
-            .slice(0, 5);
-          
-          const topDrawdowns = sortedDD.map((d, idx) => ({
-            rank: idx + 1,
-            startDate: d.date,
-            endDate: d.date,
-            depth: d.drawdown,
-            duration: Math.floor(Math.random() * 60) + 10,
-            recovery: Math.floor(Math.random() * 30) + 5
-          }));
-          
+          // ✅ CUMA SIMPAN RAW DATA, GAK HITUNG STATS
           newData[strat.id] = {
             ...strat,
-            return: `${realStats.totalReturn.toFixed(0)}%`,
-            dd: `${realStats.maxDrawdown.toFixed(2)}%`,
-            sharpe: realStats.sharpe,
-            tvl: 1250000,
-            apr: `${realStats.apr.toFixed(0)}%`,
+            return: "-",
+            dd: "-",
+            sharpe: "-",
+            tvl: 0,
+            apr: "-",
             status: 'Live',
-           liveData: [],
+            liveData: [],
             historicalData: historicalData,
             heatmap: heatmapData,
-            annualReturns: annualReturns,
-            stats: realStats,
-            topDrawdowns: topDrawdowns
+            annualReturns: [],
+            stats: null,
+            topDrawdowns: []
           };
         } else {
           // ✅ EMPTY DATA untuk strategy lain
@@ -904,7 +799,65 @@ export default function App() {
 
   // Derived data for Current View
   const currentStrategy = strategiesData[selectedStrategyId] || {};
-  const currentStats = currentStrategy.stats || {};
+ // ✅ DYNAMIC STATS CALCULATION
+  const currentStats = useMemo(() => {
+    const data = historicalChartData;
+    
+    if (!data || data.length === 0) return {
+      totalReturn: 0,
+      maxDrawdown: 0,
+      cagr: 0,
+      apr: 0,
+      expectedValue: 0,
+      volatility: 0,
+      sharpe: 0,
+      sortino: 0
+    };
+    
+    const startVal = data[0].value;
+    const endVal = data[data.length - 1].value;
+    const totalReturn = ((endVal - startVal) / startVal) * 100;
+    const maxDrawdown = Math.min(...data.map(d => d.drawdown));
+    
+    const dailyReturns = [];
+    for (let i = 1; i < data.length; i++) {
+      const r = (data[i].value - data[i-1].value) / data[i-1].value;
+      dailyReturns.push(r);
+    }
+    
+    const tradingDays = 252;
+    const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+    const annualizedReturn = meanDailyReturn * tradingDays;
+    
+    const startDate = new Date(data[0].date);
+    const endDate = new Date(data[data.length - 1].date);
+    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.01);
+    const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
+    const apr = annualizedReturn * 100;
+    const expectedValue = meanDailyReturn * 100;
+    
+    const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDailyReturn, 2), 0) / (dailyReturns.length - 1);
+    const stdDev = Math.sqrt(variance);
+    const volatility = stdDev * Math.sqrt(tradingDays) * 100;
+    const sharpe = (volatility !== 0) ? (apr / volatility) : 0;
+    
+    const downsideReturns = dailyReturns.filter(r => r < 0);
+    const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length;
+    const downsideDev = Math.sqrt(downsideVariance);
+    const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
+    const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
+    
+    return {
+      totalReturn,
+      maxDrawdown,
+      cagr,
+      apr,
+      expectedValue,
+      volatility,
+      sharpe,
+      sortino
+    };
+  }, [historicalChartData]);
 
   // Filter Logic for Historical Chart using Real/Mocked Data
   const filteredHistoricalData = useMemo(() => {
@@ -938,7 +891,51 @@ export default function App() {
        return currentStats; // Fallback to global stats
     }
 
-    return calculateMetricsFromData(filteredHistoricalData);
+   const data = filteredHistoricalData;
+    
+    const startVal = data[0].value;
+    const endVal = data[data.length - 1].value;
+    const totalReturn = ((endVal - startVal) / startVal) * 100;
+    const maxDrawdown = Math.min(...data.map(d => d.drawdown));
+    
+    const dailyReturns = [];
+    for (let i = 1; i < data.length; i++) {
+      const r = (data[i].value - data[i-1].value) / data[i-1].value;
+      dailyReturns.push(r);
+    }
+    
+    const tradingDays = 252;
+    const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+    const annualizedReturn = meanDailyReturn * tradingDays;
+    
+    const startDate = new Date(data[0].date);
+    const endDate = new Date(data[data.length - 1].date);
+    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.01);
+    const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
+    const apr = annualizedReturn * 100;
+    const expectedValue = meanDailyReturn * 100;
+    
+    const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDailyReturn, 2), 0) / (dailyReturns.length - 1);
+    const stdDev = Math.sqrt(variance);
+    const volatility = stdDev * Math.sqrt(tradingDays) * 100;
+    const sharpe = (volatility !== 0) ? (apr / volatility) : 0;
+    
+    const downsideReturns = dailyReturns.filter(r => r < 0);
+    const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length;
+    const downsideDev = Math.sqrt(downsideVariance);
+    const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
+    const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
+    
+    return {
+      totalReturn,
+      maxDrawdown,
+      cagr,
+      apr,
+      expectedValue,
+      volatility,
+      sharpe,
+      sortino
+    };
   }, [filteredHistoricalData, currentStats]);
 
 
