@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell, CartesianGrid
 } from 'recharts';
 import { 
-  Menu, X, Lock, Activity, Eye, EyeOff, ArrowRight, HelpCircle, Terminal, ChevronDown, Filter 
+  Menu, X, Lock, Activity, Eye, EyeOff, ArrowRight, ArrowLeft, HelpCircle, Terminal, ChevronDown, Filter 
 } from 'lucide-react';
 
 // --- UTILITY: Fetch or Fallback ---
@@ -1030,8 +1030,8 @@ export default function App() {
                           <div className="text-sm font-bold text-white">{strat.dd}</div>
                        </div>
                        <div className="text-center">
-                          <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.sharpe}</div>
-                          <div className="text-sm font-bold text-white">{strat.sharpe}</div>
+                          <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">TVL</div>
+                          <div className="text-sm font-bold text-white">{formatCurrency(strat.tvl)}</div>
                        </div>
                     </div>
                   </div>
@@ -1044,6 +1044,15 @@ export default function App() {
           {activeTab === 'live' && (
             <div className="animate-fade-in-up space-y-12 pb-20 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
               
+              {/* BACK BUTTON */}
+              <button 
+                onClick={() => setActiveTab('terminal')}
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4 group"
+              >
+                <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                <span className="font-eth font-bold text-sm tracking-wider">BACK TO TERMINAL</span>
+              </button>
+
               <div className="space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
                   <div className="flex items-center gap-4">
