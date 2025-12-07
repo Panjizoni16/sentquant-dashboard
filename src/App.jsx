@@ -1094,6 +1094,19 @@ export default function App() {
                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">PROTOCOL</span>
                     <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">{currentStrategy.protocol}</span>
                   </div>
+
+                  {/* TRADE NOW BOX - Spans to center on Desktop */}
+                  <button className="relative border border-white/10 bg-[#A3A3A3] hover:bg-[#8f8f8f] transition-colors p-6 flex flex-col items-center justify-center md:col-start-2 cursor-pointer group">
+                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-black/40"></div>
+                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-black/40"></div>
+                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-black/40"></div>
+                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-black/40"></div>
+                    
+                    <span className="text-[10px] font-bold text-black/70 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      EXECUTE <ArrowRight size={12} />
+                    </span>
+                    <span className="text-2xl md:text-3xl font-eth font-bold text-black tracking-tighter">TRADE NOW</span>
+                  </button>
                 </div>
 
                 {/* KEY METRICS GRID */}
