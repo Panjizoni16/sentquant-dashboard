@@ -742,6 +742,9 @@ export default function App() {
 const { historicalData, heatmapData } = await fetchSentquantRealData();
           
           // ✅ CUMA SIMPAN RAW DATA, GAK HITUNG STATS
+         if (strat.id === 'sentquant') {
+          const { historicalData, heatmapData } = await fetchSentquantRealData();
+          
           newData[strat.id] = {
             ...strat,
             return: "-",
@@ -758,6 +761,8 @@ const { historicalData, heatmapData } = await fetchSentquantRealData();
             topDrawdowns: []
           };
         } else {
+          newData[strat.id] = generateEmptyStrategyData(strat);
+        }
           // ✅ EMPTY DATA untuk strategy lain
           newData[strat.id] = generateEmptyStrategyData(strat);
         }
