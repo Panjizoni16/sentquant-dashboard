@@ -1096,7 +1096,7 @@ export default function App() {
                   </div>
 
                   {/* TRADE NOW BOX - Spans to center on Desktop */}
-                  <button className="relative border border-white/10 bg-[#A3A3A3] hover:bg-[#8f8f8f] transition-colors p-6 flex flex-col items-center justify-center md:col-start-2 cursor-pointer group">
+                  <button className="relative border border-white/10 bg-[#A3A3A3] hover:bg-[#8f8f8f] transition-colors p-6 md:p-4 md:h-28 md:w-[80%] md:mx-auto flex flex-col items-center justify-center md:col-start-2 cursor-pointer group rounded-xl">
                     <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-black/40"></div>
                     <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-black/40"></div>
                     <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-black/40"></div>
