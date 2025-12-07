@@ -4,7 +4,7 @@ import {
   BarChart as RechartsBarChart, Bar, Cell, CartesianGrid
 } from 'recharts';
 import { 
-  Menu, X, Lock, Activity, Eye, EyeOff, ArrowRight, HelpCircle, Terminal 
+  Menu, X, Lock, Activity, Eye, EyeOff, ArrowRight, HelpCircle, Terminal, ChevronDown, Filter 
 } from 'lucide-react';
 
 // --- UTILITY: Fetch or Fallback ---
@@ -43,12 +43,12 @@ const SentquantLogo = ({ size = 120, withBg = false, animate = false }) => (
 // --- CONFIGURATION & MOCK DATA ---
 const STRATEGIES_CONFIG = [
   // REVERTED: Sentquant color back to Teal (#22ab94) for Card/Strategy Identity
-  { id: 'sentquant', name: 'Sentquant', color: '#22ab94', status: 'Offline', return: '25,516%', dd: '-29.20%', sharpe: 1.44, tvl: 8200000, apr: '1,224%' },
-  { id: 'alpha_hunter', name: 'Alpha Hunter', color: '#3b82f6', status: 'Live', return: '12,450%', dd: '-18.50%', sharpe: 1.82, tvl: 3500000, apr: '850%' },
-  { id: 'momentum_pro', name: 'Momentum Pro', color: '#f59e0b', status: 'Live', return: '8,320%', dd: '-22.10%', sharpe: 1.35, tvl: 2100000, apr: '620%' },
-  { id: 'mean_revert', name: 'Mean Revert', color: '#8b5cf6', status: 'Offline', return: '5,680%', dd: '-15.30%', sharpe: 1.95, tvl: 1400000, apr: '410%' },
-  { id: 'volatility_edge', name: 'Volatility Edge', color: '#ec4899', status: 'Live', return: '4,200%', dd: '-12.80%', sharpe: 2.15, tvl: 800200, apr: '320%' },
-  { id: 'trend_follower', name: 'Trend Follower', color: '#6366f1', status: 'Offline', return: '3,850%', dd: '-19.40%', sharpe: 1.58, tvl: 500000, apr: '280%' }
+  { id: 'sentquant', name: 'Sentquant', color: '#22ab94', status: 'Offline', return: '25,516%', dd: '-29.20%', sharpe: 1.44, tvl: 8200000, apr: '1,224%', protocol: 'Hyperliquid' },
+  { id: 'alpha_hunter', name: 'Alpha Hunter', color: '#3b82f6', status: 'Live', return: '12,450%', dd: '-18.50%', sharpe: 1.82, tvl: 3500000, apr: '850%', protocol: 'GMX' },
+  { id: 'momentum_pro', name: 'Momentum Pro', color: '#f59e0b', status: 'Live', return: '8,320%', dd: '-22.10%', sharpe: 1.35, tvl: 2100000, apr: '620%', protocol: 'Lighter' },
+  { id: 'mean_revert', name: 'Mean Revert', color: '#8b5cf6', status: 'Offline', return: '5,680%', dd: '-15.30%', sharpe: 1.95, tvl: 1400000, apr: '410%', protocol: 'Hyperliquid' },
+  { id: 'volatility_edge', name: 'Volatility Edge', color: '#ec4899', status: 'Live', return: '4,200%', dd: '-12.80%', sharpe: 2.15, tvl: 800200, apr: '320%', protocol: 'GMX' },
+  { id: 'trend_follower', name: 'Trend Follower', color: '#6366f1', status: 'Offline', return: '3,850%', dd: '-19.40%', sharpe: 1.58, tvl: 500000, apr: '280%', protocol: 'Lighter' }
 ];
 
 // Helper to format currency
@@ -61,7 +61,7 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 
-// UPDATED: More organic curve generation
+// UPDATED: More organic curve generation & Extended to 2005-2025
 const generateStrategyData = () => {
   const benchmarkData = [];
   let values = STRATEGIES_CONFIG.map(() => 1000); 
@@ -75,6 +75,7 @@ const generateStrategyData = () => {
     { drift: 0.001, vol: 0.05 }   
   ];
 
+  // Benchmark Data (Mock short term)
   for (let i = 0; i < 200; i++) {
     const point = { date: `Day ${i}` };
     values = values.map((val, idx) => {
@@ -104,25 +105,39 @@ const generateStrategyData = () => {
       };
     });
 
+    // Historical Data: 2005 - 2025
     let currentHistVal = 1000; 
-    const historicalData = Array.from({ length: 365 }, (_, i) => {
-      const change = currentHistVal * (drift + (Math.random() - 0.5) * vol);
-      currentHistVal = Math.max(100, currentHistVal + change);
-      return {
-        date: i,
-        value: currentHistVal,
-        drawdown: -(Math.abs(Math.random() * (vol * 800)))
-      };
-    });
+    const historicalData = [];
+    const startDate = new Date('2005-01-01');
+    const endDate = new Date('2025-12-31');
+    
+    // Simulate daily data points for 20+ years (approximation loop)
+    // We'll skip some days to keep array size manageable for this demo but ensure years are covered
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 2)) {
+       const change = currentHistVal * (drift * 0.1 + (Math.random() - 0.5) * vol);
+       currentHistVal = Math.max(100, currentHistVal + change);
+       historicalData.push({
+         date: d.toISOString().split('T')[0], // YYYY-MM-DD
+         year: d.getFullYear(),
+         value: currentHistVal,
+         drawdown: -(Math.abs(Math.random() * (vol * 800)))
+       });
+    }
+
+    // Heatmap Data: 2005 - 2025
+    const heatmap = [];
+    for (let y = 2025; y >= 2005; y--) {
+      heatmap.push({
+        year: y.toString(),
+        months: Array.from({ length: 12 }, () => (Math.random() * 20 - 5).toFixed(1)).map(Number)
+      });
+    }
 
     strategiesDetails[strat.id] = {
       ...strat,
       liveData,
       historicalData,
-      heatmap: Array.from({ length: 5 }, (_, y) => ({
-        year: (2025 - y).toString(),
-        months: Array.from({ length: 12 }, () => (Math.random() * 20 - 5).toFixed(1)).map(Number)
-      })),
+      heatmap,
       topDrawdowns: [
         { rank: 1, startDate: '2022-01', endDate: '2022-03', depth: parseFloat(strat.dd), duration: 60, recovery: 20 },
         { rank: 2, startDate: '2021-05', endDate: '2021-06', depth: -10.5, duration: 30, recovery: 15 },
@@ -444,16 +459,53 @@ const DetailedStatCard = ({ section }) => (
   </div>
 );
 
-// --- COMPONENT: MONTHLY HEATMAP ---
+// --- COMPONENT: MONTHLY HEATMAP WITH FILTER ---
 const MonthlyHeatmap = ({ data, t }) => {
+  const [filter, setFilter] = useState('2020-2025');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const filteredData = useMemo(() => {
+    const [start, end] = filter.split('-').map(Number);
+    return data.filter(row => {
+      const year = parseInt(row.year);
+      return year >= start && year <= end;
+    });
+  }, [data, filter]);
+
   return (
     <div className="mb-10 mt-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <h3 className="text-xl font-bold text-white drop-shadow-md font-eth">{t.heatmap_title}</h3>
-          <div className="flex gap-2">
-            {/* REVERTED: Legend color to Teal (#22ab94) */}
-            <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> {t.positive}</span>
-            <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> {t.negative}</span>
+          
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Legend */}
+            <div className="flex gap-2 mr-4">
+              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#22ab94] rounded-sm"></div> {t.positive}</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400"><div className="w-2 h-2 bg-[#f23645] rounded-sm"></div> {t.negative}</span>
+            </div>
+
+            {/* Filter Dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-xs font-bold text-white transition-colors"
+              >
+                {filter} <ChevronDown size={14} />
+              </button>
+              {isFilterOpen && (
+                <div className="absolute right-0 top-full mt-2 w-32 bg-[#1A1A1A] border border-white/10 rounded-lg shadow-xl z-20 py-1">
+                  {['2020-2025', '2015-2019', '2010-2014', '2005-2009'].map(range => (
+                    <button
+                      key={range}
+                      onClick={() => { setFilter(range); setIsFilterOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-white/5 transition-colors ${filter === range ? 'text-white' : 'text-gray-400'}`}
+                    >
+                      {range}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
       </div>
 
@@ -469,13 +521,12 @@ const MonthlyHeatmap = ({ data, t }) => {
                 </tr>
             </thead>
             <tbody>
-                {data.map((row, idx) => (
+                {filteredData.map((row, idx) => (
                   <tr key={idx} className="hover:bg-white/5 transition-colors rounded-lg">
                       <td className="text-left font-bold text-white py-4 px-2">{row.year}</td>
                       {row.months.map((val, i) => (
                         <td key={i} className="text-center py-4 px-2">
                             {val !== null ? (
-                              // REVERTED: Value colors back to Teal (#22ab94)
                               <span className={`px-2 py-1 rounded font-medium backdrop-blur-md ${val >= 0 ? 'text-[#22ab94] bg-[#22ab94]/20' : 'text-[#f23645] bg-[#f23645]/20'}`}>
                                             {val > 0 ? '+' : ''}{val}%
                               </span>
@@ -590,13 +641,18 @@ const WarpBackground = () => {
 // --- MAIN APP ---
 export default function App() {
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('home'); // Default to home
+  const [activeTab, setActiveTab] = useState('home'); 
   const [selectedStrategyId, setSelectedStrategyId] = useState('sentquant');
   const [visibleStrategies, setVisibleStrategies] = useState(
     STRATEGIES_CONFIG.reduce((acc, strat) => ({ ...acc, [strat.id]: true }), {})
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [language, setLanguage] = useState('en');
+
+  // HISTORICAL CHART FILTER STATE
+  const [chartTimeRange, setChartTimeRange] = useState('ALL'); // '5Y', 'ALL', 'FILTER'
+  const [chartYearFilter, setChartYearFilter] = useState(null); // specific year if FILTER is active
+  const [isChartFilterOpen, setIsChartFilterOpen] = useState(false);
 
   const t = TRANSLATIONS[language];
 
@@ -620,6 +676,19 @@ export default function App() {
   // Derived data
   const currentStrategy = MOCK_STRATEGIES_DETAILS[selectedStrategyId];
   const currentStats = currentStrategy.stats;
+
+  // Filter Logic for Historical Chart
+  const filteredHistoricalData = useMemo(() => {
+    let data = currentStrategy.historicalData;
+    if (chartTimeRange === '5Y') {
+        const fiveYearsAgo = new Date();
+        fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+        data = data.filter(d => new Date(d.date) >= fiveYearsAgo);
+    } else if (chartTimeRange === 'FILTER' && chartYearFilter) {
+        data = data.filter(d => d.year === chartYearFilter);
+    }
+    return data;
+  }, [currentStrategy.historicalData, chartTimeRange, chartYearFilter]);
 
   // Generate detailed stats sections dynamically
   const detailedStatsSections = useMemo(() => [
@@ -692,13 +761,10 @@ export default function App() {
       <header className="h-[60px] flex-none flex items-center justify-between px-4 md:px-8 bg-black/50 backdrop-blur-md z-50 border-b border-white/5">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('home')}>
-             <SentquantLogo size={32} />
-             {/* REMOVED: Text SENTQUANT removed as requested */}
+             <SentquantLogo size={48} />
           </div>
           <div className="hidden md:block h-6 w-px bg-white/10 mx-2"></div>
-          {/* UPDATED: Added font-eth directly to buttons for stronger specificity */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-bold tracking-wider">
-            {/* KEPT: Active tab color to Grey (#A3A3A3) for Website Theme */}
             <button onClick={() => setActiveTab('home')} className={`transition-colors font-eth ${activeTab === 'home' ? 'text-[#A3A3A3]' : 'text-gray-400 hover:text-white'}`}>{t.nav.home}</button>
             <button onClick={() => setActiveTab('terminal')} className={`transition-colors font-eth ${activeTab === 'terminal' ? 'text-[#A3A3A3]' : 'text-gray-400 hover:text-white'}`}>{t.nav.terminal}</button>
             <button onClick={() => setActiveTab('live')} className={`transition-colors font-eth ${activeTab === 'live' ? 'text-[#A3A3A3]' : 'text-gray-400 hover:text-white'}`}>{t.nav.live}</button>
@@ -715,7 +781,6 @@ export default function App() {
       {/* MOBILE MENU */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl pt-24 px-6 md:hidden flex flex-col gap-6 animate-fade-in-up">
-            {/* KEPT: Active tab color to Grey (#A3A3A3) */}
             <button onClick={() => { setActiveTab('home'); setIsMenuOpen(false); }} className={`text-xl font-bold font-eth tracking-wide text-left py-3 border-b border-white/10 ${activeTab === 'home' ? 'text-[#A3A3A3]' : 'text-gray-400'}`}>{t.nav.home}</button>
             <button onClick={() => { setActiveTab('terminal'); setIsMenuOpen(false); }} className={`text-xl font-bold font-eth tracking-wide text-left py-3 border-b border-white/10 ${activeTab === 'terminal' ? 'text-[#A3A3A3]' : 'text-gray-400'}`}>{t.nav.terminal}</button>
             <button onClick={() => { setActiveTab('live'); setIsMenuOpen(false); }} className={`text-xl font-bold font-eth tracking-wide text-left py-3 border-b border-white/10 ${activeTab === 'live' ? 'text-[#A3A3A3]' : 'text-gray-400'}`}>{t.nav.live}</button>
@@ -723,42 +788,34 @@ export default function App() {
         </div>
       )}
 
-      {/* MAIN CONTENT WRAPPER - SCROLLS HERE, FULL WIDTH */}
+      {/* MAIN CONTENT WRAPPER */}
       <div className="flex-1 overflow-y-auto no-scrollbar relative z-10 h-full flex flex-col">
         <WarpBackground />
         
         {/* MAIN CONTENT CONSTRAINT */}
         <main className="flex-1 flex flex-col relative z-20">
           
-          {/* --- HOME PAGE (REDESIGNED TO MATCH REFERENCE) --- */}
+          {/* --- HOME PAGE --- */}
           {activeTab === 'home' && (
             <div className="animate-fade-in-up flex-1 flex flex-col items-center justify-start p-4 md:p-8 space-y-8">
-               
-               {/* Main Bordered Container */}
                <div className="relative w-full max-w-4xl mx-auto border border-white/10 bg-black/40 backdrop-blur-sm p-8 md:p-16 text-center">
-                  
-                  {/* Decorative Corner Accents */}
                   <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
                   <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
                   <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
                   <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
 
-                  {/* Top Label */}
                   <div className="text-xs md:text-sm text-gray-500 font-mono tracking-[0.3em] uppercase mb-6">
                     TRACK
                   </div>
 
-                  {/* Main Title - CHANGED TO Title Case */}
                   <h1 className="text-5xl md:text-7xl lg:text-8xl font-eth font-extrabold text-white mb-2 tracking-tighter leading-none drop-shadow-2xl">
                     Sentquant
                   </h1>
 
-                  {/* Subtitle - REDUCED SIZE */}
                   <h2 className="text-sm md:text-xl text-gray-400 font-light tracking-widest uppercase mb-12">
                     WE DON'T TRACK WALLETS. WE TRACK THE EDGE.
                   </h2>
 
-                  {/* Action Buttons */}
                   <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-12">
                     <button 
                       onClick={() => setActiveTab('terminal')}
@@ -768,19 +825,14 @@ export default function App() {
                     </button>
                   </div>
 
-                  {/* Description Box */}
                   <div className="border-y border-white/10 py-8 max-w-2xl mx-auto">
                     <p className="text-gray-400 text-sm md:text-base font-mono leading-relaxed px-4">
                       {t.home.manifesto}
                     </p>
                   </div>
-
                </div>
 
-               {/* 3 BOXES - PROBLEM, SOLUTION, IMPACT */}
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto">
-                 
-                 {/* BOX 1: PROBLEM */}
                  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
                     <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
                     <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
@@ -795,7 +847,6 @@ export default function App() {
                     </p>
                  </div>
 
-                 {/* BOX 2: SOLUTION */}
                  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
                     <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
                     <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
@@ -810,7 +861,6 @@ export default function App() {
                     </p>
                  </div>
 
-                 {/* BOX 3: IMPACT */}
                  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
                     <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
                     <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
@@ -824,27 +874,18 @@ export default function App() {
                       The era of "Salesmen disguised as Mentors" and "Lucky Gamblers" flexing one-time memecoin gains is over. In the Sentquant ecosystem, marketing budget means nothing. Only those with proven, repeatable mathematical edge will survive. The rest will fade into irrelevance.
                     </p>
                  </div>
-
                </div>
-
             </div>
           )}
 
-          {/* --- TERMINAL: BENCHMARK COMPARISON --- */}
+          {/* --- TERMINAL --- */}
           {activeTab === 'terminal' && (
             <div className="animate-fade-in-up space-y-8 pb-20 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
-              
-              {/* TOTAL TVL BANNER */}
               <div className="w-full bg-black/20 backdrop-blur-md border border-white/10 rounded-3xl p-8 text-center flex flex-col items-center justify-center space-y-2 shadow-2xl relative overflow-hidden">
-                 {/* KEPT: Gradient to Grey (Base Theme) */}
                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#A3A3A3] to-transparent opacity-50"></div>
-                 
-                 {/* ADDED LOGO */}
                  <div className="mb-2">
                     <SentquantLogo size={48} /> 
                  </div>
-
-                 {/* UPDATED: LABEL WITH TOOLTIP */}
                  <div className="flex items-center gap-2 justify-center mb-1">
                     <h2 className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">{t.terminal.total_tvl_label}</h2>
                     <div className="relative group">
@@ -854,8 +895,6 @@ export default function App() {
                        </div>
                     </div>
                  </div>
-                 
-                 {/* REDUCED FONT SIZE: text-4xl md:text-6xl -> text-3xl md:text-5xl */}
                  <div className="text-3xl md:text-5xl font-eth font-bold text-white tracking-tight drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
                     {formatCurrency(totalTVL)}
                  </div>
@@ -866,8 +905,6 @@ export default function App() {
               <div className="space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <h1 className="text-2xl md:text-3xl font-eth font-bold text-white">{t.terminal.title}</h1>
-                  
-                  {/* Visibility Toggles */}
                   <div className="flex flex-wrap gap-2">
                     {STRATEGIES_CONFIG.map(strat => (
                       <button 
@@ -920,13 +957,10 @@ export default function App() {
                 </div>
               </div>
 
-              {/* STRATEGY CARDS GRID - REDESIGNED */}
+              {/* STRATEGY CARDS GRID */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {STRATEGIES_CONFIG.map(strat => (
-                  // The card container matches the visual style: Dark bg, rounded corners, border
                   <div key={strat.id} className="relative bg-[#0E0E0E] border border-white/10 rounded-3xl p-6 flex flex-col h-[450px] overflow-hidden group hover:border-white/20 transition-all duration-300">
-                    
-                    {/* Header: Icon, Name, Buttons */}
                     <div className="flex justify-between items-start mb-2 z-10">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/5">
@@ -946,7 +980,6 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Main Metric: Big Total Return - REVERTED TO USE STRATEGY COLOR (TEAL FOR SENTQUANT) */}
                     <div className="mt-4 z-10">
                        <div className="text-5xl font-bold font-eth tracking-tighter" style={{ color: strat.id === 'sentquant' ? '#22ab94' : '#22ab94' }}>
                           {strat.return}
@@ -956,7 +989,6 @@ export default function App() {
                        </div>
                     </div>
 
-                    {/* Chart Area: Fills middle - REVERTED TO USE STRATEGY COLOR (TEAL FOR SENTQUANT) */}
                     <div className="absolute inset-x-0 top-[120px] bottom-[80px] w-full opacity-80">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={MOCK_STRATEGIES_DETAILS[strat.id].liveData}>
@@ -986,14 +1018,12 @@ export default function App() {
                         </ResponsiveContainer>
                     </div>
 
-                    {/* Footer Metrics: APR, Max DD, Sharpe */}
                     <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
                        <div className="text-center">
                           <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
                           <div className="text-sm font-bold text-white">{strat.apr}</div>
                        </div>
                        <div className="text-center relative">
-                          {/* Divider lines */}
                           <div className="absolute left-0 top-1 bottom-1 w-px bg-white/5"></div>
                           <div className="absolute right-0 top-1 bottom-1 w-px bg-white/5"></div>
                           <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.max_dd}</div>
@@ -1004,7 +1034,6 @@ export default function App() {
                           <div className="text-sm font-bold text-white">{strat.sharpe}</div>
                        </div>
                     </div>
-
                   </div>
                 ))}
               </div>
@@ -1015,7 +1044,6 @@ export default function App() {
           {activeTab === 'live' && (
             <div className="animate-fade-in-up space-y-12 pb-20 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
               
-              {/* SECTION 1: LIVE TRADING STATUS */}
               <div className="space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
                   <div className="flex items-center gap-4">
@@ -1032,10 +1060,46 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* KEY METRICS GRID (ADDED ABOVE CHARTS) */}
+                {/* NEW METRICS BOX: APR, TVL, PROTOCOL - STYLED */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  {/* APR BOX */}
+                  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 flex flex-col items-center justify-center">
+                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+                    
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">APR</span>
+                    <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">{currentStrategy.apr}</span>
+                  </div>
+
+                  {/* TVL BOX */}
+                  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 flex flex-col items-center justify-center">
+                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+                    
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">TVL</span>
+                    <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">{formatCurrency(currentStrategy.tvl)}</span>
+                  </div>
+
+                  {/* PROTOCOL BOX */}
+                  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 flex flex-col items-center justify-center">
+                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+                    
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">PROTOCOL</span>
+                    <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">{currentStrategy.protocol}</span>
+                  </div>
+                </div>
+
+                {/* KEY METRICS GRID */}
                 <KeyMetricsGrid stats={currentStats} t={t} isLive={true} />
 
-                {/* LIVE CHARTS (STACKED) */}
+                {/* LIVE CHARTS */}
                 <StrategyCharts 
                   data={currentStrategy.liveData} 
                   color={currentStrategy.color} 
@@ -1044,39 +1108,82 @@ export default function App() {
                 />
               </div>
 
-              {/* SECTION 2: HISTORICAL PERFORMANCE */}
+              {/* SECTION 2: HISTORICAL PERFORMANCE WITH NEW FILTERS */}
               <div>
-                <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
-                  {/* CHANGED: Indicator to Grey (Base Theme) */}
-                  <span className="w-1 h-6 bg-[#A3A3A3] rounded-full"></span>
-                  <h2 className="text-xl font-eth font-bold text-white">{t.live.historical_title}</h2>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-white/10 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1 h-6 bg-[#A3A3A3] rounded-full"></span>
+                    <h2 className="text-xl font-eth font-bold text-white">{t.live.historical_title}</h2>
+                  </div>
+
+                  {/* CHART FILTERS: 5Y, ALL, FILTER (Dropdown) */}
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => { setChartTimeRange('5Y'); setChartYearFilter(null); }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${chartTimeRange === '5Y' ? 'bg-[#22ab94] border-[#22ab94] text-black' : 'bg-[#1A1A1A] border-white/10 text-gray-400 hover:text-white'}`}
+                    >
+                      5Y
+                    </button>
+                    <button 
+                      onClick={() => { setChartTimeRange('ALL'); setChartYearFilter(null); }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${chartTimeRange === 'ALL' ? 'bg-[#22ab94] border-[#22ab94] text-black' : 'bg-[#1A1A1A] border-white/10 text-gray-400 hover:text-white'}`}
+                    >
+                      ALL
+                    </button>
+                    
+                    <div className="relative">
+                      <button 
+                        onClick={() => setIsChartFilterOpen(!isChartFilterOpen)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${chartTimeRange === 'FILTER' ? 'bg-[#22ab94] border-[#22ab94] text-black' : 'bg-[#1A1A1A] border-white/10 text-gray-400 hover:text-white'}`}
+                      >
+                        {chartTimeRange === 'FILTER' && chartYearFilter ? chartYearFilter : 'FILTER'} <ChevronDown size={12} />
+                      </button>
+                      
+                      {isChartFilterOpen && (
+                        <div className="absolute right-0 top-full mt-2 w-32 max-h-60 overflow-y-auto custom-scrollbar bg-[#1A1A1A] border border-white/10 rounded-lg shadow-xl z-20 py-1">
+                          {Array.from({ length: 21 }, (_, i) => 2025 - i).map(year => (
+                            <button
+                              key={year}
+                              onClick={() => { 
+                                setChartTimeRange('FILTER'); 
+                                setChartYearFilter(year); 
+                                setIsChartFilterOpen(false); 
+                              }}
+                              className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-white/5 transition-colors ${chartYearFilter === year ? 'text-[#22ab94]' : 'text-gray-400'}`}
+                            >
+                              {year}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 
-                {/* HISTORICAL KEY METRICS GRID (ADDED) */}
                 <KeyMetricsGrid stats={currentStats} t={t} isLive={false} />
 
-                {/* HISTORICAL CHARTS (ADDED) */}
+                {/* PASSING FILTERED DATA TO CHART */}
                 <StrategyCharts 
-                  data={currentStrategy.historicalData} 
+                  data={filteredHistoricalData} 
                   color={currentStrategy.color} 
                   name={currentStrategy.name} 
                   title="Historical" 
                 />
 
+                {/* MONTHLY HEATMAP WITH NEW FILTERS */}
                 <MonthlyHeatmap data={currentStrategy.heatmap} t={t.historical} />
+                
                 <TopDrawdownsTable data={currentStrategy.topDrawdowns} t={t.historical} />
               </div>
 
               {/* SECTION 3: STATISTICS & METRICS */}
               <div>
                 <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
-                  {/* CHANGED: Indicator to Grey (Base Theme) */}
                   <span className="w-1 h-6 bg-[#A3A3A3] rounded-full"></span>
                   <h2 className="text-xl font-eth font-bold text-white">{t.live.stats_title}</h2>
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                  {/* Annual Returns Bar Chart */}
                   <div className="lg:col-span-2 h-[300px] bg-black/20 border border-white/5 rounded-xl p-4">
                     <h3 className="text-sm font-bold text-white mb-4 font-eth">{t.stats.annual_returns}</h3>
                     <ResponsiveContainer width="100%" height="90%">
@@ -1092,13 +1199,11 @@ export default function App() {
                     </ResponsiveContainer>
                   </div>
                   
-                  {/* About Model */}
                   <div className="lg:col-span-1">
                     <AboutModelsCard t={t.stats} />
                   </div>
                 </div>
 
-                {/* Detailed Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {detailedStatsSections.map((section, idx) => (
                     <DetailedStatCard key={idx} section={section} />
@@ -1115,7 +1220,6 @@ export default function App() {
                <SentquantLogo size={100} />
                <h2 className="text-3xl font-eth font-bold text-white mt-8 mb-4">{t.about.broken}</h2>
                <p className="text-gray-400 leading-relaxed mb-8">{t.about.fake_gurus} {t.about.misled} {t.about.era_ends}</p>
-               {/* CHANGED: Button to Grey (Base Theme) */}
                <button className="px-8 py-3 bg-[#A3A3A3] text-black font-bold rounded-full hover:bg-[#737373] transition-colors">
                  {t.about.join_movement}
                </button>
