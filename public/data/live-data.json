@@ -4,13 +4,13 @@
       {
         "date": "2025-12-08",
         "year": 2025,
-        "value": 18.82,
-        "collateral": 18.821539,
-        "pnl": 0.06908,
+        "value": 1000.0,
+        "collateral": 18.821098,
+        "pnl": -0.01466,
         "drawdown": 0.0
       }
     ],
-    "tvl": 18.821539,
+    "tvl": 18.821098,
     "status": "Live"
   }
 }
