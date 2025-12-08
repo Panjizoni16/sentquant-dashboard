@@ -706,29 +706,44 @@ useEffect(() => {
       
       const newData = {};
       
-      for (const strat of STRATEGIES_CONFIG) {
-        if (strat.id === 'sentquant') {
-          const { historicalData, heatmapData } = await fetchSentquantRealData();
-          
-          newData[strat.id] = {
-            ...strat,
-            return: "-",
-            dd: "-",
-            sharpe: "-",
-            tvl: 0,
-            apr: "-",
-            status: 'Live',
-            liveData: [],
-            historicalData: historicalData,
-            heatmap: heatmapData,
-            annualReturns: [],
-            stats: null,
-            topDrawdowns: []
-          };
-        } else {
-          newData[strat.id] = generateEmptyStrategyData(strat);
-        }
-      }
+   for (const strat of STRATEGIES_CONFIG) {
+  if (strat.id === 'sentquant') {
+    // Fetch all 3 files: historical, heatmap, AND live-data
+    const [histRes, heatRes, liveRes] = await Promise.all([
+      fetch('/data/equity-historical.json'),
+      fetch('/data/heatmap-data.json'),
+      fetch('/data/live-data.json')  // ← ADD THIS!
+    ]);
+    
+    const historicalData = await histRes.json();
+    const heatmapData = await heatRes.json();
+    const liveDataJson = await liveRes.json();  // ← ADD THIS!
+    
+    const sentquantLive = liveDataJson.sentquant || {
+      liveData: [],
+      tvl: 0,
+      status: 'Offline'
+    };
+    
+    newData[strat.id] = {
+      ...strat,
+      return: "-",
+      dd: "-",
+      sharpe: "-",
+      tvl: sentquantLive.tvl,              // ← FROM LIVE-DATA.JSON!
+      apr: "-",
+      status: sentquantLive.status,        // ← FROM LIVE-DATA.JSON!
+      liveData: sentquantLive.liveData,    // ← FROM LIVE-DATA.JSON!
+      historicalData: historicalData,
+      heatmap: heatmapData,
+      annualReturns: [],
+      stats: null,
+      topDrawdowns: []
+    };
+  } else {
+    newData[strat.id] = generateEmptyStrategyData(strat);
+  }
+}
       
       setStrategiesData(newData);
       setLoading(false);
