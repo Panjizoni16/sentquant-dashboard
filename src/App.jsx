@@ -447,7 +447,7 @@ const metrics = [
       color: 'text-white' 
     }
   ];
-
+  
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 px-4 py-4">
       {metrics.map((m, i) => (
