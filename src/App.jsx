@@ -877,6 +877,11 @@ useEffect(() => {
     const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
     const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
     
+    // Calculate Win Rate
+    const winningDays = dailyReturns.filter(r => r > 0).length;
+    const totalDays = dailyReturns.length;
+    const winRate = totalDays > 0 ? ((winningDays / totalDays) * 100).toFixed(2) : 0;
+    
     return {
       totalReturn,
       maxDrawdown,
@@ -885,7 +890,8 @@ useEffect(() => {
       expectedValue,
       volatility,
       sharpe,
-      sortino
+      sortino,
+      winRate
     };
   }, [historicalChartData]);
 // ✅ LIVE STATS CALCULATION (Separate from Historical)
@@ -970,7 +976,7 @@ useEffect(() => {
 
   // --- NEW: DYNAMIC METRICS CALCULATION ---
   // Calculates metrics based on the FILTERED historical data
-  const dynamicHistoricalStats = useMemo(() => {
+ const dynamicHistoricalStats = useMemo(() => {
     // If no filter is applied (or ALL), use the pre-calculated stats (which represent all-time)
     // BUT user requested dynamic metrics based on the chart.
     // So we should calculate from filteredHistoricalData.
@@ -978,8 +984,7 @@ useEffect(() => {
     if (!filteredHistoricalData || filteredHistoricalData.length === 0) {
        return currentStats; // Fallback to global stats
     }
-
-   const data = filteredHistoricalData;
+    const data = filteredHistoricalData;
     
     const startVal = data[0].value;
     const endVal = data[data.length - 1].value;
@@ -1014,6 +1019,11 @@ useEffect(() => {
     const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
     const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
     
+    // Calculate Win Rate
+    const winningDays = dailyReturns.filter(r => r > 0).length;
+    const totalDays = dailyReturns.length;
+    const winRate = totalDays > 0 ? ((winningDays / totalDays) * 100).toFixed(2) : 0;
+    
     return {
       totalReturn,
       maxDrawdown,
@@ -1022,10 +1032,10 @@ useEffect(() => {
       expectedValue,
       volatility,
       sharpe,
-      sortino
+      sortino,
+      winRate
     };
   }, [filteredHistoricalData, currentStats]);
-
 
   // Generate detailed stats sections dynamically
   const detailedStatsSections = useMemo(() => {
