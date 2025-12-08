@@ -120,33 +120,6 @@ const fetchSentquantRealData = async () => {
 };
 
 // Helper: Generate Empty Data for Other Strategies
-const generateEmptyStrategyData = (meta) => {
-  return {
-    ...meta,
-    return: "-",
-    dd: "-",
-    sharpe: "-",
-    tvl: 0,
-    apr: "-",
-    status: 'Pending',
-    liveData: [],
-    historicalData: [],
-    heatmap: [],
-    annualReturns: [],
-    stats: {
-      totalReturn: 0,
-      maxDrawdown: 0,
-      sharpe: 0,
-      sortino: 0,
-      winRate: 0,
-      cagr: 0,
-      apr: 0,
-      expectedValue: 0,
-      volatility: 0
-    },
-    topDrawdowns: []
-  };
-};
 // Helper: Generate Mock Data (SIMULATING API RESPONSE)
 // Fetch real data from JSON files
 const fetchRealData = async (strategy) => {
