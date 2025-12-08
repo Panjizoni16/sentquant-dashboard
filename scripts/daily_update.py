@@ -11,7 +11,7 @@ from datetime import datetime, date
 from pathlib import Path
 
 # ========== CONFIG ==========
-ACCOUNT_INDEX = 505549
+ACCOUNT_INDEX = int(os.getenv('ACCOUNT_INDEX', '505549'))
 BASE_URL = "https://mainnet.zklighter.elliot.ai/api/v1"
 START_NAV = 1000  # Starting NAV for tracking
 
