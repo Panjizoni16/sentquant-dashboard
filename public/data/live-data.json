@@ -1,0 +1,16 @@
+{
+  "sentquant": {
+    "liveData": [
+      {
+        "date": "2025-12-08",
+        "year": 2025,
+        "value": 18.82,
+        "collateral": 18.821539,
+        "pnl": 0.06908,
+        "drawdown": 0.0
+      }
+    ],
+    "tvl": 18.821539,
+    "status": "Live"
+  }
+}
