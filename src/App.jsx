@@ -148,91 +148,55 @@ const generateEmptyStrategyData = (meta) => {
   };
 };
 // Helper: Generate Mock Data (SIMULATING API RESPONSE)
-const simulateApiData = (meta) => {
-  // Simulasi nilai acak agar terlihat seperti data live
-  const randomReturn = (Math.random() * 20000 + 5000).toFixed(0);
-  const randomDD = -(Math.random() * 25 + 5).toFixed(2);
-  const randomSharpe = (Math.random() * 1.5 + 1).toFixed(2);
-  const randomTVL = Math.floor(Math.random() * 5000000 + 500000);
-  const randomAPR = (Math.random() * 800 + 100).toFixed(0);
-  
-  // Simulasi Chart Data Live (150 poin)
-  let currentVal = 1000;
-  const liveData = Array.from({ length: 150 }, (_, i) => {
-    currentVal = currentVal * (1 + (Math.random() - 0.45) * 0.02);
-    return { date: i, value: currentVal, drawdown: -(Math.abs(Math.random() * 10)) };
-  });
-
-  // Simulasi Stats Object (Ini untuk status 'Live' / 'All Time')
-  const stats = {
-    totalReturn: parseFloat(randomReturn),
-    maxDrawdown: parseFloat(randomDD),
-    sharpe: randomSharpe,
-    sortino: (parseFloat(randomSharpe) * 1.2).toFixed(2),
-    winRate: (55 + Math.random() * 10).toFixed(2),
-    cagr: (30 + Math.random() * 20).toFixed(2),
-    apr: randomAPR,
-    expectedValue: 0.15,
-    volatility: 15.5
-  };
-
-  // Simulasi Heatmap (5 tahun)
-  const heatmap = [];
-  for (let y = 2025; y >= 2005; y--) {
-    heatmap.push({
-      year: y.toString(),
-      months: Array.from({ length: 12 }, () => (Math.random() * 20 - 5).toFixed(1)).map(Number)
-    });
+// Fetch real data from JSON files
+const fetchRealData = async (strategy) => {
+  try {
+    if (strategy === 'sentquant') {
+      // Fetch live data for Sentquant
+      const liveResponse = await fetch('/data/live-data.json');
+      const liveData = await liveResponse.json();
+      
+      // Fetch historical data
+      const histResponse = await fetch('/data/equity-historical.json');
+      const histData = await histResponse.json();
+      
+      // Fetch heatmap data
+      const heatResponse = await fetch('/data/heatmap-data.json');
+      const heatData = await heatResponse.json();
+      
+      const sentquantLive = liveData.sentquant || {
+        liveData: [],
+        tvl: 0,
+        status: 'Offline'
+      };
+      
+      return {
+        historicalData: histData,
+        liveData: sentquantLive.liveData,
+        heatmap: heatData,
+        tvl: sentquantLive.tvl,
+        status: sentquantLive.status,
+        topDrawdowns: []
+      };
+    } else {
+      // Other strategies - return empty for now
+      return generateEmptyStrategyData();
+    }
+  } catch (error) {
+    console.error(`Error fetching data for ${strategy}:`, error);
+    return generateEmptyStrategyData();
   }
+};
 
-  // Simulasi Annual Returns
-  const annualReturns = [
-    { year: '2021', value: Math.random() * 60 - 10 },
-    { year: '2022', value: Math.random() * 40 - 15 },
-    { year: '2023', value: Math.random() * 80 + 10 },
-    { year: '2024', value: Math.random() * 50 + 5 },
-    { year: '2025', value: Math.random() * 30 }
-  ];
-
-  // Simulasi Historical Data (JSON like)
-  let currentHistVal = 1000;
-  const historicalData = [];
-  const startDate = new Date('2005-01-01');
-  const endDate = new Date('2025-12-31');
-  
-  // Loop sederhana untuk simulasi data historis panjang
-  // Melompat 2 hari agar datanya cukup padat tapi tidak terlalu berat
-  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 2)) {
-      const change = currentHistVal * (0.0005 + (Math.random() - 0.5) * 0.025); // Slight positive drift
-      currentHistVal = Math.max(100, currentHistVal + change);
-      historicalData.push({
-        date: d.toISOString().split('T')[0], // YYYY-MM-DD
-        year: d.getFullYear(),
-        value: currentHistVal,
-        drawdown: -(Math.abs(Math.random() * 20))
-      });
-  }
-
+// Generate empty data for strategies without data yet
+const generateEmptyStrategyData = () => {
   return {
-    ...meta,
-    return: `${randomReturn}%`,
-    dd: `${randomDD}%`,
-    sharpe: randomSharpe,
-    tvl: randomTVL,
-    apr: `${randomAPR}%`,
-    status: Math.random() > 0.3 ? 'Live' : 'Offline',
-    liveData,
-    historicalData,
-    heatmap, 
-    annualReturns,
-    stats,
-    topDrawdowns: [
-        { rank: 1, startDate: '2022-01', endDate: '2022-03', depth: parseFloat(randomDD), duration: 60, recovery: 20 },
-        { rank: 2, startDate: '2021-05', endDate: '2021-06', depth: -10.5, duration: 30, recovery: 15 },
-        { rank: 3, startDate: '2023-08', endDate: '2023-09', depth: -8.2, duration: 25, recovery: 10 },
-        { rank: 4, startDate: '2020-03', endDate: '2020-04', depth: -5.5, duration: 15, recovery: 5 },
-        { rank: 5, startDate: '2024-01', endDate: '2024-02', depth: -3.1, duration: 10, recovery: 2 },
-    ]
+    historicalData: [],
+    liveData: [],
+    heatmap: [],
+    tvl: 0,
+    status: 'Offline',
+    topDrawdowns: []
   };
 };
 
