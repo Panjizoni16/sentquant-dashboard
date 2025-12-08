@@ -1036,44 +1036,43 @@ useEffect(() => {
     {
       title: t.stats.section_return,
       metrics: [
-        { l: t.metrics_labels.total_return, v: `${currentStats.totalReturn.toLocaleString()}%` },
-        { l: t.metrics_labels.cagr, v: `${currentStats.cagr}%` },
-        { l: t.metrics_labels.apr, v: `${currentStats.apr}%` },
+        { l: t.metrics_labels.total_return, v: `${currentStats.totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})}%` },
+        { l: t.metrics_labels.cagr, v: `${currentStats.cagr.toFixed(2)}%` },
+        { l: t.metrics_labels.apr, v: `${currentStats.apr.toFixed(2)}%` },
       ]
     },
     {
       title: t.stats.section_drawdown,
       metrics: [
-        { l: t.metrics_labels.max_dd, v: `${currentStats.maxDrawdown}%` },
+        { l: t.metrics_labels.max_dd, v: `${currentStats.maxDrawdown.toFixed(2)}%` },
       ]
     },
     {
       title: t.stats.section_risk_adj,
       metrics: [
-        { l: t.metrics_labels.sharpe, v: currentStats.sharpe },
-        { l: t.metrics_labels.sortino, v: currentStats.sortino },
+        { l: t.metrics_labels.sharpe, v: currentStats.sharpe.toFixed(2) },
+        { l: t.metrics_labels.sortino, v: currentStats.sortino.toFixed(2) },
       ]
     },
     {
       title: t.stats.section_volatility,
       metrics: [
-        { l: t.metrics_labels.ann_vol, v: `${currentStats.volatility}%` },
+        { l: t.metrics_labels.ann_vol, v: `${currentStats.volatility.toFixed(2)}%` },
       ]
     },
     {
       title: t.stats.section_win_loss,
       metrics: [
-        { l: t.metrics_labels.win_rate, v: `${currentStats.winRate}%` },
+        { l: t.metrics_labels.win_rate, v: currentStats.winRate ? `${currentStats.winRate}%` : 'N/A' },
       ]
     },
     {
       title: t.stats.section_consistency,
       metrics: [
-        { l: t.metrics_labels.expected_val_short, v: `${currentStats.expectedValue}%` },
+        { l: t.metrics_labels.expected_val_short, v: `${currentStats.expectedValue.toFixed(2)}%` },
       ]
     }
-  ]}, [language, currentStats, t]); 
-
+  ]}, [language, currentStats, t]);
   // Loading Screen
   if (loading) return <div className="h-screen bg-black text-white flex items-center justify-center font-mono">INITIALIZING SYSTEM...</div>;
 
