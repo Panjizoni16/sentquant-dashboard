@@ -405,19 +405,47 @@ const TRANSLATIONS = {
 };
 
 // --- COMPONENT: KEY METRICS GRID (NEW) ---
-const KeyMetricsGrid = ({ stats, t, isLive }) => {
-  // Safety check to ensure stats exists
-  const s = stats || {};
-  
-  const metrics = [
-    { label: t.metrics_labels.total_return, value: s.totalReturn ? `${s.totalReturn.toLocaleString()}%` : '-', color: (s.totalReturn || 0) >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]' },
-    { label: t.metrics_labels.max_dd, value: s.maxDrawdown ? `${s.maxDrawdown}%` : '-', color: 'text-[#f23645]' },
-    { label: t.metrics_labels.cagr, value: s.cagr ? `${s.cagr}%` : '-', color: 'text-white' },
-    { label: t.metrics_labels.apr, value: s.apr ? `${s.apr}%` : '-', color: 'text-white' },
-    { label: t.metrics_labels.expected_val_short, value: s.expectedValue ? `${s.expectedValue}%` : '-', color: 'text-white' },
-    { label: t.metrics_labels.volatility_short, value: s.volatility ? `${s.volatility}%` : '-', color: 'text-white' },
-    { label: t.metrics_labels.sharpe, value: s.sharpe || '-', color: 'text-white' },
-    { label: t.metrics_labels.sortino, value: s.sortino || '-', color: 'text-white' }
+const metrics = [
+    { 
+      label: t.metrics_labels.total_return, 
+      value: s.totalReturn ? `${s.totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})}%` : '-', 
+      color: (s.totalReturn || 0) >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]' 
+    },
+    { 
+      label: t.metrics_labels.max_dd, 
+      value: s.maxDrawdown ? `${s.maxDrawdown.toFixed(2)}%` : '-', 
+      color: 'text-[#f23645]' 
+    },
+    { 
+      label: t.metrics_labels.cagr, 
+      value: s.cagr ? `${s.cagr.toFixed(2)}%` : '-', 
+      color: 'text-white' 
+    },
+    { 
+      label: t.metrics_labels.apr, 
+      value: s.apr ? `${s.apr.toFixed(2)}%` : '-', 
+      color: 'text-white' 
+    },
+    { 
+      label: t.metrics_labels.expected_val_short, 
+      value: s.expectedValue ? `${s.expectedValue.toFixed(2)}%` : '-', 
+      color: 'text-white' 
+    },
+    { 
+      label: t.metrics_labels.volatility_short, 
+      value: s.volatility ? `${s.volatility.toFixed(2)}%` : '-', 
+      color: 'text-white' 
+    },
+    { 
+      label: t.metrics_labels.sharpe, 
+      value: s.sharpe ? s.sharpe.toFixed(2) : '-', 
+      color: 'text-white' 
+    },
+    { 
+      label: t.metrics_labels.sortino, 
+      value: s.sortino ? s.sortino.toFixed(2) : '-', 
+      color: 'text-white' 
+    }
   ];
 
   return (
