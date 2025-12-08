@@ -405,7 +405,10 @@ const TRANSLATIONS = {
 };
 
 // --- COMPONENT: KEY METRICS GRID (NEW) ---
-const metrics = [
+const KeyMetricsGrid = ({ stats, t, isLive }) => {
+  const s = stats || {};
+  
+  const metrics = [
     { 
       label: t.metrics_labels.total_return, 
       value: s.totalReturn ? `${s.totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})}%` : '-', 
