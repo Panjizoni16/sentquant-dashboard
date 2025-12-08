@@ -888,7 +888,65 @@ useEffect(() => {
       sortino
     };
   }, [historicalChartData]);
-
+// ✅ LIVE STATS CALCULATION (Separate from Historical)
+  const liveStats = useMemo(() => {
+    const data = currentStrategy.liveData;
+    
+    if (!data || data.length === 0) return {
+      totalReturn: 0,
+      maxDrawdown: 0,
+      cagr: 0,
+      apr: 0,
+      expectedValue: 0,
+      volatility: 0,
+      sharpe: 0,
+      sortino: 0
+    };
+    
+    const startVal = data[0].value;
+    const endVal = data[data.length - 1].value;
+    const totalReturn = ((endVal - startVal) / startVal) * 100;
+    const maxDrawdown = Math.min(...data.map(d => d.drawdown || 0));
+    
+    const dailyReturns = [];
+    for (let i = 1; i < data.length; i++) {
+      const r = (data[i].value - data[i-1].value) / data[i-1].value;
+      dailyReturns.push(r);
+    }
+    
+    const tradingDays = 252;
+    const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+    const annualizedReturn = meanDailyReturn * tradingDays;
+    
+    const startDate = new Date(data[0].date || Date.now());
+    const endDate = new Date(data[data.length - 1].date || Date.now());
+    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.01);
+    const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
+    const apr = annualizedReturn * 100;
+    const expectedValue = meanDailyReturn * 100;
+    
+    const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDailyReturn, 2), 0) / (dailyReturns.length - 1);
+    const stdDev = Math.sqrt(variance);
+    const volatility = stdDev * Math.sqrt(tradingDays) * 100;
+    const sharpe = (volatility !== 0) ? (apr / volatility) : 0;
+    
+    const downsideReturns = dailyReturns.filter(r => r < 0);
+    const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length;
+    const downsideDev = Math.sqrt(downsideVariance);
+    const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
+    const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
+    
+    return {
+      totalReturn,
+      maxDrawdown,
+      cagr,
+      apr,
+      expectedValue,
+      volatility,
+      sharpe,
+      sortino
+    };
+  }, [currentStrategy.liveData]);
   // Filter Logic for Historical Chart using Real/Mocked Data
   const filteredHistoricalData = useMemo(() => {
     let data = historicalChartData || [];
@@ -1398,7 +1456,7 @@ useEffect(() => {
                 </div>
 
                 {/* KEY METRICS GRID */}
-                <KeyMetricsGrid stats={currentStats} t={t} isLive={true} />
+               <KeyMetricsGrid stats={liveStats} t={t} isLive={true} />
 
                 {/* LIVE CHARTS */}
                 <StrategyCharts 
