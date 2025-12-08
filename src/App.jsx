@@ -1142,7 +1142,6 @@ useEffect(() => {
                   <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
 
                   <div className="text-xs md:text-sm text-gray-500 font-mono tracking-[0.3em] uppercase mb-6">
-                    TRACK
                   </div>
 
                   <h1 className="text-5xl md:text-7xl lg:text-8xl font-eth font-extrabold text-white mb-2 tracking-tighter leading-none drop-shadow-2xl">
