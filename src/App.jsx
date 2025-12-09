@@ -44,7 +44,7 @@ const SentquantLogo = ({ size = 120, withBg = false, animate = false }) => (
 // ==========================================
 // Data ini statis (ID, Nama, Warna, Protokol Dasar)
 const STRATEGIES_CONFIG = [
-  { id: 'sentquant', name: 'Sentquant', color: '#22ab94', protocol: 'Hyperliquid' },
+  { id: 'sentquant', name: 'Sentquant', color: '#22ab94', protocol: 'Lighter' },
   { id: 'alpha_hunter', name: 'Alpha Hunter', color: '#3b82f6', protocol: 'GMX' },
   { id: 'momentum_pro', name: 'Momentum Pro', color: '#f59e0b', protocol: 'Lighter' },
   { id: 'mean_revert', name: 'Mean Revert', color: '#8b5cf6', protocol: 'Hyperliquid' },
