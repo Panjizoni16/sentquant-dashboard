@@ -1086,25 +1086,35 @@ useEffect(() => {
 <div className="flex items-center gap-2">
   <button 
     onClick={() => setLanguage('en')}
-    className={`w-8 h-8 rounded-full flex items-center justify-center text-xl transition-all duration-300 ${
+    className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-all duration-300 ${
       language === 'en' 
-        ? 'opacity-100 scale-110 ring-2 ring-white/30' 
-        : 'opacity-40 hover:opacity-70 hover:scale-105'
+        ? 'opacity-100 scale-110 border-white/30' 
+        : 'opacity-40 hover:opacity-70 hover:scale-105 border-transparent'
     }`}
     title="English"
   >
-    🇬🇧
+    <img 
+      src="https://flagcdn.com/w40/gb.png" 
+      srcSet="https://flagcdn.com/w80/gb.png 2x"
+      alt="EN" 
+      className="w-full h-full object-cover" 
+    />
   </button>
   <button 
     onClick={() => setLanguage('id')}
-    className={`w-8 h-8 rounded-full flex items-center justify-center text-xl transition-all duration-300 ${
+    className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-all duration-300 ${
       language === 'id' 
-        ? 'opacity-100 scale-110 ring-2 ring-white/30' 
-        : 'opacity-40 hover:opacity-70 hover:scale-105'
+        ? 'opacity-100 scale-110 border-white/30' 
+        : 'opacity-40 hover:opacity-70 hover:scale-105 border-transparent'
     }`}
     title="Bahasa Indonesia"
   >
-    🇮🇩
+    <img 
+      src="https://flagcdn.com/w40/id.png" 
+      srcSet="https://flagcdn.com/w80/id.png 2x"
+      alt="ID" 
+      className="w-full h-full object-cover" 
+    />
   </button>
 </div>
           <button className="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-colors flex items-center gap-2">{t.join} <Lock size={12} /></button>
