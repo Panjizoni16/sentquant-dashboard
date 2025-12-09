@@ -1175,168 +1175,197 @@ useEffect(() => {
             </div>
           )}
 
-          {/* --- TERMINAL --- */}
-          {activeTab === 'terminal' && (
-            <div className="animate-fade-in-up space-y-8 pb-20 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
-              <div className="w-full bg-black/20 backdrop-blur-md border border-white/10 rounded-3xl p-8 text-center flex flex-col items-center justify-center space-y-2 shadow-2xl relative overflow-hidden">
-                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#A3A3A3] to-transparent opacity-50"></div>
-                 <div className="mb-2">
-                    <SentquantLogo size={48} /> 
-                 </div>
-                 <div className="flex items-center gap-2 justify-center mb-1">
-                    <h2 className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">{t.terminal.total_tvl_label}</h2>
-                    <div className="relative group">
-                       <HelpCircle size={14} className="text-gray-500 cursor-help hover:text-[#A3A3A3] transition-colors" />
-                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-black/90 border border-white/10 rounded-lg text-xs text-gray-300 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-sm">
-                          {t.terminal.tvl_tooltip}
-                       </div>
-                    </div>
-                 </div>
-                 <div className="text-3xl md:text-5xl font-eth font-bold text-white tracking-tight drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
-                    {formatCurrency(totalTVL)}
-                 </div>
-                 <p className="text-sm text-gray-500 font-medium">{t.terminal.tvl_sub}</p>
-              </div>
+        {/* --- TERMINAL --- */}
+{activeTab === 'terminal' && (
+  <div className="animate-fade-in-up space-y-8 pb-20 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
+    <div className="w-full bg-black/20 backdrop-blur-md border border-white/10 rounded-3xl p-8 text-center flex flex-col items-center justify-center space-y-2 shadow-2xl relative overflow-hidden">
+       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#A3A3A3] to-transparent opacity-50"></div>
+       <div className="mb-2">
+          <SentquantLogo size={48} /> 
+       </div>
+       <div className="flex items-center gap-2 justify-center mb-1">
+          <h2 className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">{t.terminal.total_tvl_label}</h2>
+          <div className="relative group">
+             <HelpCircle size={14} className="text-gray-500 cursor-help hover:text-[#A3A3A3] transition-colors" />
+             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-black/90 border border-white/10 rounded-lg text-xs text-gray-300 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 backdrop-blur-sm">
+                {t.terminal.tvl_tooltip}
+             </div>
+          </div>
+       </div>
+       <div className="text-3xl md:text-5xl font-eth font-bold text-white tracking-tight drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
+          {formatCurrency(totalTVL)}
+       </div>
+       <p className="text-sm text-gray-500 font-medium">{t.terminal.tvl_sub}</p>
+    </div>
 
-              {/* BENCHMARK CHART SECTION */}
-              <div className="space-y-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <h1 className="text-2xl md:text-3xl font-eth font-bold text-white">{t.terminal.title}</h1>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.values(strategiesData).map(strat => (
-                      <button 
-                        key={strat.id}
-                        onClick={() => toggleStrategyVisibility(strat.id)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${visibleStrategies[strat.id] ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-gray-500'}`}
-                      >
-                        {visibleStrategies[strat.id] ? <Eye size={12} style={{color: strat.color}} /> : <EyeOff size={12} />}
-                        {strat.name}
-                      </button>
-                    ))}
-                  </div>
+    {/* BENCHMARK CHART SECTION */}
+    <div className="space-y-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h1 className="text-2xl md:text-3xl font-eth font-bold text-white">{t.terminal.title}</h1>
+        <div className="flex flex-wrap gap-2">
+          {Object.values(strategiesData).map(strat => (
+            <button 
+              key={strat.id}
+              onClick={() => toggleStrategyVisibility(strat.id)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${visibleStrategies[strat.id] ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-gray-500'}`}
+            >
+              {visibleStrategies[strat.id] ? <Eye size={12} style={{color: strat.color}} /> : <EyeOff size={12} />}
+              {strat.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="h-[400px] md:h-[500px] w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 relative">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={MOCK_BENCHMARK_DATA} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
+            <defs>
+              {Object.values(strategiesData).map(strat => (
+                <linearGradient key={strat.id} id={`color-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={strat.color} stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor={strat.color} stopOpacity={0}/>
+                </linearGradient>
+              ))}
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+            <XAxis dataKey="date" hide />
+            <YAxis domain={['dataMin', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
+            <Tooltip 
+              contentStyle={{backgroundColor: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px'}} 
+              itemStyle={{fontSize: '12px', fontWeight: 'bold'}}
+              labelStyle={{color: '#888', marginBottom: '5px'}}
+            />
+            {Object.values(strategiesData).map(strat => (
+              visibleStrategies[strat.id] && (
+                <Area 
+                  key={strat.id}
+                  type="monotone" 
+                  dataKey={strat.id} 
+                  stroke={strat.color} 
+                  strokeWidth={2}
+                  fill={`url(#color-${strat.id})`}
+                  dot={false}
+                  activeDot={{r: 4, strokeWidth: 0}}
+                />
+              )
+            ))}
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+
+    {/* STRATEGY CARDS GRID */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {Object.values(strategiesData).map(strat => {
+        // Calculate live stats for this card
+        const cardStats = (() => {
+          if (strat.id !== 'sentquant' || !strat.liveData || strat.liveData.length === 0) {
+            return { apr: '-', maxDD: '-', totalReturn: '-' };
+          }
+          
+          const data = strat.liveData;
+          const startVal = data[0].value;
+          const endVal = data[data.length - 1].value;
+          const totalReturn = ((endVal - startVal) / startVal) * 100;
+          
+          const dailyReturns = [];
+          for (let i = 1; i < data.length; i++) {
+            const r = (data[i].value - data[i-1].value) / data[i-1].value;
+            dailyReturns.push(r);
+          }
+          
+          const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+          const apr = (meanDailyReturn * 252 * 100).toFixed(2);
+          const maxDD = Math.min(...data.map(d => d.drawdown || 0)).toFixed(2);
+          
+          return { 
+            apr: `${apr}%`, 
+            maxDD: `${maxDD}%`,
+            totalReturn: totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})
+          };
+        })();
+
+        return (
+          <div key={strat.id} className="relative bg-[#0E0E0E] border border-white/10 rounded-3xl p-6 flex flex-col h-[450px] overflow-hidden group hover:border-white/20 transition-all duration-300">
+            <div className="flex justify-between items-start mb-2 z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/5">
+                   {strat.id === 'sentquant' ? <SentquantLogo size={24} /> : <Activity size={20} style={{color: strat.color}} />}
                 </div>
-
-                <div className="h-[400px] md:h-[500px] w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 relative">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={MOCK_BENCHMARK_DATA} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
-                      <defs>
-                        {Object.values(strategiesData).map(strat => (
-                          <linearGradient key={strat.id} id={`color-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={strat.color} stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor={strat.color} stopOpacity={0}/>
-                          </linearGradient>
-                        ))}
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                      <XAxis dataKey="date" hide />
-                      <YAxis domain={['dataMin', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
-                      <Tooltip 
-                        contentStyle={{backgroundColor: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px'}} 
-                        itemStyle={{fontSize: '12px', fontWeight: 'bold'}}
-                        labelStyle={{color: '#888', marginBottom: '5px'}}
-                      />
-                      {Object.values(strategiesData).map(strat => (
-                        visibleStrategies[strat.id] && (
-                          <Area 
-                            key={strat.id}
-                            type="monotone" 
-                            dataKey={strat.id} 
-                            stroke={strat.color} 
-                            strokeWidth={2}
-                            fill={`url(#color-${strat.id})`}
-                            dot={false}
-                            activeDot={{r: 4, strokeWidth: 0}}
-                          />
-                        )
-                      ))}
-                    </AreaChart>
-                  </ResponsiveContainer>
+                <div>
+                   <h3 className="font-bold text-white font-eth text-lg tracking-wide">{strat.name}</h3>
                 </div>
               </div>
-
-              {/* STRATEGY CARDS GRID */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Object.values(strategiesData).map(strat => (
-                  <div key={strat.id} className="relative bg-[#0E0E0E] border border-white/10 rounded-3xl p-6 flex flex-col h-[450px] overflow-hidden group hover:border-white/20 transition-all duration-300">
-                    <div className="flex justify-between items-start mb-2 z-10">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/5">
-                           {strat.id === 'sentquant' ? <SentquantLogo size={24} /> : <Activity size={20} style={{color: strat.color}} />}
-                        </div>
-                        <div>
-                           <h3 className="font-bold text-white font-eth text-lg tracking-wide">{strat.name}</h3>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                         <button onClick={() => handleLiveView(strat.id)} className="px-3 py-1 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-[10px] font-bold text-gray-300 transition-colors">
-                           {t.terminal.history}
-                         </button>
-                         <button onClick={() => handleLiveView(strat.id)} className="px-3 py-1 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-[10px] font-bold text-white transition-colors">
-                           {t.terminal.live_btn}
-                         </button>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 z-10">
-                       <div className="text-5xl font-bold font-eth tracking-tighter" style={{ color: strat.id === 'sentquant' ? '#22ab94' : '#22ab94' }}>
-                          {strat.return}
-                       </div>
-                       <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
-                          {t.terminal.total_return}
-                       </div>
-                    </div>
-
-                    <div className="absolute inset-x-0 top-[120px] bottom-[80px] w-full opacity-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={strat.liveData}>
-                            <defs>
-                              <linearGradient id={`cardGradient-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} stopOpacity={0.2}/>
-                                <stop offset="100%" stopColor={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} stopOpacity={0}/>
-                              </linearGradient>
-                            </defs>
-                            <Tooltip 
-                                contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(4px)'}}
-                                itemStyle={{color: strat.id === 'sentquant' ? '#22ab94' : '#22ab94'}}
-                                cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
-                                formatter={(val) => [val.toFixed(2), 'NAV']}
-                                labelStyle={{display: 'none'}}
-                            />
-                            <Area 
-                              type="monotone" 
-                              dataKey="value" 
-                              stroke={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} 
-                              strokeWidth={2} 
-                              fill={`url(#cardGradient-${strat.id})`} 
-                              dot={false}
-                              activeDot={{ r: 4, fill: strat.id === 'sentquant' ? '#22ab94' : '#22ab94', stroke: '#fff' }}
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-
-                    <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
-                       <div className="text-center">
-                          <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
-                          <div className="text-sm font-bold text-white">{strat.apr}</div>
-                       </div>
-                       <div className="text-center relative">
-                          <div className="absolute left-0 top-1 bottom-1 w-px bg-white/5"></div>
-                          <div className="absolute right-0 top-1 bottom-1 w-px bg-white/5"></div>
-                          <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.max_dd}</div>
-                          <div className="text-sm font-bold text-white">{strat.dd}</div>
-                       </div>
-                       <div className="text-center">
-                          <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">TVL</div>
-                          <div className="text-sm font-bold text-white">{formatCurrency(strat.tvl)}</div>
-                       </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex gap-2">
+                 <button onClick={() => handleLiveView(strat.id)} className="px-3 py-1 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-[10px] font-bold text-gray-300 transition-colors">
+                   {t.terminal.history}
+                 </button>
+                 <button onClick={() => handleLiveView(strat.id)} className="px-3 py-1 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-[10px] font-bold text-white transition-colors">
+                   {t.terminal.live_btn}
+                 </button>
               </div>
             </div>
-          )}
 
+            <div className="mt-4 z-10">
+               <div className="text-5xl font-bold font-eth tracking-tighter" style={{ color: strat.id === 'sentquant' ? '#22ab94' : '#22ab94' }}>
+                  {cardStats.totalReturn}%
+               </div>
+               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
+                  {t.terminal.total_return}
+               </div>
+            </div>
+
+            <div className="absolute inset-x-0 top-[120px] bottom-[80px] w-full opacity-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={strat.liveData}>
+                    <defs>
+                      <linearGradient id={`cardGradient-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} stopOpacity={0.2}/>
+                        <stop offset="100%" stopColor={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Tooltip 
+                        contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(4px)'}}
+                        itemStyle={{color: strat.id === 'sentquant' ? '#22ab94' : '#22ab94'}}
+                        cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
+                        formatter={(val) => [val.toFixed(2), 'NAV']}
+                        labelStyle={{display: 'none'}}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} 
+                      strokeWidth={2} 
+                      fill={`url(#cardGradient-${strat.id})`} 
+                      dot={false}
+                      activeDot={{ r: 4, fill: strat.id === 'sentquant' ? '#22ab94' : '#22ab94', stroke: '#fff' }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+            </div>
+
+            <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
+               <div className="text-center">
+                  <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
+                  <div className="text-sm font-bold text-white">{cardStats.apr}</div>
+               </div>
+               <div className="text-center relative">
+                  <div className="absolute left-0 top-1 bottom-1 w-px bg-white/5"></div>
+                  <div className="absolute right-0 top-1 bottom-1 w-px bg-white/5"></div>
+                  <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.max_dd}</div>
+                  <div className="text-sm font-bold text-white">{cardStats.maxDD}</div>
+               </div>
+               <div className="text-center">
+                  <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">TVL</div>
+                  <div className="text-sm font-bold text-white">{formatCurrency(strat.tvl)}</div>
+               </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
           {/* --- LIVE: UNIFIED DASHBOARD --- */}
           {activeTab === 'live' && (
             <div className="animate-fade-in-up space-y-12 pb-20 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
