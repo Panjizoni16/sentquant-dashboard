@@ -1198,27 +1198,57 @@ useEffect(() => {
        <p className="text-sm text-gray-500 font-medium">{t.terminal.tvl_sub}</p>
     </div>
 
-    {/* BENCHMARK CHART SECTION */}
-    <div className="space-y-4">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-2xl md:text-3xl font-eth font-bold text-white">{t.terminal.title}</h1>
-        <div className="flex flex-wrap gap-2">
-          {Object.values(strategiesData).map(strat => (
-            <button 
-              key={strat.id}
-              onClick={() => toggleStrategyVisibility(strat.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${visibleStrategies[strat.id] ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-gray-500'}`}
-            >
-              {visibleStrategies[strat.id] ? <Eye size={12} style={{color: strat.color}} /> : <EyeOff size={12} />}
-              {strat.name}
-            </button>
-          ))}
-        </div>
-      </div>
+{/* BENCHMARK CHART SECTION */}
+<div className="space-y-4">
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <h1 className="text-2xl md:text-3xl font-eth font-bold text-white">{t.terminal.title}</h1>
+    <div className="flex flex-wrap gap-2">
+      {Object.values(strategiesData).map(strat => (
+        <button 
+          key={strat.id}
+          onClick={() => toggleStrategyVisibility(strat.id)}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${visibleStrategies[strat.id] ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-gray-500'}`}
+        >
+          {visibleStrategies[strat.id] ? <Eye size={12} style={{color: strat.color}} /> : <EyeOff size={12} />}
+          {strat.name}
+        </button>
+      ))}
+    </div>
+  </div>
 
+  {/* ✅ USE REAL DATA */}
+  {(() => {
+    // Prepare benchmark data - use real data for Sentquant, mock for others
+    const benchmarkData = (() => {
+      const sentquant = strategiesData.sentquant;
+      
+      // If Sentquant has real data, use it
+      if (sentquant && sentquant.liveData && sentquant.liveData.length > 0) {
+        return sentquant.liveData.map((point, index) => {
+          const dataPoint = {
+            date: point.date || `Day ${index + 1}`,
+            sentquant: point.value
+          };
+          
+          // Add null for other strategies (they don't have data yet)
+          Object.values(strategiesData).forEach(strat => {
+            if (strat.id !== 'sentquant') {
+              dataPoint[strat.id] = null;
+            }
+          });
+          
+          return dataPoint;
+        });
+      }
+      
+      // Fallback to mock data if no real data
+      return MOCK_BENCHMARK_DATA;
+    })();
+
+    return (
       <div className="h-[400px] md:h-[500px] w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 relative">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={MOCK_BENCHMARK_DATA} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
+          <AreaChart data={benchmarkData} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
             <defs>
               {Object.values(strategiesData).map(strat => (
                 <linearGradient key={strat.id} id={`color-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
@@ -1246,13 +1276,16 @@ useEffect(() => {
                   fill={`url(#color-${strat.id})`}
                   dot={false}
                   activeDot={{r: 4, strokeWidth: 0}}
+                  connectNulls={false}
                 />
               )
             ))}
           </AreaChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    );
+  })()}
+</div>
 
 {/* STRATEGY CARDS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
