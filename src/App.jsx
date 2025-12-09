@@ -1391,7 +1391,7 @@ useEffect(() => {
   <button 
     className="w-full sm:w-auto px-6 py-3 bg-[#A3A3A3] hover:bg-[#8f8f8f] text-black font-eth font-bold rounded-xl text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-105"
   >
-    <span>EXECUTE TRADE</span>
+    <span>TRADE</span>
     <ArrowRight size={16} />
   </button>
 </div>
