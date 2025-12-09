@@ -1376,7 +1376,7 @@ useEffect(() => {
                     <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
                     
                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">APR</span>
-                    <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">{currentStrategy.apr}</span>
+                    <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">{liveStats.apr ? `${liveStats.apr.toFixed(2)}%` : '-'}</span>
                   </div>
 
                   {/* TVL BOX */}
