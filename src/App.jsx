@@ -273,11 +273,11 @@ const TRANSLATIONS = {
       manifesto: "Sentquant adalah tempat di mana setiap trader dapat melacak kualitas strategi dan edukasi sebelum mengeluarkan uang sepeser pun.",
       launch: "Buka Terminal",
       problem_title: "MASALAH",
-      problem_text: "Bagi banyak guru palsu, sumber keuntungan bukan dari pasar melainkan KAMU. Member mereka adalah produk, trader retail diperdaya dengan klaim kosong dan mimpi hanya untuk diperah biaya keanggotaan hingga mereka kehabisan uang.",
+      problem_text: "Bagi banyak guru palsu, sumber keuntungan mereka bukan dari pasar melainkan dari ANDA. Member mereka adalah produk nya, trader retail dipancing dengan klaim kosong dan mimpi hanya untuk diperah biaya membership hingga mereka kehabisan uang.",
       solution_title: "SOLUSI",
-      solution_text: "Sentquant memberdayakan setiap trader untuk mengaudit kinerja strategi dan mentor secara real-time sebelum mempertaruhkan modal atau membeli kursus.",
+      solution_text: "Sentquant mengajak setiap trader untuk menilai performa strategi atau mentor nya secara real-time sebelum mengeluarkan uang atau membeli kursus.",
       impact_title: "DAMPAK",
-      impact_text: "Era \"Salesman menyamar sebagai Mentor\" dan \"Penjudi Beruntung\" yang pamer keuntungan memecoin sekali jalan telah berakhir. Di ekosistem Sentquant, anggaran marketing tidak berarti apa-apa. Hanya mereka yang memiliki keunggulan matematis terbukti dan dapat diulang yang akan bertahan. Sisanya akan memudar menjadi tidak relevan."
+      impact_text: "Era \"Sales berkedok Mentor\" dan \"Penjudi Beruntung\" yang pamer keuntungan memecoin karena hanya bullrun telah berakhir. Di ekosistem Sentquant, semua trader mendapatkan informasi di awal , semua trader membeli karena nilai yang valid , bukan lagi karena klaim palsu atau hype marketing."
     },
     terminal: {
       title: "Perbandingan Benchmark",
