@@ -1376,30 +1376,41 @@ useEffect(() => {
           {activeTab === 'live' && (
             <div className="animate-fade-in-up space-y-12 pb-20 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
               
-              {/* BACK BUTTON */}
-              <button 
-                onClick={() => setActiveTab('terminal')}
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4 group"
-              >
-                <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                <span className="font-eth font-bold text-sm tracking-wider">BACK TO TERMINAL</span>
-              </button>
+            {/* HEADER WITH BACK & TRADE BUTTONS */}
+<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+  {/* BACK BUTTON */}
+  <button 
+    onClick={() => setActiveTab('terminal')}
+    className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+  >
+    <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+    <span className="font-eth font-bold text-sm tracking-wider">BACK TO TERMINAL</span>
+  </button>
 
-              <div className="space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/5 border border-white/10">
-                       {currentStrategy.id === 'sentquant' ? <SentquantLogo size={32} /> : <Activity size={24} style={{color: currentStrategy.color}} />}
-                    </div>
-                    <div>
-                      <h1 className="text-3xl font-eth font-bold text-white">{currentStrategy.name}</h1>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={`w-2 h-2 rounded-full ${currentStrategy.status === 'Live' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{currentStrategy.status} TRADING</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+  {/* TRADE NOW BUTTON - TOP RIGHT */}
+  <button 
+    className="w-full sm:w-auto px-6 py-3 bg-[#22ab94] hover:bg-[#1d9580] text-black font-eth font-bold rounded-xl text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-105"
+  >
+    <span>EXECUTE TRADE</span>
+    <ArrowRight size={16} />
+  </button>
+</div>
+
+<div className="space-y-6">
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+    <div className="flex items-center gap-4">
+      <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/5 border border-white/10">
+         {currentStrategy.id === 'sentquant' ? <SentquantLogo size={32} /> : <Activity size={24} style={{color: currentStrategy.color}} />}
+      </div>
+      <div>
+        <h1 className="text-3xl font-eth font-bold text-white">{currentStrategy.name}</h1>
+        <div className="flex items-center gap-2 mt-1">
+          <span className={`w-2 h-2 rounded-full ${currentStrategy.status === 'Live' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{currentStrategy.status} TRADING</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
                 {/* NEW METRICS BOX: APR, TVL, PROTOCOL - STYLED */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -1436,18 +1447,6 @@ useEffect(() => {
                     <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">{currentStrategy.protocol}</span>
                   </div>
 
-                  {/* TRADE NOW BOX - Spans to center on Desktop */}
-                  <button className="relative border border-white/10 bg-[#A3A3A3] hover:bg-[#8f8f8f] transition-colors p-6 md:p-4 md:h-28 md:w-[80%] md:mx-auto flex flex-col items-center justify-center md:col-start-2 cursor-pointer group rounded-xl">
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-black/40"></div>
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-black/40"></div>
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-black/40"></div>
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-black/40"></div>
-                    
-                    <span className="text-[10px] font-bold text-black/70 uppercase tracking-widest mb-2 flex items-center gap-2">
-                      EXECUTE <ArrowRight size={12} />
-                    </span>
-                    <span className="text-2xl md:text-3xl font-eth font-bold text-black tracking-tighter">TRADE NOW</span>
-                  </button>
                 </div>
 
                 {/* KEY METRICS GRID */}
