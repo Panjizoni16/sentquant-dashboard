@@ -878,7 +878,7 @@ useEffect(() => {
     
     const startDate = new Date(data[0].date || Date.now());
     const endDate = new Date(data[data.length - 1].date || Date.now());
-    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.01);
+    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.001);
     const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
     const apr = annualizedReturn * 100;
     const expectedValue = meanDailyReturn * 100;
