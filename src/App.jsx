@@ -1254,118 +1254,125 @@ useEffect(() => {
       </div>
     </div>
 
-    {/* STRATEGY CARDS GRID */}
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {Object.values(strategiesData).map(strat => {
-        // Calculate live stats for this card
-        const cardStats = (() => {
-          if (strat.id !== 'sentquant' || !strat.liveData || strat.liveData.length === 0) {
-            return { apr: '-', maxDD: '-', totalReturn: '-' };
-          }
-          
-          const data = strat.liveData;
-          const startVal = data[0].value;
-          const endVal = data[data.length - 1].value;
-          const totalReturn = ((endVal - startVal) / startVal) * 100;
-          
-          const dailyReturns = [];
-          for (let i = 1; i < data.length; i++) {
-            const r = (data[i].value - data[i-1].value) / data[i-1].value;
-            dailyReturns.push(r);
-          }
-          
-          const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
-          const apr = (meanDailyReturn * 252 * 100).toFixed(2);
-          const maxDD = Math.min(...data.map(d => d.drawdown || 0)).toFixed(2);
-          
-          return { 
-            apr: `${apr}%`, 
-            maxDD: `${maxDD}%`,
-            totalReturn: totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})
-          };
-        })();
+ {/* STRATEGY CARDS GRID */}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {Object.values(strategiesData).map(strat => {
+    // Calculate live stats for this card
+    const cardStats = (() => {
+      if (strat.id !== 'sentquant' || !strat.liveData || strat.liveData.length === 0) {
+        return { apr: '-', maxDD: '-', totalReturn: '-' };
+      }
+      
+      const data = strat.liveData;
+      const startVal = data[0].value;
+      const endVal = data[data.length - 1].value;
+      const totalReturn = ((endVal - startVal) / startVal) * 100;
+      
+      const dailyReturns = [];
+      for (let i = 1; i < data.length; i++) {
+        const r = (data[i].value - data[i-1].value) / data[i-1].value;
+        dailyReturns.push(r);
+      }
+      
+      const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+      const apr = (meanDailyReturn * 252 * 100).toFixed(2);
+      const maxDD = Math.min(...data.map(d => d.drawdown || 0)).toFixed(2);
+      
+      return { 
+        apr: `${apr}%`, 
+        maxDD: `${maxDD}%`,
+        totalReturn: totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})
+      };
+    })();
 
-        return (
-          <div key={strat.id} className="relative bg-[#0E0E0E] border border-white/10 rounded-3xl p-6 flex flex-col h-[450px] overflow-hidden group hover:border-white/20 transition-all duration-300">
-            <div className="flex justify-between items-start mb-2 z-10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/5">
-                   {strat.id === 'sentquant' ? <SentquantLogo size={24} /> : <Activity size={20} style={{color: strat.color}} />}
-                </div>
-                <div>
-                   <h3 className="font-bold text-white font-eth text-lg tracking-wide">{strat.name}</h3>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                 <button onClick={() => handleLiveView(strat.id)} className="px-3 py-1 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-[10px] font-bold text-gray-300 transition-colors">
-                   {t.terminal.history}
-                 </button>
-                 <button onClick={() => handleLiveView(strat.id)} className="px-3 py-1 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-[10px] font-bold text-white transition-colors">
-                   {t.terminal.live_btn}
-                 </button>
-              </div>
+    // ✅ NEW: Color helper function
+    const getColor = (value) => {
+      if (value === '-') return 'text-white';
+      const numValue = parseFloat(value);
+      return numValue < 0 ? 'text-[#f23645]' : 'text-[#22ab94]';
+    };
+
+    return (
+      <div key={strat.id} className="relative bg-[#0E0E0E] border border-white/10 rounded-3xl p-6 flex flex-col h-[450px] overflow-hidden group hover:border-white/20 transition-all duration-300">
+        <div className="flex justify-between items-start mb-2 z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/5">
+               {strat.id === 'sentquant' ? <SentquantLogo size={24} /> : <Activity size={20} style={{color: strat.color}} />}
             </div>
-
-            <div className="mt-4 z-10">
-               <div className="text-5xl font-bold font-eth tracking-tighter" style={{ color: strat.id === 'sentquant' ? '#22ab94' : '#22ab94' }}>
-                  {cardStats.totalReturn}%
-               </div>
-               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
-                  {t.terminal.total_return}
-               </div>
-            </div>
-
-            <div className="absolute inset-x-0 top-[120px] bottom-[80px] w-full opacity-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={strat.liveData}>
-                    <defs>
-                      <linearGradient id={`cardGradient-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} stopOpacity={0.2}/>
-                        <stop offset="100%" stopColor={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <Tooltip 
-                        contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(4px)'}}
-                        itemStyle={{color: strat.id === 'sentquant' ? '#22ab94' : '#22ab94'}}
-                        cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
-                        formatter={(val) => [val.toFixed(2), 'NAV']}
-                        labelStyle={{display: 'none'}}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} 
-                      strokeWidth={2} 
-                      fill={`url(#cardGradient-${strat.id})`} 
-                      dot={false}
-                      activeDot={{ r: 4, fill: strat.id === 'sentquant' ? '#22ab94' : '#22ab94', stroke: '#fff' }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-            </div>
-
-            <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
-               <div className="text-center">
-                  <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
-                  <div className="text-sm font-bold text-white">{cardStats.apr}</div>
-               </div>
-               <div className="text-center relative">
-                  <div className="absolute left-0 top-1 bottom-1 w-px bg-white/5"></div>
-                  <div className="absolute right-0 top-1 bottom-1 w-px bg-white/5"></div>
-                  <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.max_dd}</div>
-                  <div className="text-sm font-bold text-white">{cardStats.maxDD}</div>
-               </div>
-               <div className="text-center">
-                  <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">TVL</div>
-                  <div className="text-sm font-bold text-white">{formatCurrency(strat.tvl)}</div>
-               </div>
+            <div>
+               <h3 className="font-bold text-white font-eth text-lg tracking-wide">{strat.name}</h3>
             </div>
           </div>
-        );
-      })}
-    </div>
-  </div>
-)}
+          <div className="flex gap-2">
+             <button onClick={() => handleLiveView(strat.id)} className="px-3 py-1 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-[10px] font-bold text-gray-300 transition-colors">
+               {t.terminal.history}
+             </button>
+             <button onClick={() => handleLiveView(strat.id)} className="px-3 py-1 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-[10px] font-bold text-white transition-colors">
+               {t.terminal.live_btn}
+             </button>
+          </div>
+        </div>
+
+        {/* ✅ CHANGED: Added dynamic color */}
+        <div className="mt-4 z-10">
+           <div className={`text-5xl font-bold font-eth tracking-tighter ${getColor(cardStats.totalReturn)}`}>
+              {cardStats.totalReturn}%
+           </div>
+           <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
+              {t.terminal.total_return}
+           </div>
+        </div>
+
+        <div className="absolute inset-x-0 top-[120px] bottom-[80px] w-full opacity-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={strat.liveData}>
+                <defs>
+                  <linearGradient id={`cardGradient-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} stopOpacity={0.2}/>
+                    <stop offset="100%" stopColor={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <Tooltip 
+                    contentStyle={{backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', backdropFilter: 'blur(4px)'}}
+                    itemStyle={{color: strat.id === 'sentquant' ? '#22ab94' : '#22ab94'}}
+                    cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
+                    formatter={(val) => [val.toFixed(2), 'NAV']}
+                    labelStyle={{display: 'none'}}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke={strat.id === 'sentquant' ? '#22ab94' : '#22ab94'} 
+                  strokeWidth={2} 
+                  fill={`url(#cardGradient-${strat.id})`} 
+                  dot={false}
+                  activeDot={{ r: 4, fill: strat.id === 'sentquant' ? '#22ab94' : '#22ab94', stroke: '#fff' }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+        </div>
+
+        {/* ✅ CHANGED: Added dynamic color to metrics */}
+        <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
+           <div className="text-center">
+              <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
+              <div className={`text-sm font-bold ${getColor(cardStats.apr)}`}>{cardStats.apr}</div>
+           </div>
+           <div className="text-center relative">
+              <div className="absolute left-0 top-1 bottom-1 w-px bg-white/5"></div>
+              <div className="absolute right-0 top-1 bottom-1 w-px bg-white/5"></div>
+              <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.max_dd}</div>
+              <div className={`text-sm font-bold ${getColor(cardStats.maxDD)}`}>{cardStats.maxDD}</div>
+           </div>
+           <div className="text-center">
+              <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">TVL</div>
+              <div className="text-sm font-bold text-white">{formatCurrency(strat.tvl)}</div>
+           </div>
+        </div>
+      </div>
+    );
+  })}
+</div>
           {/* --- LIVE: UNIFIED DASHBOARD --- */}
           {activeTab === 'live' && (
             <div className="animate-fade-in-up space-y-12 pb-20 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
