@@ -1082,7 +1082,31 @@ useEffect(() => {
           </nav>
         </div>
         <div className="flex items-center gap-4">
-          <button onClick={() => setLanguage(l => l === 'en' ? 'id' : 'en')} className="text-xs font-bold text-gray-400 hover:text-white transition-colors">{language === 'en' ? 'EN' : 'ID'}</button>
+         {/* LANGUAGE FLAGS */}
+<div className="flex items-center gap-2">
+  <button 
+    onClick={() => setLanguage('en')}
+    className={`w-8 h-8 rounded-full flex items-center justify-center text-xl transition-all duration-300 ${
+      language === 'en' 
+        ? 'opacity-100 scale-110 ring-2 ring-white/30' 
+        : 'opacity-40 hover:opacity-70 hover:scale-105'
+    }`}
+    title="English"
+  >
+    🇬🇧
+  </button>
+  <button 
+    onClick={() => setLanguage('id')}
+    className={`w-8 h-8 rounded-full flex items-center justify-center text-xl transition-all duration-300 ${
+      language === 'id' 
+        ? 'opacity-100 scale-110 ring-2 ring-white/30' 
+        : 'opacity-40 hover:opacity-70 hover:scale-105'
+    }`}
+    title="Bahasa Indonesia"
+  >
+    🇮🇩
+  </button>
+</div>
           <button className="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-colors flex items-center gap-2">{t.join} <Lock size={12} /></button>
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-white">{isMenuOpen ? <X size={24}/> : <Menu size={24}/>}</button>
         </div>
