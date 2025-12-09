@@ -183,7 +183,13 @@ const TRANSLATIONS = {
       subtitle_2: "Sentquant tracks strategy performance.",
       tagline: "Sentquant", 
       manifesto: "Sentquant is the place where every trader can track the quality of strategies before spending a single dollar.",
-      launch: "Launch Terminal"
+      launch: "Launch Terminal",
+      problem_title: "PROBLEM",
+      problem_text: "For many fake gurus, the profit source isn't the market it's YOU. Their members are the product, retail traders are lured with empty claim and dream in only to be milked for membership fees until they are financially drained.",
+      solution_title: "SOLUTION",
+      solution_text: "Sentquant empowers every trader to audit the real-time performance of strategies and mentors before risking capital or buying a course.",
+      impact_title: "IMPACT",
+      impact_text: "The era of \"Salesmen disguised as Mentors\" and \"Lucky Gamblers\" flexing one-time memecoin gains is over. In the Sentquant ecosystem, marketing budget means nothing. Only those with proven, repeatable mathematical edge will survive. The rest will fade into irrelevance."
     },
     terminal: {
       title: "Benchmark Comparison",
@@ -222,13 +228,13 @@ const TRANSLATIONS = {
     about: {
       broken: "The trading industry is broken.",
       fake_gurus: "Fake gurus sell dreams.",
-      cant_verify: "Performance can’t be verified.",
+      cant_verify: "Performance can't be verified.",
       misled: "Retail traders are misled by empty claims.",
       talks: "Everyone talks.",
       no_data: "No data.",
       cmc_analogy_1: "If CoinMarketCap tracks assets,",
       cmc_analogy_2: "Sentquant tracks strategy performance.",
-      cant_lie: "Because performance can’t lie, people can.",
+      cant_lie: "Because performance can't lie, people can.",
       era_ends: "The era of fake trading gurus ends here.",
       join_movement: "Join Movement"
     },
@@ -265,7 +271,13 @@ const TRANSLATIONS = {
       subtitle_2: "Sentquant melacak kinerja strategi.",
       tagline: "Sentquant", 
       manifesto: "Sentquant adalah tempat di mana setiap trader dapat melacak kualitas strategi dan edukasi sebelum mengeluarkan uang sepeser pun.",
-      launch: "Buka Terminal"
+      launch: "Buka Terminal",
+      problem_title: "MASALAH",
+      problem_text: "Bagi banyak guru palsu, sumber keuntungan bukan dari pasar melainkan KAMU. Member mereka adalah produk, trader retail diperdaya dengan klaim kosong dan mimpi hanya untuk diperah biaya keanggotaan hingga mereka kehabisan uang.",
+      solution_title: "SOLUSI",
+      solution_text: "Sentquant memberdayakan setiap trader untuk mengaudit kinerja strategi dan mentor secara real-time sebelum mempertaruhkan modal atau membeli kursus.",
+      impact_title: "DAMPAK",
+      impact_text: "Era \"Salesman menyamar sebagai Mentor\" dan \"Penjudi Beruntung\" yang pamer keuntungan memecoin sekali jalan telah berakhir. Di ekosistem Sentquant, anggaran marketing tidak berarti apa-apa. Hanya mereka yang memiliki keunggulan matematis terbukti dan dapat diulang yang akan bertahan. Sisanya akan memudar menjadi tidak relevan."
     },
     terminal: {
       title: "Perbandingan Benchmark",
@@ -1129,49 +1141,47 @@ useEffect(() => {
                   </div>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto">
-                 <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
-                    
-                    <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
-                      PROBLEM
-                    </h3>
-                    <p className="text-gray-400 text-sm font-mono leading-relaxed">
-                      For many fake gurus, the profit source isn't the market it’s YOU. Their members are the product, retail traders are lured with empty claim and dream in only to be milked for membership fees until they are financially drained.
-                    </p>
-                 </div>
-
-                 <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
-                    
-                    <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
-                      SOLUTION
-                    </h3>
-                    <p className="text-gray-400 text-sm font-mono leading-relaxed">
-                      Sentquant empowers every trader to audit the real-time performance of strategies and mentors before risking capital or buying a course.
-                    </p>
-                 </div>
-
-                 <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
-                    
-                    <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
-                      IMPACT
-                    </h3>
-                    <p className="text-gray-400 text-sm font-mono leading-relaxed">
-                      The era of "Salesmen disguised as Mentors" and "Lucky Gamblers" flexing one-time memecoin gains is over. In the Sentquant ecosystem, marketing budget means nothing. Only those with proven, repeatable mathematical edge will survive. The rest will fade into irrelevance.
-                    </p>
-                 </div>
-               </div>
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto">
+  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
+    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+    
+    <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
+      {t.home.problem_title}
+    </h3>
+    <p className="text-gray-400 text-sm font-mono leading-relaxed">
+      {t.home.problem_text}
+    </p>
+  </div>
+  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
+    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+    
+    <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
+      {t.home.solution_title}
+    </h3>
+    <p className="text-gray-400 text-sm font-mono leading-relaxed">
+      {t.home.solution_text}
+    </p>
+  </div>
+  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
+    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+    
+    <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
+      {t.home.impact_title}
+    </h3>
+    <p className="text-gray-400 text-sm font-mono leading-relaxed">
+      {t.home.impact_text}
+    </p>
+  </div>
+</div>
             </div>
           )}
 
