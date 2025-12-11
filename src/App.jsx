@@ -796,9 +796,12 @@ newData[strat.id] = {
 
 
   // Calculate Total TVL dynamically from Fetched Data
-  const totalTVL = useMemo(() => {
-    return Object.values(strategiesData).reduce((acc, curr) => acc + (curr.tvl || 0), 0);
-  }, [strategiesData]);
+const totalTVL = useMemo(() => {
+  return Object.values(strategiesData).reduce((acc, curr) => {
+    if (curr.id === 'sentquant') return acc;
+    return acc + (curr.tvl || 0);
+  }, 0);
+}, [strategiesData]);
 
   // Helper to toggle strategy visibility
   const toggleStrategyVisibility = (id) => {
@@ -1448,22 +1451,29 @@ newData[strat.id] = {
                     </ResponsiveContainer>
                 </div>
 
-                <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
-                   <div className="text-center">
-                      <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
-                      <div className={`text-sm font-bold ${getColor(cardStats.apr)}`}>{cardStats.apr}</div>
-                   </div>
-                   <div className="text-center relative">
-                      <div className="absolute left-0 top-1 bottom-1 w-px bg-white/5"></div>
-                      <div className="absolute right-0 top-1 bottom-1 w-px bg-white/5"></div>
-                      <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.max_dd}</div>
-                      <div className={`text-sm font-bold ${getColor(cardStats.maxDD)}`}>{cardStats.maxDD}</div>
-                   </div>
-                   <div className="text-center">
-                      <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">TVL</div>
-                      <div className="text-sm font-bold text-white">{formatCurrency(strat.tvl)}</div>
-                   </div>
-                </div>
+ <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
+  {/* APR */}
+  <div className="text-center">
+    <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
+    <div className={`text-sm font-bold ${getColor(cardStats.apr)}`}>{cardStats.apr}</div>
+  </div>
+  
+  {/* TVL */}
+  <div className="text-center relative">
+    <div className="absolute left-0 top-1 bottom-1 w-px bg-white/5"></div>
+    <div className="absolute right-0 top-1 bottom-1 w-px bg-white/5"></div>
+    <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">TVL</div>
+    <div className="text-sm font-bold text-white">
+      {strat.id === 'sentquant' ? 'LOCKED' : formatCurrency(strat.tvl)}
+    </div>
+  </div>
+  
+  {/* PROTOCOL */}
+  <div className="text-center">
+    <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">PROTOCOL</div>
+    <div className="text-sm font-bold text-white">{strat.protocol}</div>
+  </div>
+</div>
               </div>
             );
           })}
@@ -1531,7 +1541,9 @@ newData[strat.id] = {
                     <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
                     
                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">TVL</span>
-                    <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">{formatCurrency(currentStrategy.tvl)}</span>
+                   <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">
+  {currentStrategy.id === 'sentquant' ? 'LOCKED' : formatCurrency(currentStrategy.tvl)}
+</span>
                   </div>
 
                   {/* PROTOCOL BOX */}
