@@ -45,7 +45,7 @@ const SentquantLogo = ({ size = 120, withBg = false, animate = false }) => (
 // Data ini statis (ID, Nama, Warna, Protokol Dasar)
 const STRATEGIES_CONFIG = [
   { id: 'sentquant', name: 'Sentquant', color: '#22ab94', protocol: 'Lighter' },
-  { id: 'alpha_hunter', name: 'Alpha Hunter', color: '#3b82f6', protocol: 'GMX' },
+   { id: 'systemic_hyper', name: 'Systemic Hyper', color: '#10b981', protocol: 'Hyperliquid' },
   { id: 'momentum_pro', name: 'Momentum Pro', color: '#f59e0b', protocol: 'Lighter' },
   { id: 'mean_revert', name: 'Mean Revert', color: '#8b5cf6', protocol: 'Hyperliquid' },
   { id: 'volatility_edge', name: 'Volatility Edge', color: '#ec4899', protocol: 'GMX' },
@@ -105,8 +105,8 @@ const MOCK_BENCHMARK_DATA = generateBenchmarkData();
 const fetchSentquantRealData = async () => {
   try {
     const [historicalRes, heatmapRes] = await Promise.all([
-      fetch('/data/equity-historical.json'),
-      fetch('/data/heatmap-data.json')
+      fetch('/data/equity-historical-sentquant.json'),
+      fetch('/data/heatmap-data-sentquant.json')
     ]);
     
     const historicalData = await historicalRes.json();
@@ -126,15 +126,15 @@ const fetchRealData = async (strategy) => {
   try {
     if (strategy === 'sentquant') {
       // Fetch live data for Sentquant
-      const liveResponse = await fetch('/data/live-data.json');
+      const liveResponse = await fetch('/data/live-data-sentquant.json');
       const liveData = await liveResponse.json();
       
       // Fetch historical data
-      const histResponse = await fetch('/data/equity-historical.json');
+      const histResponse = await fetch('/data/equity-historical-sentquant.json');
       const histData = await histResponse.json();
       
       // Fetch heatmap data
-      const heatResponse = await fetch('/data/heatmap-data.json');
+      const heatResponse = await fetch('/data/heatmap-data-sentquant.json');
       const heatData = await heatResponse.json();
       
       const sentquantLive = liveData.sentquant || {
@@ -719,39 +719,60 @@ useEffect(() => {
       const newData = {};
       
    for (const strat of STRATEGIES_CONFIG) {
-  if (strat.id === 'sentquant') {
+ if (strat.id === 'sentquant' || strat.id === 'systemic_hyper') {
     // Fetch all 3 files: historical, heatmap, AND live-data
-    const [histRes, heatRes, liveRes] = await Promise.all([
-      fetch('/data/equity-historical.json'),
-      fetch('/data/heatmap-data.json'),
-      fetch('/data/live-data.json')  // ← ADD THIS!
-    ]);
+  const [histRes, heatRes, liveRes] = await Promise.all([
+  fetch(`/data/equity-historical-${strat.id}.json`),
+  fetch(`/data/heatmap-data-${strat.id}.json`),
+  fetch(`/data/live-data-${strat.id}.json`)
+]);
+
+let historicalData = [];
+let heatmapData = [];
+let liveDataJson = {};
+
+try {
+  historicalData = await histRes.json();
+} catch (e) {
+  console.log('Historical data error:', e);
+  historicalData = [];
+}
+
+try {
+  heatmapData = await heatRes.json();
+} catch (e) {
+  console.log('Heatmap data error:', e);
+  heatmapData = [];
+}
+
+try {
+  liveDataJson = await liveRes.json();
+} catch (e) {
+  console.log('Live data error:', e);
+  liveDataJson = {};
+}
     
-    const historicalData = await histRes.json();
-    const heatmapData = await heatRes.json();
-    const liveDataJson = await liveRes.json();  // ← ADD THIS!
-    
-    const sentquantLive = liveDataJson.sentquant || {
-      liveData: [],
-      tvl: 0,
-      status: 'Offline'
-    };
-    
-    newData[strat.id] = {
-      ...strat,
-      return: "-",
-      dd: "-",
-      sharpe: "-",
-      tvl: sentquantLive.tvl,              // ← FROM LIVE-DATA.JSON!
-      apr: "-",
-      status: sentquantLive.status,        // ← FROM LIVE-DATA.JSON!
-      liveData: sentquantLive.liveData,    // ← FROM LIVE-DATA.JSON!
-      historicalData: historicalData,
-      heatmap: heatmapData,
-      annualReturns: [],
-      stats: null,
-      topDrawdowns: []
-    };
+   const strategyLive = liveDataJson[strat.id] || {
+  liveData: [],
+  tvl: 0,
+  status: 'Offline'
+};
+
+newData[strat.id] = {
+  ...strat,
+  return: "-",
+  dd: "-",
+  sharpe: "-",
+  tvl: strategyLive.tvl,
+  apr: "-",
+  status: strategyLive.status,
+  liveData: strategyLive.liveData,
+  historicalData: historicalData,
+  heatmap: heatmapData,
+  annualReturns: [],
+  stats: null,
+  topDrawdowns: []
+};
   } else {
     newData[strat.id] = generateEmptyStrategyData(strat);
   }
