@@ -35,8 +35,8 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          git add public/data/live-data-hyperliquid_alpha.json
-          git add public/data/equity-historical-hyperliquid_alpha.json
+          git add public/data/live-data-systemic_hyper.json
+          git add public/data/equity-historical-systemic_hyper.json
           git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Auto-update Hyperliquid data - $(date +'%Y-%m-%d')" && git push)
       
       - name: Update summary
