@@ -144,13 +144,7 @@ def update_live_data(metrics):
     
     live_data = strategy_data.get("liveData", [])
     
-    # Check if today already has data
-    today_exists = any(point['date'] == today for point in live_data)
-    
-    if today_exists:
-        print(f"⚠️  Data for {today} already exists. Updating...")
-        # Remove today's data
-        live_data = [point for point in live_data if point['date'] != today]
+   
     
     # Calculate NAV
     if len(live_data) > 0:
@@ -165,10 +159,12 @@ def update_live_data(metrics):
     current_collateral = metrics['tvl']
     new_nav = calculate_nav(previous_nav, previous_collateral, current_collateral)
     
-    # Create new data point
+   # Create new data point with timestamp
+    now = datetime.now()
     new_point = {
         "date": today,
-        "year": datetime.now().year,
+        "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "year": now.year,
         "value": round(new_nav, 2),
         "collateral": current_collateral,
         "pnl": metrics['total_pnl'],
