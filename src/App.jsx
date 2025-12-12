@@ -1360,7 +1360,10 @@ const totalTVL = useMemo(() => {
           {Object.values(strategiesData).map(strat => {
             // Calculate live stats for this card
             const cardStats = (() => {
-              if (strat.id !== 'sentquant' || !strat.liveData || strat.liveData.length === 0) {
+              // Support both Sentquant AND Hyperliquid
+              if ((strat.id !== 'sentquant' && strat.id !== 'systemic_hyper') || 
+                  !strat.liveData || 
+                  strat.liveData.length === 0) {
                 return { apr: '-', maxDD: '-', totalReturn: '-' };
               }
               
@@ -1451,29 +1454,29 @@ const totalTVL = useMemo(() => {
                     </ResponsiveContainer>
                 </div>
 
- <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
-  {/* APR */}
-  <div className="text-center">
-    <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
-    <div className={`text-sm font-bold ${getColor(cardStats.apr)}`}>{cardStats.apr}</div>
-  </div>
-  
-  {/* TVL */}
-  <div className="text-center relative">
-    <div className="absolute left-0 top-1 bottom-1 w-px bg-white/5"></div>
-    <div className="absolute right-0 top-1 bottom-1 w-px bg-white/5"></div>
-    <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">TVL</div>
-    <div className="text-sm font-bold text-white">
-      {strat.id === 'sentquant' ? 'LOCKED' : formatCurrency(strat.tvl)}
-    </div>
-  </div>
-  
-  {/* PROTOCOL */}
-  <div className="text-center">
-    <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">PROTOCOL</div>
-    <div className="text-sm font-bold text-white">{strat.protocol}</div>
-  </div>
-</div>
+                <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
+                  {/* APR */}
+                  <div className="text-center">
+                    <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
+                    <div className={`text-sm font-bold ${getColor(cardStats.apr)}`}>{cardStats.apr}</div>
+                  </div>
+                  
+                  {/* TVL */}
+                  <div className="text-center relative">
+                    <div className="absolute left-0 top-1 bottom-1 w-px bg-white/5"></div>
+                    <div className="absolute right-0 top-1 bottom-1 w-px bg-white/5"></div>
+                    <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">TVL</div>
+                    <div className="text-sm font-bold text-white">
+                      {strat.id === 'sentquant' ? 'LOCKED' : formatCurrency(strat.tvl)}
+                    </div>
+                  </div>
+                  
+                  {/* PROTOCOL */}
+                  <div className="text-center">
+                    <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">PROTOCOL</div>
+                    <div className="text-sm font-bold text-white">{strat.protocol}</div>
+                  </div>
+                </div>
               </div>
             );
           })}
