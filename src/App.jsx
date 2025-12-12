@@ -939,12 +939,12 @@ const totalTVL = useMemo(() => {
     if (!data || data.length === 0) return {
       totalReturn: 0,
       maxDrawdown: 0,
-      cagr: 0,
-      apr: 0,
+      cagr: '-',
+      apr: '-',
       expectedValue: 0,
       volatility: 0,
-      sharpe: 0,
-      sortino: 0
+      sharpe: '-',
+      sortino: '-'
     };
     
     const startVal = data[0].value;
@@ -952,33 +952,79 @@ const totalTVL = useMemo(() => {
     const totalReturn = ((endVal - startVal) / startVal) * 100;
     const maxDrawdown = Math.min(...data.map(d => d.drawdown || 0));
     
-    const dailyReturns = [];
+    const returns = [];
     for (let i = 1; i < data.length; i++) {
       const r = (data[i].value - data[i-1].value) / data[i-1].value;
-      dailyReturns.push(r);
+      returns.push(r);
     }
     
-    const tradingDays = 252;
-    const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
-    const annualizedReturn = meanDailyReturn * tradingDays;
+    // Calculate time span in HOURS
+    const startTime = new Date(data[0].timestamp || data[0].date);
+    const endTime = new Date(data[data.length - 1].timestamp || data[data.length - 1].date);
+    const hoursElapsed = Math.max((endTime - startTime) / (1000 * 60 * 60), 1);
     
-    const startDate = new Date(data[0].date || Date.now());
-    const endDate = new Date(data[data.length - 1].date || Date.now());
-    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.001);
-    const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
-    const apr = annualizedReturn * 100;
-    const expectedValue = meanDailyReturn * 100;
+    const meanReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+    const expectedValue = meanReturn * 100;
     
-    const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDailyReturn, 2), 0) / (dailyReturns.length - 1);
+    // Calculate volatility (using all returns)
+    const variance = returns.reduce((sum, r) => sum + Math.pow(r - meanReturn, 2), 0) / (returns.length - 1);
     const stdDev = Math.sqrt(variance);
-    const volatility = stdDev * Math.sqrt(tradingDays) * 100;
-    const sharpe = (volatility !== 0) ? (apr / volatility) : 0;
+    const volatility = stdDev * Math.sqrt(24 * 365 / (hoursElapsed / returns.length)) * 100;
     
-    const downsideReturns = dailyReturns.filter(r => r < 0);
-    const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length;
-    const downsideDev = Math.sqrt(downsideVariance);
-    const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
-    const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
+    // Only annualize if data >= 7 days (168 hours)
+    let apr = '-';
+    let cagr = '-';
+    let sharpe = '-';
+    let sortino = '-';
+    
+    if (hoursElapsed >= 168) {
+      // Take last 30 days (720 hours) or all available data
+      const last30DaysReturns = returns.slice(-Math.min(720, returns.length));
+      const avgReturn = last30DaysReturns.reduce((a, b) => a + b, 0) / last30DaysReturns.length;
+      
+      // Calculate annualized metrics
+      const periodsPerYear = 24 * 365;
+      const yearFraction = hoursElapsed / (24 * 365);
+      
+      // APR - only show if positive trend
+      if (avgReturn > 0) {
+        apr = (avgReturn * periodsPerYear * 100);
+      }
+      // else: apr stays as dash
+      
+      // CAGR - calculate normally (can be negative)
+      cagr = ((Math.pow(endVal / startVal, 1 / yearFraction) - 1) * 100);
+      
+      // Sharpe - ALWAYS calculate (can be negative)
+      const variance30d = last30DaysReturns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / (last30DaysReturns.length - 1);
+      const stdDev30d = Math.sqrt(variance30d);
+      const annualizedStdDev = stdDev30d * Math.sqrt(periodsPerYear);
+      
+      if (annualizedStdDev !== 0) {
+        const annualizedAvgReturn = avgReturn * periodsPerYear * 100;
+        sharpe = annualizedAvgReturn / (annualizedStdDev * 100);
+      } else {
+        sharpe = 0;
+      }
+      
+      // Sortino - ALWAYS calculate (can be negative)
+      const downsideReturns = last30DaysReturns.filter(r => r < 0);
+      if (downsideReturns.length > 0) {
+        const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / last30DaysReturns.length;
+        const downsideDev = Math.sqrt(downsideVariance);
+        const annDownsideDev = downsideDev * Math.sqrt(periodsPerYear);
+        
+        if (annDownsideDev !== 0) {
+          const annualizedAvgReturn = avgReturn * periodsPerYear * 100;
+          sortino = annualizedAvgReturn / (annDownsideDev * 100);
+        } else {
+          sortino = 0;
+        }
+      } else {
+        // No downside - perfect!
+        sortino = 999; // Theoretical infinity
+      }
+    }
     
     return {
       totalReturn,
