@@ -1,7 +1,16 @@
 {
   "systemic_hyper": {
-    "liveData": [],
-    "tvl": 0,
+    "liveData": [
+      {
+        "date": "2025-12-12",
+        "year": 2025,
+        "value": 1000.0,
+        "tvl": 3766267.787904,
+        "pnl": 1076506.7467319998,
+        "drawdown": 0.0
+      }
+    ],
+    "tvl": 3766267.787904,
     "status": "Live"
   }
 }
