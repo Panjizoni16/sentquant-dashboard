@@ -242,12 +242,7 @@ def update_historical_data(metrics):
         print(f"⚠️  Could not load historical data: {e}")
         historical_data = []
     
-    # Check if today already exists
-    today_exists = any(point['date'] == today for point in historical_data)
-    
-    if today_exists:
-        # Update today's data
-        historical_data = [point for point in historical_data if point['date'] != today]
+  
     
     # Get NAV from live data
     live_data_path = OUTPUT_DIR / f"live-data-{STRATEGY_ID}.json"
