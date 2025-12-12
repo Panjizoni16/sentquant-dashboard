@@ -156,11 +156,11 @@ def update_live_data(metrics):
     if len(live_data) > 0:
         last_point = live_data[-1]
         previous_nav = last_point['value']
-        previous_collateral = last_point.get('collateral', previous_nav)
+        previous_collateral = last_point.get('collateral', 0)
     else:
-        # First data point
+        # First data point - start at NAV 1000
         previous_nav = START_NAV
-        previous_collateral = START_NAV
+        previous_collateral = metrics['tvl']
     
     current_collateral = metrics['tvl']
     new_nav = calculate_nav(previous_nav, previous_collateral, current_collateral)
@@ -195,7 +195,7 @@ def update_live_data(metrics):
     with open(live_data_path, 'w') as f:
         json.dump(all_data, f, indent=2)
     
-    print(f"✅ Updated live-data.json")
+    print(f"✅ Updated live-data-sentquant.json")
     print(f"   Date: {today}")
     print(f"   NAV: {new_nav:.2f}")
     print(f"   TVL: ${metrics['tvl']:.2f}")
@@ -245,7 +245,7 @@ def main():
     print()
     
     # Update live data
-    print("💾 Updating live-data.json...")
+    print("💾 Updating live-data-sentquant.json...")
     new_point = update_live_data(metrics)
     
     print()
