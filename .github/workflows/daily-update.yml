@@ -2,8 +2,7 @@ name: Daily Sentquant Update
 
 on:
   schedule:
-    # Run every day at 00:00 UTC (7 AM Jakarta)
-    - cron: '0 0 * * *'
+    - cron: '0 * * * *'  # Every hour
   
   workflow_dispatch:  # Allow manual trigger
 
