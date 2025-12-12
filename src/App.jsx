@@ -720,8 +720,7 @@ useEffect(() => {
       
    for (const strat of STRATEGIES_CONFIG) {
  if (strat.id === 'sentquant' || strat.id === 'systemic_hyper') {
-    // Fetch all 3 files: historical, heatmap, AND live-data
-  const [histRes, heatRes, liveRes] = await Promise.all([
+    const [histRes, heatRes, liveRes] = await Promise.all([
   fetch(`/data/equity-historical-${strat.id}.json`),
   fetch(`/data/heatmap-data-${strat.id}.json`),
   fetch(`/data/live-data-${strat.id}.json`)
@@ -758,13 +757,64 @@ try {
   status: 'Offline'
 };
 
+const liveData = strategyLive.liveData || [];
+let calculatedStats = { apr: '-', return: '-', dd: '-', sharpe: '-' };
+
+if (liveData.length >= 2) {
+  const startVal = liveData[0].value;
+  const endVal = liveData[liveData.length - 1].value;
+  const totalReturn = ((endVal - startVal) / startVal) * 100;
+  
+  const returns = [];
+  for (let i = 1; i < liveData.length; i++) {
+    const r = (liveData[i].value - liveData[i-1].value) / liveData[i-1].value;
+    returns.push(r);
+  }
+  
+  const startTime = new Date(liveData[0].timestamp || liveData[0].date);
+  const endTime = new Date(liveData[liveData.length - 1].timestamp || liveData[liveData.length - 1].date);
+  const hoursElapsed = Math.max((endTime - startTime) / (1000 * 60 * 60), 1);
+  
+  const meanReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+  
+  let apr = '-';
+  let cagr = '-';
+  
+  if (hoursElapsed >= 168) {
+    const yearFraction = hoursElapsed / (24 * 365);
+    cagr = ((Math.pow(endVal / startVal, 1 / yearFraction) - 1) * 100).toFixed(2);
+    
+    const periodsPerYear = (24 * 365) / (hoursElapsed / returns.length);
+    apr = (meanReturn * periodsPerYear * 100).toFixed(2);
+  }
+  
+  const maxDD = Math.min(...liveData.map(d => d.drawdown || 0)).toFixed(2);
+  
+  let sharpe = '-';
+  if (hoursElapsed >= 168 && returns.length >= 10) {
+    const variance = returns.reduce((sum, r) => sum + Math.pow(r - meanReturn, 2), 0) / (returns.length - 1);
+    const stdDev = Math.sqrt(variance);
+    const annualizedStdDev = stdDev * Math.sqrt(24 * 365 / (hoursElapsed / returns.length));
+    sharpe = (annualizedStdDev !== 0 && !isNaN(annualizedStdDev)) 
+      ? (parseFloat(apr) / (annualizedStdDev * 100)).toFixed(2) 
+      : '-';
+  }
+  
+  calculatedStats = {
+    apr: apr,
+    return: totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2}),
+    dd: `${maxDD}%`,
+    sharpe: sharpe
+  };
+}
+
 newData[strat.id] = {
   ...strat,
-  return: "-",
-  dd: "-",
-  sharpe: "-",
+  return: calculatedStats.return,
+  dd: calculatedStats.dd,
+  sharpe: calculatedStats.sharpe,
   tvl: strategyLive.tvl,
-  apr: "-",
+  apr: calculatedStats.apr,
   status: strategyLive.status,
   liveData: strategyLive.liveData,
   historicalData: historicalData,
