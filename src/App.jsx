@@ -360,42 +360,42 @@ const KeyMetricsGrid = ({ stats, t, isLive }) => {
   const metrics = [
     { 
       label: t.metrics_labels.total_return, 
-      value: s.totalReturn ? `${s.totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})}%` : '-', 
+      value: typeof s.totalReturn === 'number' ? `${s.totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})}%` : '-', 
       color: (s.totalReturn || 0) >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]' 
     },
     { 
       label: t.metrics_labels.max_dd, 
-      value: s.maxDrawdown ? `${s.maxDrawdown.toFixed(2)}%` : '-', 
+      value: typeof s.maxDrawdown === 'number' ? `${s.maxDrawdown.toFixed(2)}%` : '-', 
       color: 'text-[#f23645]' 
     },
     { 
       label: t.metrics_labels.cagr, 
-      value: s.cagr ? `${s.cagr.toFixed(2)}%` : '-', 
+      value: (typeof s.cagr === 'number' && s.cagr !== 0) ? `${s.cagr.toFixed(2)}%` : '-', 
       color: 'text-white' 
     },
     { 
       label: t.metrics_labels.apr, 
-      value: s.apr ? `${s.apr.toFixed(2)}%` : '-', 
+      value: (typeof s.apr === 'number' && s.apr !== 0) ? `${s.apr.toFixed(2)}%` : '-', 
       color: 'text-white' 
     },
     { 
       label: t.metrics_labels.expected_val_short, 
-      value: s.expectedValue ? `${s.expectedValue.toFixed(2)}%` : '-', 
+      value: (typeof s.expectedValue === 'number' && s.expectedValue !== 0) ? `${s.expectedValue.toFixed(2)}%` : '-', 
       color: 'text-white' 
     },
     { 
       label: t.metrics_labels.volatility_short, 
-      value: s.volatility ? `${s.volatility.toFixed(2)}%` : '-', 
+      value: (typeof s.volatility === 'number' && s.volatility !== 0) ? `${s.volatility.toFixed(2)}%` : '-', 
       color: 'text-white' 
     },
     { 
       label: t.metrics_labels.sharpe, 
-      value: s.sharpe ? s.sharpe.toFixed(2) : '-', 
+      value: (typeof s.sharpe === 'number' && s.sharpe !== 0) ? s.sharpe.toFixed(2) : '-', 
       color: 'text-white' 
     },
     { 
       label: t.metrics_labels.sortino, 
-      value: s.sortino ? s.sortino.toFixed(2) : '-', 
+      value: (typeof s.sortino === 'number' && s.sortino !== 0) ? s.sortino.toFixed(2) : '-', 
       color: 'text-white' 
     }
   ];
@@ -411,7 +411,6 @@ const KeyMetricsGrid = ({ stats, t, isLive }) => {
     </div>
   );
 };
-
 // --- COMPONENT: STRATEGY CHARTS (STACKED) ---
 const StrategyCharts = ({ data, color, name, title }) => (
   <div className="flex flex-col space-y-2 mt-4">
