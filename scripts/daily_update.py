@@ -132,7 +132,7 @@ def update_live_data(metrics):
     today = date.today().isoformat()
     
     # Load previous data
-    live_data_path = OUTPUT_DIR / "live-data.json"
+    live_data_path = OUTPUT_DIR / "live-data-sentquant.json"
     all_data = load_previous_data(live_data_path)
     
     # Get strategy data
