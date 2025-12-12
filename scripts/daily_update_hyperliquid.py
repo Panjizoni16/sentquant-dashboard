@@ -184,15 +184,16 @@ def update_live_data(metrics):
     new_nav = calculate_nav(previous_nav, previous_tvl, current_tvl)
     
    # Create new point with timestamp
+   # Create new point with timestamp
     now = datetime.now()
     new_point = {
         "date": today,
         "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
-        "year": current_year,
+        "year": now.year,
         "value": new_nav,
-        "tvl": tvl,
-        "pnl": unrealized_pnl,
-        "drawdown": drawdown
+        "tvl": current_tvl,
+        "pnl": metrics['unrealized_pnl'],
+        "drawdown": 0  # Will calculate after appending
     }
     
     # Append new point
