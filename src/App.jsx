@@ -946,7 +946,30 @@ const totalTVL = useMemo(() => {
       sortino: 0
     };
     
-    // Step 1: Aggregate hourly data by day (take LAST value per day)
+    // Always calculate Total Return & Max DD from raw data
+    const startVal = data[0].value;
+    const endVal = data[data.length - 1].value;
+    const totalReturn = ((endVal - startVal) / startVal) * 100;
+    const maxDrawdown = Math.min(...data.map(d => d.drawdown || 0));
+    
+    // Check how many unique DAYS we have
+    const uniqueDays = new Set(data.map(d => d.date)).size;
+    
+    if (uniqueDays < 7) {
+      // Not enough days - return dash for annualized metrics
+      return {
+        totalReturn,
+        maxDrawdown,
+        cagr: 0,
+        apr: 0,
+        expectedValue: 0,
+        volatility: 0,
+        sharpe: 0,
+        sortino: 0
+      };
+    }
+    
+    // We have 7+ days - aggregate by day & calculate
     const dailyDataMap = {};
     
     data.forEach(point => {
@@ -964,45 +987,16 @@ const totalTVL = useMemo(() => {
       }
     });
     
-    // Step 2: Convert to array & sort by date
     const dailyData = Object.values(dailyDataMap).sort((a, b) => 
       new Date(a.date) - new Date(b.date)
     );
     
-    // Step 3: Check if we have at least 7 days
-    const daysElapsed = dailyData.length;
-    
-    if (daysElapsed < 7) {
-      // Not enough data - return dash for annualized metrics
-      const startVal = dailyData[0].value;
-      const endVal = dailyData[dailyData.length - 1].value;
-      const totalReturn = ((endVal - startVal) / startVal) * 100;
-      const maxDrawdown = Math.min(...dailyData.map(d => d.drawdown || 0));
-      
-      return {
-        totalReturn,
-        maxDrawdown,
-        cagr: 0,
-        apr: 0,
-        expectedValue: 0,
-        volatility: 0,
-        sharpe: 0,
-        sortino: 0
-      };
-    }
-    
-    // Step 4: Calculate daily returns
+    // Calculate daily returns
     const dailyReturns = [];
     for (let i = 1; i < dailyData.length; i++) {
       const r = (dailyData[i].value - dailyData[i-1].value) / dailyData[i-1].value;
       dailyReturns.push(r);
     }
-    
-    // Step 5: Calculate metrics
-    const startVal = dailyData[0].value;
-    const endVal = dailyData[dailyData.length - 1].value;
-    const totalReturn = ((endVal - startVal) / startVal) * 100;
-    const maxDrawdown = Math.min(...dailyData.map(d => d.drawdown || 0));
     
     const tradingDays = 252;
     const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
@@ -1015,7 +1009,9 @@ const totalTVL = useMemo(() => {
     const startDate = new Date(dailyData[0].date);
     const endDate = new Date(dailyData[dailyData.length - 1].date);
     const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.001);
-    const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
+    const dailyStartVal = dailyData[0].value;
+    const dailyEndVal = dailyData[dailyData.length - 1].value;
+    const cagr = (Math.pow(dailyEndVal / dailyStartVal, 1 / yearsDiff) - 1) * 100;
     
     // Volatility & Sharpe
     const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDailyReturn, 2), 0) / (dailyReturns.length - 1);
