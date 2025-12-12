@@ -1460,34 +1460,70 @@ const totalTVL = useMemo(() => {
           {Object.values(strategiesData).map(strat => {
             // Calculate live stats for this card
             const cardStats = (() => {
-              // Support both Sentquant AND Hyperliquid
-              if ((strat.id !== 'sentquant' && strat.id !== 'systemic_hyper') || 
-                  !strat.liveData || 
-                  strat.liveData.length === 0) {
-                return { apr: '-', maxDD: '-', totalReturn: '-' };
-              }
-              
-              const data = strat.liveData;
-              const startVal = data[0].value;
-              const endVal = data[data.length - 1].value;
-              const totalReturn = ((endVal - startVal) / startVal) * 100;
-              
-              const dailyReturns = [];
-              for (let i = 1; i < data.length; i++) {
-                const r = (data[i].value - data[i-1].value) / data[i-1].value;
-                dailyReturns.push(r);
-              }
-              
-              const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
-              const apr = (meanDailyReturn * 252 * 100).toFixed(2);
-              const maxDD = Math.min(...data.map(d => d.drawdown || 0)).toFixed(2);
-              
-              return { 
-                apr: `${apr}%`, 
-                maxDD: `${maxDD}%`,
-                totalReturn: totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})
-              };
-            })();
+  if ((strat.id !== 'sentquant' && strat.id !== 'systemic_hyper') || 
+      !strat.liveData || 
+      strat.liveData.length === 0) {
+    return { apr: '-', maxDD: '-', totalReturn: '-' };
+  }
+  
+  const data = strat.liveData;
+  
+  // Always calculate Total Return & Max DD
+  const startVal = data[0].value;
+  const endVal = data[data.length - 1].value;
+  const totalReturn = ((endVal - startVal) / startVal) * 100;
+  const maxDD = Math.min(...data.map(d => d.drawdown || 0)).toFixed(2);
+  
+  // Check unique days
+  const uniqueDays = new Set(data.map(d => d.date)).size;
+  
+  if (uniqueDays < 7) {
+    // Not enough days - show dash for APR
+    return { 
+      apr: '-', 
+      maxDD: `${maxDD}%`,
+      totalReturn: totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})
+    };
+  }
+  
+  // 7+ days - aggregate by day & calculate APR
+  const dailyDataMap = {};
+  
+  data.forEach(point => {
+    const date = point.date;
+    
+    if (!dailyDataMap[date]) {
+      dailyDataMap[date] = point;
+    } else {
+      const currentTime = point.timestamp || point.date;
+      const existingTime = dailyDataMap[date].timestamp || dailyDataMap[date].date;
+      
+      if (currentTime > existingTime) {
+        dailyDataMap[date] = point;
+      }
+    }
+  });
+  
+  const dailyData = Object.values(dailyDataMap).sort((a, b) => 
+    new Date(a.date) - new Date(b.date)
+  );
+  
+  const dailyReturns = [];
+  for (let i = 1; i < dailyData.length; i++) {
+    const r = (dailyData[i].value - dailyData[i-1].value) / dailyData[i-1].value;
+    dailyReturns.push(r);
+  }
+  
+  const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+  const tradingDays = 252;
+  const apr = (meanDailyReturn * tradingDays * 100).toFixed(2);
+  
+  return { 
+    apr: `${apr}%`, 
+    maxDD: `${maxDD}%`,
+    totalReturn: totalReturn.toLocaleString('en-US', {maximumFractionDigits: 2})
+  };
+})();
 
             const getColor = (value) => {
               if (value === '-') return 'text-white';
