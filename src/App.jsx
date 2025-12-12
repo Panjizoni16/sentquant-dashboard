@@ -933,7 +933,7 @@ const totalTVL = useMemo(() => {
     };
   }, [historicalChartData]);
 // ✅ LIVE STATS CALCULATION (Separate from Historical)
-  const liveStats = useMemo(() => {
+ const liveStats = useMemo(() => {
     const data = currentStrategy.liveData;
     
     if (!data || data.length === 0) return {
@@ -947,38 +947,93 @@ const totalTVL = useMemo(() => {
       sortino: 0
     };
     
-    const startVal = data[0].value;
-    const endVal = data[data.length - 1].value;
-    const totalReturn = ((endVal - startVal) / startVal) * 100;
-    const maxDrawdown = Math.min(...data.map(d => d.drawdown || 0));
+    // Step 1: Aggregate hourly data by day (take LAST value per day)
+    const dailyDataMap = {};
     
+    data.forEach(point => {
+      const date = point.date;
+      
+      if (!dailyDataMap[date]) {
+        dailyDataMap[date] = point;
+      } else {
+        const currentTime = point.timestamp || point.date;
+        const existingTime = dailyDataMap[date].timestamp || dailyDataMap[date].date;
+        
+        if (currentTime > existingTime) {
+          dailyDataMap[date] = point;
+        }
+      }
+    });
+    
+    // Step 2: Convert to array & sort by date
+    const dailyData = Object.values(dailyDataMap).sort((a, b) => 
+      new Date(a.date) - new Date(b.date)
+    );
+    
+    // Step 3: Check if we have at least 7 days
+    const daysElapsed = dailyData.length;
+    
+    if (daysElapsed < 7) {
+      // Not enough data - return dash for annualized metrics
+      const startVal = dailyData[0].value;
+      const endVal = dailyData[dailyData.length - 1].value;
+      const totalReturn = ((endVal - startVal) / startVal) * 100;
+      const maxDrawdown = Math.min(...dailyData.map(d => d.drawdown || 0));
+      
+      return {
+        totalReturn,
+        maxDrawdown,
+        cagr: 0,
+        apr: 0,
+        expectedValue: 0,
+        volatility: 0,
+        sharpe: 0,
+        sortino: 0
+      };
+    }
+    
+    // Step 4: Calculate daily returns
     const dailyReturns = [];
-    for (let i = 1; i < data.length; i++) {
-      const r = (data[i].value - data[i-1].value) / data[i-1].value;
+    for (let i = 1; i < dailyData.length; i++) {
+      const r = (dailyData[i].value - dailyData[i-1].value) / dailyData[i-1].value;
       dailyReturns.push(r);
     }
     
+    // Step 5: Calculate metrics
+    const startVal = dailyData[0].value;
+    const endVal = dailyData[dailyData.length - 1].value;
+    const totalReturn = ((endVal - startVal) / startVal) * 100;
+    const maxDrawdown = Math.min(...dailyData.map(d => d.drawdown || 0));
+    
     const tradingDays = 252;
     const meanDailyReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
-    const annualizedReturn = meanDailyReturn * tradingDays;
-    
-    const startDate = new Date(data[0].date || Date.now());
-    const endDate = new Date(data[data.length - 1].date || Date.now());
-    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.001);
-    const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
-    const apr = annualizedReturn * 100;
     const expectedValue = meanDailyReturn * 100;
     
+    // APR (Simple Annual)
+    const apr = meanDailyReturn * tradingDays * 100;
+    
+    // CAGR (Compound Annual)
+    const startDate = new Date(dailyData[0].date);
+    const endDate = new Date(dailyData[dailyData.length - 1].date);
+    const yearsDiff = Math.max((endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25), 0.001);
+    const cagr = (Math.pow(endVal / startVal, 1 / yearsDiff) - 1) * 100;
+    
+    // Volatility & Sharpe
     const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDailyReturn, 2), 0) / (dailyReturns.length - 1);
-    const stdDev = Math.sqrt(variance);
-    const volatility = stdDev * Math.sqrt(tradingDays) * 100;
+    const dailyStdDev = Math.sqrt(variance);
+    const volatility = dailyStdDev * Math.sqrt(tradingDays) * 100;
     const sharpe = (volatility !== 0) ? (apr / volatility) : 0;
     
+    // Sortino
     const downsideReturns = dailyReturns.filter(r => r < 0);
-    const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length;
-    const downsideDev = Math.sqrt(downsideVariance);
-    const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
-    const sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
+    let sortino = 0;
+    
+    if (downsideReturns.length > 0) {
+      const downsideVariance = downsideReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / dailyReturns.length;
+      const downsideDev = Math.sqrt(downsideVariance);
+      const annDownsideDev = downsideDev * Math.sqrt(tradingDays);
+      sortino = (annDownsideDev !== 0 && !isNaN(annDownsideDev)) ? (apr / (annDownsideDev * 100)) : 0;
+    }
     
     return {
       totalReturn,
