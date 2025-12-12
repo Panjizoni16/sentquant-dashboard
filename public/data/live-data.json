@@ -32,9 +32,17 @@
         "collateral": 21.006681,
         "pnl": 0.0,
         "drawdown": 0.0
+      },
+      {
+        "date": "2025-12-12",
+        "year": 2025,
+        "value": 1117.27,
+        "collateral": 21.02817,
+        "pnl": 0.0,
+        "drawdown": 0.0
       }
     ],
-    "tvl": 21.006681,
+    "tvl": 21.02817,
     "status": "Live"
   }
 }
