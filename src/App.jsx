@@ -1425,8 +1425,11 @@ const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
 
     return (
       <div className="h-[400px] md:h-[500px] w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 relative">
-        <ResponsiveContainer width="100%" height="100%">
- <AreaChart margin={{top: 10, right: 10, left: -20, bottom: 0}}>
+       <ResponsiveContainer width="100%" height="100%">
+  <AreaChart 
+    margin={{top: 10, right: 10, left: -20, bottom: 0}}
+    data={[...sentquantData, ...systemicHyperData].sort((a, b) => new Date(a.date || a.timestamp) - new Date(b.date || b.timestamp))}
+  >
             <defs>
               {Object.values(strategiesData).map(strat => (
                 <linearGradient key={strat.id} id={`color-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
@@ -1438,38 +1441,39 @@ const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
             <XAxis dataKey="date" hide />
             <YAxis domain={['dataMin', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
-           <Tooltip 
-  content={<CustomBenchmarkTooltip />} 
-  cursor={false}
-  allowEscapeViewBox={{ x: false, y: false }}
+<Tooltip 
+  contentStyle={{backgroundColor: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px'}} 
+  itemStyle={{fontSize: '12px', fontWeight: 'bold'}}
+  labelStyle={{color: '#888', marginBottom: '5px'}}
 />
-           {/* Sentquant Line */}
+{/* Sentquant Line */}
 {visibleStrategies.sentquant && sentquantData.length > 0 && (
   <Area 
     key="sentquant"
     type="monotone" 
-    data={sentquantData}
-    dataKey="value"
+    dataKey={(entry) => entry.value}
     stroke="#22ab94"
     strokeWidth={2}
     fill="url(#color-sentquant)"
     dot={false}
     activeDot={{r: 4, strokeWidth: 0}}
+    connectNulls={true}
   />
 )}
+
 
 {/* Systemic Hyper Line */}
 {visibleStrategies.systemic_hyper && systemicHyperData.length > 0 && (
   <Area 
     key="systemic_hyper"
     type="monotone" 
-    data={systemicHyperData}
-    dataKey="value"
+    dataKey={(entry) => entry.value}
     stroke="#10b981"
     strokeWidth={2}
     fill="url(#color-systemic_hyper)"
     dot={false}
     activeDot={{r: 4, strokeWidth: 0}}
+    connectNulls={true}
   />
 )}
           </AreaChart>
