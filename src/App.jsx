@@ -1456,7 +1456,10 @@ const mergedData = Array.from(allTimestamps).sort().map(timestamp => {
     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
     <XAxis dataKey="date" hide />
     <YAxis domain={['dataMin', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
-    <Tooltip content={<CustomBenchmarkTooltip />} />
+    <Tooltip 
+  content={<CustomBenchmarkTooltip />} 
+  shared={true}
+/>
     
     {visibleStrategies.sentquant && sentquantData.length > 0 && (
       <Area 
