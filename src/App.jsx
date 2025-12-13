@@ -1591,11 +1591,15 @@ const totalTVL = useMemo(() => {
                 </div>
 
                 <div className="mt-auto grid grid-cols-3 gap-4 border-t border-white/5 pt-4 z-10 bg-[#0E0E0E]/80 backdrop-blur-sm">
-                  {/* APR */}
-                  <div className="text-center">
-                    <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">{t.terminal.apr}</div>
-                    <div className={`text-sm font-bold ${getColor(cardStats.apr)}`}>{cardStats.apr}</div>
-                  </div>
+                  {/* NAV */}
+<div className="text-center">
+  <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">NAV</div>
+  <div className="text-sm font-bold text-white">
+    {strat.liveData && strat.liveData.length > 0 
+      ? strat.liveData[strat.liveData.length - 1].value.toFixed(2)
+      : '-'}
+  </div>
+</div>
                   
                   {/* TVL */}
                   <div className="text-center relative">
