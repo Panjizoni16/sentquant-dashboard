@@ -687,14 +687,14 @@ const WarpBackground = () => {
 };
 // --- CUSTOM TOOLTIP FOR BENCHMARK CHART ---
 const CustomBenchmarkTooltip = ({ active, payload, label }) => {
-  console.log('Tooltip triggered:', { active, payload, label }); // DEBUG
+  // CRITICAL: Only show if active AND has valid payload
+  if (!active) return null;
+  if (!payload || payload.length === 0) return null;
   
-  if (!active || !payload || !payload.length) return null;
+  // Filter out null/undefined values
+  const validData = payload.filter(p => p.value != null && p.value !== undefined && p.value !== 0);
   
-  const validData = payload.filter(p => p.value != null && p.value !== undefined);
-  
-  console.log('Valid data:', validData); // DEBUG
-  
+  // If no valid data after filtering, don't show tooltip
   if (validData.length === 0) return null;
   
   return (
