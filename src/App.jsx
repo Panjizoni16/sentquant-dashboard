@@ -1426,7 +1426,7 @@ const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
     return (
       <div className="h-[400px] md:h-[500px] w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 relative">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart margin={{top: 10, right: 10, left: -20, bottom: 0}}>
+ <AreaChart margin={{top: 10, right: 10, left: -20, bottom: 0}}>
             <defs>
               {Object.values(strategiesData).map(strat => (
                 <linearGradient key={strat.id} id={`color-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
@@ -1438,7 +1438,11 @@ const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
             <XAxis dataKey="date" hide />
             <YAxis domain={['dataMin', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
-           <Tooltip content={<CustomBenchmarkTooltip />} />
+           <Tooltip 
+  content={<CustomBenchmarkTooltip />} 
+  cursor={false}
+  allowEscapeViewBox={{ x: false, y: false }}
+/>
            {/* Sentquant Line */}
 {visibleStrategies.sentquant && sentquantData.length > 0 && (
   <Area 
