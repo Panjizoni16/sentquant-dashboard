@@ -1423,10 +1423,27 @@ const totalTVL = useMemo(() => {
 const sentquantData = strategiesData.sentquant?.liveData || [];
 const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
 
+// Merge data with null values for missing dates
+const allDates = new Set([
+  ...sentquantData.map(d => d.date),
+  ...systemicHyperData.map(d => d.date)
+]);
+
+const mergedData = Array.from(allDates).sort().map(date => {
+  const sentPoint = sentquantData.find(d => d.date === date);
+  const hyperPoint = systemicHyperData.find(d => d.date === date);
+  
+  return {
+    date,
+    sentquant: sentPoint?.value || null,
+    systemic_hyper: hyperPoint?.value || null
+  };
+});
+
     return (
       <div className="h-[400px] md:h-[500px] w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 relative">
      <ResponsiveContainer width="100%" height="100%">
-  <AreaChart margin={{top: 10, right: 10, left: -20, bottom: 0}}>
+  <AreaChart data={mergedData} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
     <defs>
       {Object.values(strategiesData).map(strat => (
         <linearGradient key={strat.id} id={`color-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
@@ -1436,12 +1453,7 @@ const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
       ))}
     </defs>
     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-    <XAxis 
-  dataKey="date" 
-  hide 
-  allowDataOverflow={false}
-  domain={['dataMin', 'dataMax']}
-/>
+    <XAxis dataKey="date" hide />
     <YAxis domain={['dataMin', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
     <Tooltip content={<CustomBenchmarkTooltip />} />
     
@@ -1449,13 +1461,13 @@ const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
       <Area 
         key="sentquant"
         type="monotone" 
-        data={sentquantData}
-        dataKey="value"
+        dataKey="sentquant"
         stroke="#22ab94"
         strokeWidth={2}
         fill="url(#color-sentquant)"
         dot={false}
         activeDot={{r: 4, strokeWidth: 0}}
+        connectNulls={true}
       />
     )}
 
@@ -1463,13 +1475,13 @@ const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
       <Area 
         key="systemic_hyper"
         type="monotone" 
-        data={systemicHyperData}
-        dataKey="value"
+        dataKey="systemic_hyper"
         stroke="#10b981"
         strokeWidth={2}
         fill="url(#color-systemic_hyper)"
         dot={false}
         activeDot={{r: 4, strokeWidth: 0}}
+        connectNulls={true}
       />
     )}
   </AreaChart>
