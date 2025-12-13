@@ -692,7 +692,7 @@ const CustomBenchmarkTooltip = ({ active, payload, label }) => {
   if (!payload || payload.length === 0) return null;
   
   // Filter out null/undefined values
-  const validData = payload.filter(p => p.value != null && p.value !== undefined && p.value !== 0);
+  const validData = payload.filter(p => p.value != null && p.value !== undefined);
   
   // If no valid data after filtering, don't show tooltip
   if (validData.length === 0) return null;
