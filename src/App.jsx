@@ -1388,30 +1388,63 @@ const totalTVL = useMemo(() => {
   {(() => {
     // Prepare benchmark data - use real data for Sentquant, mock for others
     const benchmarkData = (() => {
-      const sentquant = strategiesData.sentquant;
+  const sentquant = strategiesData.sentquant;
+  const systemicHyper = strategiesData.systemic_hyper;
+  
+  // Find the longest dataset to use as base
+  let baseData = [];
+  
+  if (sentquant && sentquant.liveData && sentquant.liveData.length > 0) {
+    baseData = sentquant.liveData;
+  } else if (systemicHyper && systemicHyper.liveData && systemicHyper.liveData.length > 0) {
+    baseData = systemicHyper.liveData;
+  }
+  
+  // If we have real data from either strategy
+  if (baseData.length > 0) {
+    // Create a map to match data points by date/timestamp
+    const hyperMap = {};
+    if (systemicHyper && systemicHyper.liveData) {
+      systemicHyper.liveData.forEach(point => {
+        const key = point.timestamp || point.date;
+        hyperMap[key] = point.value;
+      });
+    }
+    
+    return baseData.map((point, index) => {
+      const key = point.timestamp || point.date;
+      const dataPoint = {
+        date: point.date || `Day ${index + 1}`
+      };
       
-      // If Sentquant has real data, use it
+      // Add Sentquant data
       if (sentquant && sentquant.liveData && sentquant.liveData.length > 0) {
-        return sentquant.liveData.map((point, index) => {
-          const dataPoint = {
-            date: point.date || `Day ${index + 1}`,
-            sentquant: point.value
-          };
-          
-          // Add null for other strategies (they don't have data yet)
-          Object.values(strategiesData).forEach(strat => {
-            if (strat.id !== 'sentquant') {
-              dataPoint[strat.id] = null;
-            }
-          });
-          
-          return dataPoint;
-        });
+        dataPoint.sentquant = point.value;
+      } else {
+        dataPoint.sentquant = null;
       }
       
-      // Fallback to mock data if no real data
-      return MOCK_BENCHMARK_DATA;
-    })();
+      // Add Systemic Hyper data
+      if (hyperMap[key]) {
+        dataPoint.systemic_hyper = hyperMap[key];
+      } else {
+        dataPoint.systemic_hyper = null;
+      }
+      
+      // Add null for other strategies
+      Object.values(strategiesData).forEach(strat => {
+        if (strat.id !== 'sentquant' && strat.id !== 'systemic_hyper') {
+          dataPoint[strat.id] = null;
+        }
+      });
+      
+      return dataPoint;
+    });
+  }
+  
+  // Fallback to mock data if no real data
+  return MOCK_BENCHMARK_DATA;
+})();
 
     return (
       <div className="h-[400px] md:h-[500px] w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 relative">
