@@ -1387,79 +1387,14 @@ const totalTVL = useMemo(() => {
   {/* ✅ USE REAL DATA */}
   {(() => {
     // Prepare benchmark data - use real data for Sentquant, mock for others
-  const benchmarkData = (() => {
-  const sentquant = strategiesData.sentquant;
-  const systemicHyper = strategiesData.systemic_hyper;
-  
-  // Collect all data points from both strategies
-  const allPoints = [];
-  
-  // Add Sentquant data
-  if (sentquant && sentquant.liveData && sentquant.liveData.length > 0) {
-    sentquant.liveData.forEach(point => {
-      allPoints.push({
-        timestamp: point.timestamp || point.date,
-        date: point.date,
-        sentquant: point.value,
-        systemic_hyper: null
-      });
-    });
-  }
-  
-  // Add Systemic Hyper data
-  if (systemicHyper && systemicHyper.liveData && systemicHyper.liveData.length > 0) {
-    systemicHyper.liveData.forEach(point => {
-      const timestamp = point.timestamp || point.date;
-      
-      // Find if this timestamp already exists
-      const existing = allPoints.find(p => p.timestamp === timestamp);
-      
-      if (existing) {
-        // Same timestamp - add to existing point
-        existing.systemic_hyper = point.value;
-      } else {
-        // New timestamp - create new point
-        allPoints.push({
-          timestamp: timestamp,
-          date: point.date,
-          sentquant: null,
-          systemic_hyper: point.value
-        });
-      }
-    });
-  }
-  
-  // If we have data, sort by timestamp and add other strategies as null
-  if (allPoints.length > 0) {
-    // Sort by timestamp
-    allPoints.sort((a, b) => {
-      const timeA = new Date(a.timestamp);
-      const timeB = new Date(b.timestamp);
-      return timeA - timeB;
-    });
-    
-    // Add null for other strategies
-    return allPoints.map(point => {
-      const dataPoint = { ...point };
-      
-      Object.values(strategiesData).forEach(strat => {
-        if (strat.id !== 'sentquant' && strat.id !== 'systemic_hyper') {
-          dataPoint[strat.id] = null;
-        }
-      });
-      
-      return dataPoint;
-    });
-  }
-  
-  // Fallback to mock data if no real data
-  return MOCK_BENCHMARK_DATA;
-})();
+  // Prepare data for each strategy separately
+const sentquantData = strategiesData.sentquant?.liveData || [];
+const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
 
     return (
       <div className="h-[400px] md:h-[500px] w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 relative">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={benchmarkData} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
+          <AreaChart margin={{top: 10, right: 10, left: -20, bottom: 0}}>
             <defs>
               {Object.values(strategiesData).map(strat => (
                 <linearGradient key={strat.id} id={`color-${strat.id}`} x1="0" y1="0" x2="0" y2="1">
@@ -1476,21 +1411,35 @@ const totalTVL = useMemo(() => {
               itemStyle={{fontSize: '12px', fontWeight: 'bold'}}
               labelStyle={{color: '#888', marginBottom: '5px'}}
             />
-            {Object.values(strategiesData).map(strat => (
-              visibleStrategies[strat.id] && (
-                <Area 
-                  key={strat.id}
-                  type="monotone" 
-                  dataKey={strat.id} 
-                  stroke={strat.color} 
-                  strokeWidth={2}
-                  fill={`url(#color-${strat.id})`}
-                  dot={false}
-                  activeDot={{r: 4, strokeWidth: 0}}
-                  connectNulls={false}
-                />
-              )
-            ))}
+           {/* Sentquant Line */}
+{visibleStrategies.sentquant && sentquantData.length > 0 && (
+  <Area 
+    key="sentquant"
+    type="monotone" 
+    data={sentquantData}
+    dataKey="value"
+    stroke="#22ab94"
+    strokeWidth={2}
+    fill="url(#color-sentquant)"
+    dot={false}
+    activeDot={{r: 4, strokeWidth: 0}}
+  />
+)}
+
+{/* Systemic Hyper Line */}
+{visibleStrategies.systemic_hyper && systemicHyperData.length > 0 && (
+  <Area 
+    key="systemic_hyper"
+    type="monotone" 
+    data={systemicHyperData}
+    dataKey="value"
+    stroke="#10b981"
+    strokeWidth={2}
+    fill="url(#color-systemic_hyper)"
+    dot={false}
+    activeDot={{r: 4, strokeWidth: 0}}
+  />
+)}
           </AreaChart>
         </ResponsiveContainer>
       </div>
