@@ -685,7 +685,36 @@ const WarpBackground = () => {
   }, []);
   return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
 };
-
+// --- CUSTOM TOOLTIP FOR BENCHMARK CHART ---
+const CustomBenchmarkTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || !payload.length) return null;
+  
+  // Filter out null/undefined values
+  const validData = payload.filter(p => p.value != null && p.value !== undefined);
+  
+  if (validData.length === 0) return null;
+  
+  return (
+    <div style={{
+      backgroundColor: 'rgba(0,0,0,0.9)', 
+      border: '1px solid rgba(255,255,255,0.1)', 
+      borderRadius: '8px',
+      padding: '8px 12px'
+    }}>
+      <p style={{color: '#888', marginBottom: '5px', fontSize: '12px'}}>{label}</p>
+      {validData.map((entry, index) => (
+        <p key={index} style={{
+          fontSize: '12px', 
+          fontWeight: 'bold',
+          color: entry.color,
+          margin: '2px 0'
+        }}>
+          {entry.name}: {entry.value.toFixed(2)}
+        </p>
+      ))}
+    </div>
+  );
+};
 // --- MAIN APP ---
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -1406,11 +1435,7 @@ const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
             <XAxis dataKey="date" hide />
             <YAxis domain={['dataMin', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
-            <Tooltip 
-              contentStyle={{backgroundColor: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px'}} 
-              itemStyle={{fontSize: '12px', fontWeight: 'bold'}}
-              labelStyle={{color: '#888', marginBottom: '5px'}}
-            />
+           <Tooltip content={<CustomBenchmarkTooltip />} />
            {/* Sentquant Line */}
 {visibleStrategies.sentquant && sentquantData.length > 0 && (
   <Area 
