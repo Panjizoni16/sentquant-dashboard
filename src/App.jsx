@@ -1387,51 +1387,61 @@ const totalTVL = useMemo(() => {
   {/* ✅ USE REAL DATA */}
   {(() => {
     // Prepare benchmark data - use real data for Sentquant, mock for others
-    const benchmarkData = (() => {
+  const benchmarkData = (() => {
   const sentquant = strategiesData.sentquant;
   const systemicHyper = strategiesData.systemic_hyper;
   
-  // Find the longest dataset to use as base
-  let baseData = [];
+  // Collect all data points from both strategies
+  const allPoints = [];
   
+  // Add Sentquant data
   if (sentquant && sentquant.liveData && sentquant.liveData.length > 0) {
-    baseData = sentquant.liveData;
-  } else if (systemicHyper && systemicHyper.liveData && systemicHyper.liveData.length > 0) {
-    baseData = systemicHyper.liveData;
+    sentquant.liveData.forEach(point => {
+      allPoints.push({
+        timestamp: point.timestamp || point.date,
+        date: point.date,
+        sentquant: point.value,
+        systemic_hyper: null
+      });
+    });
   }
   
-  // If we have real data from either strategy
-  if (baseData.length > 0) {
-    // Create a map to match data points by date/timestamp
-    const hyperMap = {};
-    if (systemicHyper && systemicHyper.liveData) {
-      systemicHyper.liveData.forEach(point => {
-        const key = point.timestamp || point.date;
-        hyperMap[key] = point.value;
-      });
-    }
+  // Add Systemic Hyper data
+  if (systemicHyper && systemicHyper.liveData && systemicHyper.liveData.length > 0) {
+    systemicHyper.liveData.forEach(point => {
+      const timestamp = point.timestamp || point.date;
+      
+      // Find if this timestamp already exists
+      const existing = allPoints.find(p => p.timestamp === timestamp);
+      
+      if (existing) {
+        // Same timestamp - add to existing point
+        existing.systemic_hyper = point.value;
+      } else {
+        // New timestamp - create new point
+        allPoints.push({
+          timestamp: timestamp,
+          date: point.date,
+          sentquant: null,
+          systemic_hyper: point.value
+        });
+      }
+    });
+  }
+  
+  // If we have data, sort by timestamp and add other strategies as null
+  if (allPoints.length > 0) {
+    // Sort by timestamp
+    allPoints.sort((a, b) => {
+      const timeA = new Date(a.timestamp);
+      const timeB = new Date(b.timestamp);
+      return timeA - timeB;
+    });
     
-    return baseData.map((point, index) => {
-      const key = point.timestamp || point.date;
-      const dataPoint = {
-        date: point.date || `Day ${index + 1}`
-      };
+    // Add null for other strategies
+    return allPoints.map(point => {
+      const dataPoint = { ...point };
       
-      // Add Sentquant data
-      if (sentquant && sentquant.liveData && sentquant.liveData.length > 0) {
-        dataPoint.sentquant = point.value;
-      } else {
-        dataPoint.sentquant = null;
-      }
-      
-      // Add Systemic Hyper data
-      if (hyperMap[key]) {
-        dataPoint.systemic_hyper = hyperMap[key];
-      } else {
-        dataPoint.systemic_hyper = null;
-      }
-      
-      // Add null for other strategies
       Object.values(strategiesData).forEach(strat => {
         if (strat.id !== 'sentquant' && strat.id !== 'systemic_hyper') {
           dataPoint[strat.id] = null;
