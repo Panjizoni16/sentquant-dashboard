@@ -1424,17 +1424,18 @@ const sentquantData = strategiesData.sentquant?.liveData || [];
 const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
 
 // Merge data with null values for missing dates
-const allDates = new Set([
-  ...sentquantData.map(d => d.date),
-  ...systemicHyperData.map(d => d.date)
+const allTimestamps = new Set([
+  ...sentquantData.map(d => d.timestamp || d.date),
+  ...systemicHyperData.map(d => d.timestamp || d.date)
 ]);
 
-const mergedData = Array.from(allDates).sort().map(date => {
-  const sentPoint = sentquantData.find(d => d.date === date);
-  const hyperPoint = systemicHyperData.find(d => d.date === date);
+const mergedData = Array.from(allTimestamps).sort().map(timestamp => {
+  const sentPoint = sentquantData.find(d => (d.timestamp || d.date) === timestamp);
+  const hyperPoint = systemicHyperData.find(d => (d.timestamp || d.date) === timestamp);
   
   return {
-    date,
+    date: sentPoint?.date || hyperPoint?.date || timestamp,
+    timestamp,
     sentquant: sentPoint?.value || null,
     systemic_hyper: hyperPoint?.value || null
   };
