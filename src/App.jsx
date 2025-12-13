@@ -1665,16 +1665,20 @@ const totalTVL = useMemo(() => {
 
                 {/* NEW METRICS BOX: APR, TVL, PROTOCOL - STYLED */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  {/* APR BOX */}
-                  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 flex flex-col items-center justify-center">
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
-                    
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">APR</span>
-                    <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">{liveStats.apr ? `${liveStats.apr.toFixed(2)}%` : '-'}</span>
-                  </div>
+                  {/* NAV BOX */}
+<div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 flex flex-col items-center justify-center">
+  <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+  <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+  <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+  <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+  
+  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">NAV</span>
+  <span className="text-2xl md:text-3xl font-eth font-bold text-white tracking-tighter">
+    {currentStrategy.liveData && currentStrategy.liveData.length > 0 
+      ? currentStrategy.liveData[currentStrategy.liveData.length - 1].value.toFixed(2)
+      : '-'}
+  </span>
+</div>
 
                   {/* TVL BOX */}
                   <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 flex flex-col items-center justify-center">
