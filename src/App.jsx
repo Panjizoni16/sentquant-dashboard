@@ -1436,7 +1436,12 @@ const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
       ))}
     </defs>
     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-    <XAxis dataKey="date" hide />
+    <XAxis 
+  dataKey="date" 
+  hide 
+  allowDataOverflow={false}
+  domain={['dataMin', 'dataMax']}
+/>
     <YAxis domain={['dataMin', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
     <Tooltip content={<CustomBenchmarkTooltip />} />
     
