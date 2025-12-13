@@ -1424,18 +1424,34 @@ const sentquantData = strategiesData.sentquant?.liveData || [];
 const systemicHyperData = strategiesData.systemic_hyper?.liveData || [];
 
 // Merge data with null values for missing dates
-const allTimestamps = new Set([
-  ...sentquantData.map(d => d.timestamp || d.date),
-  ...systemicHyperData.map(d => d.timestamp || d.date)
+// Group by hour to align timestamps
+const groupByHour = (data) => {
+  const hourlyMap = {};
+  data.forEach(point => {
+    const timestamp = point.timestamp || point.date;
+    const hourKey = new Date(timestamp).toISOString().slice(0, 13); // YYYY-MM-DDTHH
+    if (!hourlyMap[hourKey] || new Date(timestamp) > new Date(hourlyMap[hourKey].timestamp)) {
+      hourlyMap[hourKey] = point;
+    }
+  });
+  return Object.values(hourlyMap);
+};
+
+const sentHourly = groupByHour(sentquantData);
+const hyperHourly = groupByHour(systemicHyperData);
+
+const allHours = new Set([
+  ...sentHourly.map(d => new Date(d.timestamp || d.date).toISOString().slice(0, 13)),
+  ...hyperHourly.map(d => new Date(d.timestamp || d.date).toISOString().slice(0, 13))
 ]);
 
-const mergedData = Array.from(allTimestamps).sort().map(timestamp => {
-  const sentPoint = sentquantData.find(d => (d.timestamp || d.date) === timestamp);
-  const hyperPoint = systemicHyperData.find(d => (d.timestamp || d.date) === timestamp);
+const mergedData = Array.from(allHours).sort().map(hourKey => {
+  const sentPoint = sentHourly.find(d => new Date(d.timestamp || d.date).toISOString().slice(0, 13) === hourKey);
+  const hyperPoint = hyperHourly.find(d => new Date(d.timestamp || d.date).toISOString().slice(0, 13) === hourKey);
   
   return {
-    date: sentPoint?.date || hyperPoint?.date || timestamp,
-    timestamp,
+    date: sentPoint?.date || hyperPoint?.date || hourKey,
+    timestamp: hourKey,
     sentquant: sentPoint?.value || null,
     systemic_hyper: hyperPoint?.value || null
   };
