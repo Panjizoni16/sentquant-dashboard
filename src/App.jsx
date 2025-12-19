@@ -44,12 +44,12 @@ const SentquantLogo = ({ size = 120, withBg = false, animate = false }) => (
 // ==========================================
 // Data ini statis (ID, Nama, Warna, Protokol Dasar)
 const STRATEGIES_CONFIG = [
-  { id: 'sentquant', name: 'Sentquant', color: '#22ab94', protocol: 'Lighter' },
-  { id: 'systemic_hyper', name: 'Systemic Hyper', color: '#10b981', protocol: 'Hyperliquid' },
-  { id: 'edgehedge', name: 'Edge and Hedge', color: '#f59e0b', protocol: 'Lighter' },
-  { id: 'systemicls', name: 'Systemic Strategies L/S', color: '#8b5cf6', protocol: 'Hyperliquid' },
-  { id: 'majorsalts', name: 'Majors/Alts', color: '#ec4899', protocol: 'Lighter' },
-  { id: 'trend_follower', name: 'Trend Follower', color: '#6366f1', protocol: 'Lighter' }
+  { id: 'sentquant', name: 'Sentquant', color: '#f3f4f5ff', protocol: 'Lighter' },
+  { id: 'systemic_hyper', name: 'Systemic Hyper', color: '#5230e7ff', protocol: 'Hyperliquid' },
+  { id: 'edgehedge', name: 'Edge and Hedge', color: '#a54316ff', protocol: 'Lighter' },
+  { id: 'systemicls', name: 'Systemic Strategies L/S', color: '#ebfd4aff', protocol: 'Hyperliquid' },
+  { id: 'majorsalts', name: 'Majors/Alts', color: '#FFFFFF', protocol: 'Lighter' },
+  { id: 'trend_follower', name: 'Trend Follower', color: '#E9D5FF', protocol: 'Lighter' }
 ];
 
 // Helper to format currency
@@ -756,6 +756,7 @@ export default function App() {
     STRATEGIES_CONFIG.reduce((acc, strat) => ({ ...acc, [strat.id]: true }), {})
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [language, setLanguage] = useState('en');
 
   // HISTORICAL CHART FILTER STATE
@@ -1119,7 +1120,49 @@ const totalTVL = useMemo(() => {
       sharpe,
       sortino
     };
-  }, [currentStrategy.liveData]);
+  }, [currentStrategy.liveData]);  
+  // Calculate Live Monthly Returns Heatmap
+const liveMonthlyReturns = useMemo(() => {
+  const data = currentStrategy.liveData;
+  
+  if (!data || data.length === 0) return [];
+  
+  const monthlyData = {};
+  
+  data.forEach(point => {
+    const date = new Date(point.timestamp || point.date);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = {
+        startValue: point.value,
+        endValue: point.value,
+        year: date.getFullYear(),
+        month: date.getMonth()
+      };
+    }
+    
+    monthlyData[monthKey].endValue = point.value;
+  });
+  
+  const returns = {};
+  
+  Object.keys(monthlyData).sort().forEach(key => {
+    const startVal = monthlyData[key].startValue;
+    const endVal = monthlyData[key].endValue;
+    const returnPct = ((endVal - startVal) / startVal) * 100;
+    const year = monthlyData[key].year;
+    const month = monthlyData[key].month;
+    
+    if (!returns[year]) {
+      returns[year] = { year, months: Array(12).fill(null) };
+    }
+    
+    returns[year].months[month] = parseFloat(returnPct.toFixed(2));
+  });
+  
+  return Object.values(returns).sort((a, b) => b.year - a.year);
+}, [currentStrategy.liveData]);
   // Filter Logic for Historical Chart using Real/Mocked Data
   const filteredHistoricalData = useMemo(() => {
     let data = historicalChartData || [];
@@ -1206,8 +1249,71 @@ const totalTVL = useMemo(() => {
 
   // Generate detailed stats sections dynamically
   const detailedStatsSections = useMemo(() => {
-    // Jika data belum siap, return array kosong untuk menghindari error render
-    if (!currentStats || !currentStats.totalReturn) return []; 
+    // HARDCODED SENTQUANT STATS - Only for Sentquant historical page
+    if (selectedStrategyId === 'sentquant') {
+      return [
+        {
+          title: 'RETURN METRICS',
+          metrics: [
+            { l: 'Total Return', v: '25,516.42%' },
+            { l: 'CAGR (Annualized)', v: '30.50%' },
+            { l: 'APR (Simple Annual)', v: '27.77%' },
+            { l: 'Analysis Period', v: '20.83 years' },
+          ]
+        },
+        {
+          title: 'DRAWDOWN METRICS',
+          metrics: [
+            { l: 'Max Drawdown', v: '-29.20%' },
+            { l: 'Average Drawdown', v: '-1.82%' },
+            { l: 'Max DD Duration', v: '563 days (~1.5 years)' },
+            { l: 'Ulcer Index', v: '5.33%' },
+          ]
+        },
+        {
+          title: 'RISK-ADJUSTED RETURN METRICS',
+          metrics: [
+            { l: 'Sharpe Ratio', v: '1.44' },
+            { l: 'Sortino Ratio', v: '2.35' },
+            { l: 'Calmar Ratio', v: '1.04' },
+          ]
+        },
+        {
+          title: 'VOLATILITY & RISK METRICS',
+          metrics: [
+            { l: 'Annual Volatility', v: '17.16%' },
+            { l: 'VaR (95%)', v: '-1.06%' },
+            { l: 'CVaR (Expected Shortfall)', v: '-1.77%' },
+            { l: 'Max Daily Loss', v: '-23.42%' },
+            { l: 'Skewness', v: '-0.0399' },
+            { l: 'Excess Kurtosis', v: '54.49' },
+          ]
+        },
+        {
+          title: 'WIN/LOSS METRICS',
+          metrics: [
+            { l: 'Win Rate', v: '42.84%' },
+            { l: 'Average Win', v: '+0.8606%' },
+            { l: 'Average Loss', v: '-0.4571%' },
+            { l: 'Win/Loss Ratio', v: '1.88' },
+            { l: 'Profit Factor', v: '1.43' },
+            { l: 'Expectancy (Daily)', v: '+0.1100%' },
+          ]
+        },
+        {
+          title: 'CONSISTENCY METRICS',
+          metrics: [
+            { l: 'Positive Months', v: '174' },
+            { l: 'Negative Months', v: '77' },
+            { l: 'Monthly Win Rate', v: '69.32%' },
+            { l: 'R-Squared (Stability)', v: '0.6848' },
+          ]
+        }
+      ];
+    }
+    
+    // Other strategies - dynamic calculation
+    if (!currentStats || !currentStats.totalReturn) return [];
 
     return [
     {
@@ -1249,7 +1355,7 @@ const totalTVL = useMemo(() => {
         { l: t.metrics_labels.expected_val_short, v: `${currentStats.expectedValue.toFixed(2)}%` },
       ]
     }
-  ]}, [language, currentStats, t]);
+  ]}, [language, currentStats, t, selectedStrategyId]);
   // Loading Screen
   if (loading) return <div className="h-screen bg-black text-white flex items-center justify-center font-mono">INITIALIZING SYSTEM...</div>;
 
@@ -1377,85 +1483,120 @@ const totalTVL = useMemo(() => {
       </div>
     </div>
   )}
-          {/* --- HOME PAGE --- */}
-          {activeTab === 'home' && (
-            <div className="animate-fade-in-up flex-1 flex flex-col items-center justify-start p-4 md:p-8 space-y-8">
-               <div className="relative w-full max-w-4xl mx-auto border border-white/10 bg-black/40 backdrop-blur-sm p-8 md:p-16 text-center">
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+        {/* --- HOME PAGE --- */}
+{activeTab === 'home' && (
+  <div className="animate-fade-in-up flex-1 flex flex-col items-center justify-start p-4 md:p-8 space-y-8">
+     <div className="relative w-full max-w-4xl mx-auto border border-white/10 bg-black/40 backdrop-blur-sm p-8 md:p-16 text-center">
+        <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+        <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+        <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+        <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
 
-                  <div className="text-xs md:text-sm text-gray-500 font-mono tracking-[0.3em] uppercase mb-6">
-                  </div>
+        <div className="text-xs md:text-sm text-gray-500 font-mono tracking-[0.3em] uppercase mb-6">
+        </div>
 
-                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-eth font-extrabold text-white mb-2 tracking-tighter leading-none drop-shadow-2xl">
-                    Sentquant
-                  </h1>
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-eth font-extrabold text-white mb-2 tracking-tighter leading-none drop-shadow-2xl">
+          Sentquant
+        </h1>
 
-                  <h2 className="text-sm md:text-xl text-gray-400 font-light tracking-widest uppercase mb-12">
-                    WE DON'T TRACK WALLETS. WE TRACK THE EDGE.
-                  </h2>
+        <h2 className="text-sm md:text-xl text-gray-400 font-light tracking-widest uppercase mb-12">
+          WE DON'T TRACK WALLETS. WE TRACK THE EDGE.
+        </h2>
 
-                  <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-12">
-                    <button 
-                      onClick={() => setActiveTab('terminal')}
-                      className="w-full md:w-auto px-8 py-3 bg-[#A3A3A3] text-black font-bold font-mono text-sm uppercase tracking-wider hover:bg-[#8f8f8f] transition-colors"
-                    >
-                      START TRACKING
-                    </button>
-                  </div>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-12">
+          <button 
+            onClick={() => setActiveTab('terminal')}
+            className="w-full md:w-auto px-8 py-3 bg-[#A3A3A3] text-black font-bold font-mono text-sm uppercase tracking-wider hover:bg-[#8f8f8f] transition-colors"
+          >
+            START TRACKING
+          </button>
+        </div>
 
-                  <div className="border-y border-white/10 py-8 max-w-2xl mx-auto">
-                    <p className="text-gray-400 text-sm md:text-base font-mono leading-relaxed px-4">
-                      {t.home.manifesto}
-                    </p>
-                  </div>
-               </div>
+        <div className="border-y border-white/10 py-8 max-w-2xl mx-auto">
+          <p className="text-gray-400 text-sm md:text-base font-mono leading-relaxed px-4">
+            {t.home.manifesto}
+          </p>
+        </div>
+     </div>
 
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto">
-  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
-    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
-    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
-    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
-    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto">
+       <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
+         <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+         <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+         <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+         <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+         
+         <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
+           {t.home.problem_title}
+         </h3>
+         <p className="text-gray-400 text-sm font-mono leading-relaxed">
+           {t.home.problem_text}
+         </p>
+       </div>
+       <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
+         <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+         <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+         <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+         <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+         
+         <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
+           {t.home.solution_title}
+         </h3>
+         <p className="text-gray-400 text-sm font-mono leading-relaxed">
+           {t.home.solution_text}
+         </p>
+       </div>
+       <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
+         <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+         <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+         <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+         <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+         
+         <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
+           {t.home.impact_title}
+         </h3>
+         <p className="text-gray-400 text-sm font-mono leading-relaxed">
+           {t.home.impact_text}
+         </p>
+       </div>
+     </div>
+
+     {/* FOOTER - SOCIAL LINKS */}
+<div className="mt-16 pt-8 border-t border-white/10 w-full max-w-6xl mx-auto">
+  
+  
+  {/* MIDDLE: SOCIAL LINKS - DISCORD | X | TELEGRAM */}
+  <div className="flex items-center justify-center gap-8 mb-6">
+    {/* DISCORD - LEFT */}
+    <a 
+      href="#" 
+      className="text-xs text-gray-600 hover:text-white transition-colors uppercase tracking-widest font-bold font-eth"
+    >
+      Discord
+    </a>
     
-    <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
-      {t.home.problem_title}
-    </h3>
-    <p className="text-gray-400 text-sm font-mono leading-relaxed">
-      {t.home.problem_text}
-    </p>
-  </div>
-  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
-    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
-    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
-    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
-    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+    {/* X - CENTER */}
+    <a 
+      href="#" 
+      className="text-2xl text-gray-600 hover:text-white transition-colors font-bold font-eth"
+    >
+      𝕏
+    </a>
     
-    <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
-      {t.home.solution_title}
-    </h3>
-    <p className="text-gray-400 text-sm font-mono leading-relaxed">
-      {t.home.solution_text}
-    </p>
+    {/* TELEGRAM - RIGHT */}
+    <a 
+      href="#" 
+      className="text-xs text-gray-600 hover:text-white transition-colors uppercase tracking-widest font-bold font-eth"
+    >
+      Telegram
+    </a>
   </div>
-  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 text-left h-full flex flex-col">
-    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
-    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
-    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
-    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
-    
-    <h3 className="text-white font-eth font-bold text-lg mb-4 tracking-wider uppercase border-b border-white/10 pb-2">
-      {t.home.impact_title}
-    </h3>
-    <p className="text-gray-400 text-sm font-mono leading-relaxed">
-      {t.home.impact_text}
-    </p>
-  </div>
+  
+  
 </div>
-            </div>
-          )}
+
+  </div>
+)}
 
         {/* --- TERMINAL --- */}
 {activeTab === 'terminal' && (
@@ -1484,18 +1625,69 @@ const totalTVL = useMemo(() => {
 <div className="space-y-4">
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <h1 className="text-2xl md:text-3xl font-eth font-bold text-white">{t.terminal.title}</h1>
-    <div className="flex flex-wrap gap-2">
-      {Object.values(strategiesData).map(strat => (
+    {/* FILTER DROPDOWN */}
+<div className="relative">
+  <button 
+    onClick={() => setIsFilterOpen(!isFilterOpen)}
+    className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 rounded-lg text-xs font-bold text-white transition-colors"
+  >
+    <Filter size={14} />
+    <span>STRATEGIES</span>
+    <ChevronDown size={14} className={`transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+  </button>
+  
+  {isFilterOpen && (
+    <div className="absolute right-0 top-full mt-2 w-64 bg-[#1A1A1A] border border-white/10 rounded-lg shadow-xl z-50 py-2">
+      {/* SELECT ALL / DESELECT ALL */}
+      <div className="px-4 py-2 border-b border-white/5 flex gap-2">
         <button 
+          onClick={() => {
+            const allVisible = {};
+            Object.keys(strategiesData).forEach(id => allVisible[id] = true);
+            setVisibleStrategies(allVisible);
+          }}
+          className="flex-1 px-2 py-1 bg-white/5 hover:bg-white/10 rounded text-xs font-bold text-gray-400 hover:text-white transition-colors"
+        >
+          All
+        </button>
+        <button 
+          onClick={() => {
+            const allHidden = {};
+            Object.keys(strategiesData).forEach(id => allHidden[id] = false);
+            setVisibleStrategies(allHidden);
+          }}
+          className="flex-1 px-2 py-1 bg-white/5 hover:bg-white/10 rounded text-xs font-bold text-gray-400 hover:text-white transition-colors"
+        >
+          None
+        </button>
+      </div>
+      
+      {/* STRATEGY LIST */}
+      {Object.values(strategiesData).map(strat => (
+        <button
           key={strat.id}
           onClick={() => toggleStrategyVisibility(strat.id)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${visibleStrategies[strat.id] ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-gray-500'}`}
+          className="w-full text-left px-4 py-2.5 hover:bg-white/5 transition-colors flex items-center justify-between group"
         >
-          {visibleStrategies[strat.id] ? <Eye size={12} style={{color: strat.color}} /> : <EyeOff size={12} />}
-          {strat.name}
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{backgroundColor: strat.color}}
+            ></div>
+            <span className={`text-xs font-bold ${visibleStrategies[strat.id] ? 'text-white' : 'text-gray-600'}`}>
+              {strat.name}
+            </span>
+          </div>
+          {visibleStrategies[strat.id] ? (
+            <Eye size={14} className="text-white" />
+          ) : (
+            <EyeOff size={14} className="text-gray-600" />
+          )}
         </button>
       ))}
     </div>
+  )}
+</div>
   </div>
 
   {/* ✅ USE REAL DATA */}
@@ -1557,7 +1749,7 @@ const mergedData = sortedTimestamps.map(timestamp => {
         key="sentquant"
         type="monotone" 
         dataKey="sentquant"
-        stroke="#22ab94"
+        stroke={STRATEGIES_CONFIG.find(s => s.id === 'sentquant').color}
         strokeWidth={2}
         fill="url(#color-sentquant)"
         dot={false}
@@ -1571,7 +1763,7 @@ const mergedData = sortedTimestamps.map(timestamp => {
         key="systemic_hyper"
         type="monotone" 
         dataKey="systemic_hyper"
-        stroke="#10b981"
+        stroke={STRATEGIES_CONFIG.find(s => s.id === 'systemic_hyper').color}
         strokeWidth={2}
         fill="url(#color-systemic_hyper)"
         dot={false}
@@ -1843,6 +2035,166 @@ const mergedData = sortedTimestamps.map(timestamp => {
                   name={currentStrategy.name} 
                   title="Live" 
                 />
+                {/* LIVE MONTHLY RETURNS HEATMAP */}
+{liveMonthlyReturns.length > 0 && (
+  <div className="mt-8">
+    <h3 className="text-xl font-bold text-white drop-shadow-md font-eth mb-6">Live Monthly Returns</h3>
+    <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/10 backdrop-blur-sm p-2 border border-white/5">
+      <table className="w-full text-xs md:text-sm border-collapse min-w-[800px]">
+        <thead>
+          <tr>
+            <th className="text-left text-gray-400 font-medium py-3 px-2">Year</th>
+            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
+              <th key={m} className="text-center text-gray-400 font-medium py-3 px-2">{m}</th>
+            ))}
+            <th className="text-center text-gray-400 font-medium py-3 px-2">YTD</th>
+          </tr>
+        </thead>
+        <tbody>
+          {liveMonthlyReturns.map((row, idx) => (
+            <tr key={idx} className="hover:bg-white/5 transition-colors rounded-lg">
+              <td className="text-left font-bold text-white py-4 px-2">{row.year}</td>
+              {row.months.map((val, i) => (
+                <td key={i} className="text-center py-4 px-2">
+                  {val !== null ? (
+                    <span className={`px-2 py-1 rounded font-medium backdrop-blur-md ${val >= 0 ? 'text-[#22ab94] bg-[#22ab94]/20' : 'text-[#f23645] bg-[#f23645]/20'}`}>
+                      {val > 0 ? '+' : ''}{val}%
+                    </span>
+                  ) : <span className="text-gray-600">-</span>}
+                </td>
+              ))}
+              <td className="text-center py-4 px-2 font-bold text-white">
+                {row.months.reduce((acc, curr) => acc + (curr || 0), 0).toFixed(1)}%
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+{/* LIVE STATISTICS & METRICS - FOR ALL STRATEGIES */}
+<div className="mt-12">
+  <h3 className="text-2xl font-bold text-white drop-shadow-md font-eth mb-6">Live Statistics & Metrics</h3>
+  
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    
+    {/* RETURN METRICS */}
+    <div className="bg-black/20 backdrop-blur-md rounded-xl p-6 border border-white/10">
+      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">RETURN METRICS</h4>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Total Return</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">CAGR (Annualized)</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">APR (Simple Annual)</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+      </div>
+    </div>
+
+    {/* DRAWDOWN METRICS */}
+    <div className="bg-black/20 backdrop-blur-md rounded-xl p-6 border border-white/10">
+      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">DRAWDOWN METRICS</h4>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Max Drawdown</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Average Drawdown</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Max DD Duration</span>
+          <span className="text-white font-bold">0 days</span>
+        </div>
+      </div>
+    </div>
+
+    {/* RISK-ADJUSTED RETURN */}
+    <div className="bg-black/20 backdrop-blur-md rounded-xl p-6 border border-white/10">
+      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">RISK-ADJUSTED RETURN</h4>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Sharpe Ratio</span>
+          <span className="text-white font-bold">0.00</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Sortino Ratio</span>
+          <span className="text-white font-bold">0.00</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Calmar Ratio</span>
+          <span className="text-white font-bold">0.00</span>
+        </div>
+      </div>
+    </div>
+
+    {/* VOLATILITY & RISK */}
+    <div className="bg-black/20 backdrop-blur-md rounded-xl p-6 border border-white/10">
+      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">VOLATILITY & RISK</h4>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Annual Volatility</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">VaR (95%)</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Max Daily Loss</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+      </div>
+    </div>
+
+    {/* WIN/LOSS METRICS */}
+    <div className="bg-black/20 backdrop-blur-md rounded-xl p-6 border border-white/10">
+      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">WIN/LOSS METRICS</h4>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Win Rate</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Average Win</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Profit Factor</span>
+          <span className="text-white font-bold">0.00</span>
+        </div>
+      </div>
+    </div>
+
+    {/* CONSISTENCY METRICS */}
+    <div className="bg-black/20 backdrop-blur-md rounded-xl p-6 border border-white/10">
+      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">CONSISTENCY</h4>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Positive Months</span>
+          <span className="text-white font-bold">0</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Negative Months</span>
+          <span className="text-white font-bold">0</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Monthly Win Rate</span>
+          <span className="text-white font-bold">0.00%</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
               </div>
 
               {/* SECTION 2: HISTORICAL PERFORMANCE WITH NEW FILTERS */}
