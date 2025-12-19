@@ -1357,7 +1357,13 @@ const liveMonthlyReturns = useMemo(() => {
     }
   ]}, [language, currentStats, t, selectedStrategyId]);
   // Loading Screen
-  if (loading) return <div className="h-screen bg-black text-white flex items-center justify-center font-mono">INITIALIZING SYSTEM...</div>;
+if (loading) return (
+  <div className="h-screen bg-black flex items-center justify-center">
+    <div className="animate-pulse">
+      <SentquantLogo size={300} />
+    </div>
+  </div>
+);
 
   return (
     <div className="flex flex-col h-[100dvh] text-[#d1d4dc] font-sans overflow-hidden relative bg-black">
