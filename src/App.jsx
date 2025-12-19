@@ -208,15 +208,15 @@ const TRANSLATIONS = {
       tagline: "Sentquant", 
       manifesto: "Sentquant is the place where every trader can track the quality of strategies before spending a single dollar.",
       launch: "Launch Terminal",
-      problem_title: "PROBLEM",
+      problem_title: "REALITY",
       problem_text: "For many fake gurus, the profit source isn't the market it's YOU. Their members are the product, retail traders are lured with empty claim and dream in only to be milked for membership fees until they are financially drained.",
-      solution_title: "SOLUTION",
+      solution_title: "WHAT WE DO",
       solution_text: "Sentquant empowers every trader to audit the real-time performance of strategies and mentors before risking capital or buying a course.",
       impact_title: "IMPACT",
       impact_text: "The era of \"Salesmen disguised as Mentors\" and \"Lucky Gamblers\" flexing one-time memecoin gains is over. In the Sentquant ecosystem, marketing budget means nothing. Only those with proven, repeatable mathematical edge will survive. The rest will fade into irrelevance."
     },
     terminal: {
-      title: "Benchmark Comparison",
+      title: "Comparison",
       live_view: "Live View",
       total_return: "TOTAL RETURN",
       max_dd: "MAX DD",
@@ -296,15 +296,15 @@ const TRANSLATIONS = {
       tagline: "Sentquant", 
       manifesto: "Sentquant adalah tempat di mana setiap trader dapat melacak kualitas strategi dan edukasi sebelum mengeluarkan uang sepeser pun.",
       launch: "Buka Terminal",
-      problem_title: "MASALAH",
+      problem_title: "REALITA",
       problem_text: "Bagi banyak guru palsu, sumber keuntungan mereka bukan dari pasar melainkan dari ANDA. Member mereka adalah produk nya, trader retail dipancing dengan klaim kosong dan mimpi hanya untuk diperah biaya membership hingga mereka kehabisan uang.",
-      solution_title: "SOLUSI",
+      solution_title: "APA YANG KAMI LAKUKAN",
       solution_text: "Sentquant mengajak setiap trader untuk menilai performa strategi atau mentor nya secara real-time sebelum mengeluarkan uang atau membeli kursus.",
       impact_title: "DAMPAK",
-      impact_text: "Era \"Sales berkedok Mentor\" dan \"Penjudi Beruntung\" yang pamer keuntungan memecoin karena hanya bullrun telah berakhir. Di ekosistem Sentquant, semua trader mendapatkan informasi di awal , semua trader membeli karena nilai yang valid , bukan lagi karena klaim palsu atau hype marketing."
+      impact_text: "Era \"Sales berkedok Mentor\" telah berakhir. Di ekosistem Sentquant, semua trader dapat menilai dan memverifikasi sendiri , dampak nya semua trader akan membeli karena nilai yang valid , bukan lagi karena klaim palsu atau hype marketing."
     },
     terminal: {
-      title: "Perbandingan Benchmark",
+      title: "Perbandingan",
       live_view: "Lihat Langsung",
       total_return: "TOTAL RETURN",
       max_dd: "MAX DD",
@@ -424,16 +424,18 @@ const KeyMetricsGrid = ({ stats, t, isLive }) => {
     }
   ];
   
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 px-4 py-4">
+return (
+  <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-6 mx-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
       {metrics.map((m, i) => (
         <div key={i} className="flex flex-col">
-          <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">{m.label}</span>
+          <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-2">{m.label}</span>
           <span className={`text-xl font-bold font-eth ${m.color}`}>{m.value}</span>
         </div>
       ))}
     </div>
-  );
+  </div>
+);
 };
 // --- COMPONENT: STRATEGY CHARTS (STACKED) ---
 const StrategyCharts = ({ data, color, name, title }) => (
@@ -468,9 +470,7 @@ const StrategyCharts = ({ data, color, name, title }) => (
 />
         </AreaChart>
       </ResponsiveContainer>
-      <div className="absolute top-4 left-4 flex gap-1 bg-black/40 backdrop-blur-md p-1 rounded shadow-lg">
-        <span className="p-1 text-gray-300 text-xs font-bold">{name} Model</span>
-      </div>
+     
     </div>
 
     {/* BOTTOM: DRAWDOWN CHART */}
