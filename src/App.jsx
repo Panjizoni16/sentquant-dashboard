@@ -848,7 +848,7 @@ const LighterMatrix = () => {
             const char = Math.random() > 0.5 ? "1" : "0";
             
             // Warna: Biru Navy redup ke arah Ungu (Dark Vibes)
-            const opacity = Math.min(brightness * 0.2, 0.4);
+            const opacity = Math.min(brightness * 0.3, 0.5);
             ctx.fillStyle = `rgba(100, 110, 180, ${opacity})`;
             
             ctx.fillText(char, x * size, y * size);
