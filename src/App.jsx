@@ -846,6 +846,141 @@ const WarpBackground = () => {
   }, []);
   return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />;
 };
+// --- OPTION A: DIGITAL FOG (Premium & Subtle) ---
+const DigitalFog = () => (
+  <div className="fixed inset-0 z-0 pointer-events-none bg-black overflow-hidden">
+    <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-purple-900/10 blur-[120px] animate-pulse" style={{ animationDuration: '15s' }} />
+    <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-900/10 blur-[150px] animate-pulse" style={{ animationDuration: '20s', animationDelay: '2s' }} />
+    <div className="absolute top-[20%] right-[10%] w-[40%] h-[40%] rounded-full bg-gray-800/10 blur-[100px] animate-pulse" style={{ animationDuration: '12s', animationDelay: '5s' }} />
+  </div>
+);
+
+// --- OPTION B: NEURAL NODES (Data & Tech) ---
+const NeuralNodes = () => {
+  const canvasRef = React.useRef(null);
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    let w = canvas.width = window.innerWidth;
+    let h = canvas.height = window.innerHeight;
+    const particles = Array.from({ length: 80 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5
+    }));
+    const animate = () => {
+      ctx.fillStyle = 'black'; ctx.fillRect(0, 0, w, h);
+      particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1; if (p.y < 0 || p.y > h) p.vy *= -1;
+        ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, Math.PI*2); ctx.fill();
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+          if (dist < 150) {
+            ctx.strokeStyle = `rgba(255,255,255,${0.1 * (1 - dist/150)})`;
+            ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+          }
+        }
+      });
+      requestAnimationFrame(animate);
+    };
+    animate();
+    const handleResize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />;
+};
+
+// --- OPTION C: CYBERPUNK GRID (3D Lab Vibe) ---
+const CyberpunkGrid = () => (
+  <div className="fixed inset-0 z-0 pointer-events-none bg-black">
+    <div className="absolute inset-0 opacity-20" style={{
+      backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
+      backgroundSize: '50px 50px',
+      transform: 'perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-100px)',
+      transformOrigin: 'top',
+    }} />
+    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black" />
+  </div>
+);
+
+// --- OPTION D: CINEMATIC GRAIN (Dark Hacker Vibe) ---
+const CinematicGrain = () => (
+  <div className="fixed inset-0 z-0 pointer-events-none bg-black overflow-hidden">
+    <div className="absolute inset-0 opacity-[0.03]" style={{
+      backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='0' text-white%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' /%3E%3C/svg%3E")`,
+    }} />
+    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent animate-pulse" style={{ animationDuration: '4s' }} />
+  </div>
+);
+// --- OPTION F: LIGHTER DATA MATRIX (Optimized with Spotlight) ---
+const LighterMatrix = () => {
+  const canvasRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    let w = canvas.width = window.innerWidth;
+    let h = canvas.height = window.innerHeight;
+    
+    const fontSize = 12;
+    const columns = Math.floor(w / fontSize);
+    const drops = new Array(columns).fill(1);
+    const chars = "0123456789ABCDEF";
+
+    const draw = () => {
+      // Background hitam transparan untuk efek trail
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, w, h);
+
+      // Warna teks (Abu-abu biru redup)
+      ctx.font = fontSize + "px monospace";
+
+      for (let i = 0; i < drops.length; i++) {
+        // Hanya gambar 15% dari total kolom supaya ringan (Optimization)
+        if (Math.random() > 0.85) {
+          const text = chars[Math.floor(Math.random() * chars.length)];
+          const x = i * fontSize;
+          const y = drops[i] * fontSize;
+
+          // Hitung jarak ke tengah layar untuk efek spotlight "Satu Bulatan"
+          const distToCenter = Math.hypot(x - w/2, y - h/2);
+          const maxDist = Math.min(w, h) * 0.4; // Ukuran bulatan
+          
+          if (distToCenter < maxDist) {
+            ctx.fillStyle = `rgba(100, 110, 150, ${1 - distToCenter/maxDist})`;
+            ctx.fillText(text, x, y);
+          }
+        }
+
+        if (drops[i] * fontSize > h && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    };
+
+    const interval = setInterval(draw, 33); // Limit 30 FPS biar enteng banget
+    const handleResize = () => {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none bg-black">
+      <canvas ref={canvasRef} />
+      {/* VIGNETTE: Biar tengah layar lebih fokus (Bulatan Tengah) */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_70%)]" />
+    </div>
+  );
+};
 // --- CUSTOM TOOLTIP FOR BENCHMARK CHART ---
 const CustomBenchmarkTooltip = ({ active, payload, label }) => {
   // CRITICAL: Only show if active AND has valid payload
@@ -1594,7 +1729,7 @@ if (loading) return (
 
       {/* MAIN CONTENT WRAPPER */}
       <div className="flex-1 overflow-y-auto no-scrollbar relative z-10 h-full flex flex-col">
-        <WarpBackground />
+        <LighterMatrix />
         
         {/* MAIN CONTENT CONSTRAINT */}
         <main className="flex-1 flex flex-col relative z-20">
