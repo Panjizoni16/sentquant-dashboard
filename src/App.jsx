@@ -44,12 +44,12 @@ const SentquantLogo = ({ size = 120, withBg = false, animate = false }) => (
 // ==========================================
 // Data ini statis (ID, Nama, Warna, Protokol Dasar)
 const STRATEGIES_CONFIG = [
-  { id: 'sentquant', name: 'Sentquant', color: '#f3f4f5ff', protocol: 'Lighter' },
-  { id: 'systemic_hyper', name: 'Systemic Hyper', color: '#5230e7ff', protocol: 'Hyperliquid' },
-  { id: 'edgehedge', name: 'Edge and Hedge', color: '#a54316ff', protocol: 'Lighter' },
-  { id: 'systemicls', name: 'Systemic Strategies L/S', color: '#ebfd4aff', protocol: 'Hyperliquid' },
-  { id: 'majorsalts', name: 'Majors/Alts', color: '#FFFFFF', protocol: 'Lighter' },
-  { id: 'trend_follower', name: 'Trend Follower', color: '#E9D5FF', protocol: 'Lighter' }
+  { id: 'sentquant', name: 'Sentquant', color: '#f3f4f5', protocol: 'Lighter' },
+  { id: 'systemic_hyper', name: 'Systemic Hyper', color: '#5230e7', protocol: 'Hyperliquid' },
+  { id: 'edgehedge', name: 'Edge and Hedge', color: '#a54316', protocol: 'Lighter' },
+  { id: 'systemicls', name: 'Systemic Strategies L/S', color: '#ebfd4a', protocol: 'Hyperliquid' },
+  { id: 'majors_alts', name: 'Majors/Alts', color: '#ffffff', protocol: 'Lighter' },
+  { id: 'trend_follower', name: 'Trend Follower', color: '#e9d5ff', protocol: 'Lighter' }
 ];
 
 // Helper to format currency
@@ -941,7 +941,7 @@ useEffect(() => {
       const newData = {};
       
   for (const strat of STRATEGIES_CONFIG) {
- if (strat.id === 'sentquant' || strat.id === 'systemic_hyper') {
+ if (strat.id === 'sentquant' || strat.id === 'systemic_hyper' || strat.id === 'systemicls') {
     // Fetch real data (existing code stays same)
     const [histRes, heatRes, liveRes] = await Promise.all([
   fetch(`/data/equity-historical-${strat.id}.json`),
