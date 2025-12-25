@@ -616,7 +616,144 @@ const MonthlyHeatmap = ({ data, t }) => {
     </div>
   );
 };
+// --- COMPONENT: STRATEGY RANKING TABLE (NEW) ---
+const StrategyRankingTable = ({ strategies, t }) => {
+  const [sortType, setSortType] = React.useState('returns'); // default sort
 
+  const sortedStrategies = React.useMemo(() => {
+    return Object.values(strategies).sort((a, b) => {
+      const parseVal = (val) => parseFloat(val?.toString().replace(/[^0-9.-]/g, '') || 0);
+      
+      const valA = parseVal(a[sortType === 'returns' ? 'return' : sortType === 'drawdowns' ? 'dd' : 'sharpe']);
+      const valB = parseVal(b[sortType === 'returns' ? 'return' : sortType === 'drawdowns' ? 'dd' : 'sharpe']);
+
+      return valB - valA;
+    });
+  }, [strategies, sortType]);
+
+  return (
+    <div className="mb-10 mt-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-6 bg-[#A3A3A3] rounded-full"></div>
+          <h3 className="text-xl font-bold text-white drop-shadow-md font-eth">STRATEGY RANKINGS</h3>
+        </div>
+
+        <div className="flex bg-black/40 p-1 rounded-xl border border-white/5">
+          {[
+            { id: 'returns', label: 'Best Returns' },
+            { id: 'sharpe', label: 'Best Sharpe' },
+            { id: 'drawdowns', label: 'Best Risk' }
+          ].map((btn) => (
+            <button
+              key={btn.id}
+              onClick={() => setSortType(btn.id)}
+              className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                sortType === btn.id 
+                ? 'bg-[#A3A3A3] text-black' 
+                : 'text-gray-500 hover:text-white'
+              }`}
+            >
+              {btn.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/20 backdrop-blur-sm p-2 border border-white/5">
+        <table className="w-full text-xs md:text-sm border-collapse min-w-[700px]">
+          <thead>
+            <tr className="text-left text-gray-500 font-bold uppercase tracking-wider border-b border-white/5">
+              <th className="py-4 px-4 text-center w-16">Rank</th>
+              <th className="py-4 px-4">Strategy</th>
+              <th className={`py-4 px-4 text-right transition-colors ${sortType === 'returns' ? 'text-white bg-white/5' : ''}`}>Total Return</th>
+              <th className={`py-4 px-4 text-right transition-colors ${sortType === 'drawdowns' ? 'text-white bg-white/5' : ''}`}>Max DD</th>
+              <th className={`py-4 px-4 text-right transition-colors ${sortType === 'sharpe' ? 'text-white bg-white/5' : ''}`}>Sharpe</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {sortedStrategies.map((strat, index) => (
+              <tr key={strat.id} className="hover:bg-white/5 transition-colors group">
+                <td className="py-4 px-4">
+                   <div className={`flex items-center justify-center w-8 h-8 rounded-full mx-auto font-eth text-xs ${
+                     index === 0 ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/50' : 
+                     index === 1 ? 'bg-gray-300/20 text-gray-300 border border-gray-300/50' :
+                     index === 2 ? 'bg-orange-800/20 text-orange-500 border border-orange-800/50' :
+                     'bg-white/5 text-gray-500'
+                   }`}>
+                    {index + 1}
+                  </div>
+                </td>
+                <td className="py-4 px-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: strat.color }}></div>
+                    <span className="font-bold text-white font-eth">{strat.name}</span>
+                  </div>
+                </td>
+                <td className={`py-4 px-4 text-right font-bold ${parseFloat(strat.return) >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]'} ${sortType === 'returns' ? 'bg-white/5' : ''}`}>
+                  {strat.return}%
+                </td>
+                <td className={`py-4 px-4 text-right text-[#f23645] font-mono ${sortType === 'drawdowns' ? 'bg-white/5' : ''}`}>{strat.dd}</td>
+                <td className={`py-4 px-4 text-right text-gray-300 font-mono ${sortType === 'sharpe' ? 'bg-white/5' : ''}`}>{strat.sharpe || '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+
+  return (
+    <div className="mb-10 mt-4">
+      <div className="flex items-center gap-2 mb-6">
+        <div className="w-1 h-6 bg-[#A3A3A3] rounded-full"></div>
+        <h3 className="text-xl font-bold text-white drop-shadow-md font-eth">STRATEGY RANKINGS</h3>
+      </div>
+      <div className="overflow-x-auto custom-scrollbar pb-2 rounded-xl bg-black/20 backdrop-blur-sm p-2 border border-white/5">
+        <table className="w-full text-xs md:text-sm border-collapse min-w-[800px]">
+          <thead>
+            <tr className="text-left text-gray-500 font-bold uppercase tracking-wider border-b border-white/5">
+              <th className="py-4 px-4">Rank</th>
+              <th className="py-4 px-4">Strategy</th>
+              <th className="py-4 px-4 text-right">Total Return</th>
+              <th className="py-4 px-4 text-right">Max DD</th>
+              <th className="py-4 px-4 text-right">Sharpe</th>
+              <th className="py-4 px-4 text-right">Protocol</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {sortedStrategies.map((strat, index) => (
+              <tr key={strat.id} className="hover:bg-white/5 transition-colors group">
+                <td className="py-4 px-4 font-bold text-white">
+                   <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white/10 text-[10px]">
+                    {index + 1}
+                  </div>
+                </td>
+                <td className="py-4 px-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: strat.color }}></div>
+                    <span className="font-bold text-white font-eth">{strat.name}</span>
+                  </div>
+                </td>
+                <td className={`py-4 px-4 text-right font-bold ${parseFloat(strat.return) >= 0 ? 'text-[#22ab94]' : 'text-[#f23645]'}`}>
+                  {strat.return}%
+                </td>
+                <td className="py-4 px-4 text-right text-[#f23645] font-mono">{strat.dd}</td>
+                <td className="py-4 px-4 text-right text-gray-300 font-mono">{strat.sharpe || '-'}</td>
+                <td className="py-4 px-4 text-right">
+                  <span className="px-2 py-1 bg-white/5 rounded text-[10px] font-bold text-gray-400 border border-white/10 uppercase">
+                    {strat.protocol}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
 // --- COMPONENT: TOP 5 DRAWDOWNS TABLE ---
 const TopDrawdownsTable = ({ data, t }) => (
   <div className="mb-10 mt-8">
@@ -1783,7 +1920,8 @@ const mergedData = sortedTimestamps.map(timestamp => {
     );
   })()}
 </div>
-
+{/* RANKING TABLE SECTION */}
+  <StrategyRankingTable strategies={strategiesData} t={t} />
 {/* STRATEGY CARDS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Object.values(strategiesData).map(strat => {
