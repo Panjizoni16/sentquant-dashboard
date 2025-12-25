@@ -1,0 +1,50 @@
+name: Daily Guinea Pool Update
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Berjalan setiap jam
+  
+  workflow_dispatch:  # Memungkinkan trigger manual
+
+# PENTING: Memberikan izin tulis agar bot bisa melakukan push data JSON
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          # Pastikan folder 'scripts' ada atau sesuaikan path-nya
+          pip install requests 
+          # Jika Anda memiliki file requirements.txt, gunakan baris di bawah:
+          # pip install -r scripts/requirements.txt
+      
+      - name: Run Guinea Pool update script
+        env:
+          # Menggunakan Secret yang sesuai untuk Guinea Pool
+          GUINEAPOOL_ACCOUNT_INDEX: ${{ secrets.GUINEAPOOL_ACCOUNT_INDEX }}
+        run: |
+          # Menjalankan script yang sudah kita ubah namanya tadi
+          python scripts/fetch_guineapool.py
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # UPDATE: Menambahkan file JSON Guinea Pool, bukan Sentquant lagi
+          git add public/data/live-data-guineapool.json
+          
+          # Hanya commit jika ada perubahan data
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update Guinea Pool data - $(date +'%Y-%m-%d %H:%M')" && git push)
