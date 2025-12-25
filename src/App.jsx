@@ -48,7 +48,7 @@ const STRATEGIES_CONFIG = [
   { id: 'systemic_hyper', name: 'Systemic Hyper', color: '#5230e7', protocol: 'Hyperliquid' },
   { id: 'edgehedge', name: 'Edge and Hedge', color: '#a54316', protocol: 'Lighter' },
   { id: 'systemicls', name: 'Systemic Strategies L/S', color: '#ebfd4a', protocol: 'Hyperliquid' },
-  { id: 'majors_alts', name: 'Majors/Alts', color: '#ffffff', protocol: 'Lighter' },
+  { id: 'guineapool', name: 'guineapool', color: '#ffffff', protocol: 'Lighter' },
   { id: 'trend_follower', name: 'Trend Follower', color: '#e9d5ff', protocol: 'Lighter' }
 ];
 
@@ -941,7 +941,7 @@ useEffect(() => {
       const newData = {};
       
   for (const strat of STRATEGIES_CONFIG) {
- if (strat.id === 'sentquant' || strat.id === 'systemic_hyper' || strat.id === 'systemicls') {
+ if (strat.id === 'sentquant' || strat.id === 'systemic_hyper' || strat.id === 'systemicls' || strat.id === 'guineapool') {
     // Fetch real data (existing code stays same)
     const [histRes, heatRes, liveRes] = await Promise.all([
   fetch(`/data/equity-historical-${strat.id}.json`),
