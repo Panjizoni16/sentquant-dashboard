@@ -425,7 +425,7 @@ const KeyMetricsGrid = ({ stats, t, isLive }) => {
   ];
   
 return (
-  <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-6 mx-4">
+  <div className="bg-[#111111] border border-white/10 rounded-xl p-6">
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
       {metrics.map((m, i) => (
         <div key={i} className="flex flex-col">
