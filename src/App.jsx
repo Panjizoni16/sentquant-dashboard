@@ -808,71 +808,70 @@ const AboutModelsCard = ({ t }) => (
   </div>
 );
 
-// --- OPTION F: LIGHTER DATA MATRIX (Optimized with Spotlight) ---
+// --- OPTION L: CYBER FLUX (ASCII Waves - No Install Required) ---
 const LighterMatrix = () => {
-  const canvasRef = React.useRef(null);
+  const canvasRef = useRef(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    let w = canvas.width = window.innerWidth;
-    let h = canvas.height = window.innerHeight;
-    
-    const fontSize = 12;
-    const columns = Math.floor(w / fontSize);
-    const drops = new Array(columns).fill(1);
-    const chars = "0123456789ABCDEF";
+    let w, h, cols, rows;
+    const size = 12;
+    let frame = 0;
 
-    const draw = () => {
-      // Background hitam transparan untuk efek trail
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-      ctx.fillRect(0, 0, w, h);
-
-      // Warna teks (Abu-abu biru redup)
-      ctx.font = fontSize + "px monospace";
-
-      for (let i = 0; i < drops.length; i++) {
-        // Hanya gambar 15% dari total kolom supaya ringan (Optimization)
-        if (Math.random() > 0.85) {
-          const text = chars[Math.floor(Math.random() * chars.length)];
-          const x = i * fontSize;
-          const y = drops[i] * fontSize;
-
-          // Hitung jarak ke tengah layar untuk efek spotlight "Satu Bulatan"
-          const distToCenter = Math.hypot(x - w/2, y - h/2);
-          const maxDist = Math.min(w, h) * 0.4; // Ukuran bulatan
-          
-          if (distToCenter < maxDist) {
-            ctx.fillStyle = `rgba(100, 110, 150, ${1 - distToCenter/maxDist})`;
-            ctx.fillText(text, x, y);
-          }
-        }
-
-        if (drops[i] * fontSize > h && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-        drops[i]++;
-      }
-    };
-
-    const interval = setInterval(draw, 33); // Limit 30 FPS biar enteng banget
-    const handleResize = () => {
+    const init = () => {
       w = canvas.width = window.innerWidth;
       h = canvas.height = window.innerHeight;
+      cols = Math.ceil(w / size);
+      rows = Math.ceil(h / size);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('resize', handleResize);
+    const draw = () => {
+      // Background hitam pekat
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.font = `${size - 2}px monospace`;
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          // LOGIKA WAVE & DITHER:
+          // Kita bikin gelombang sinus yang bergerak (frame)
+          // Gabungan x dan y bikin efek diagonal/fluid
+          const wave = Math.sin(x * 0.15 + frame * 0.05) + Math.cos(y * 0.15 + frame * 0.03);
+          
+          // Noise statis untuk efek "Dither" (bintik-bintik digital)
+          const noise = Math.random() * 0.5;
+          const brightness = wave + noise;
+
+          if (brightness > 0.6) {
+            const char = Math.random() > 0.5 ? "1" : "0";
+            
+            // Warna: Biru Navy redup ke arah Ungu (Dark Vibes)
+            const opacity = Math.min(brightness * 0.2, 0.4);
+            ctx.fillStyle = `rgba(100, 110, 180, ${opacity})`;
+            
+            ctx.fillText(char, x * size, y * size);
+          }
+        }
+      }
+      frame++;
+      requestAnimationFrame(draw);
     };
+
+    init();
+    draw();
+    window.addEventListener('resize', init);
+    return () => window.removeEventListener('resize', init);
   }, []);
 
   return (
     <div className="fixed inset-0 z-0 pointer-events-none bg-black">
       <canvas ref={canvasRef} />
-      {/* VIGNETTE: Biar tengah layar lebih fokus (Bulatan Tengah) */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_70%)]" />
+      {/* SCANLINES: Efek garis monitor terminal */}
+      <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.3)_50%)] bg-[length:100%_4px]" />
+      {/* VIGNETTE: Biar tengah layar lebih terang, pinggir gelap */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_80%)]" />
     </div>
   );
 };
