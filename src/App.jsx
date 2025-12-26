@@ -48,7 +48,7 @@ const STRATEGIES_CONFIG = [
   { id: 'systemic_hyper', name: 'Systemic Hyper', color: '#5230e7', protocol: 'Hyperliquid' },
   { id: 'edgehedge', name: 'Edge and Hedge', color: '#a54316', protocol: 'Lighter' },
   { id: 'systemicls', name: 'Systemic Strategies L/S', color: '#ebfd4a', protocol: 'Hyperliquid' },
-  { id: 'guineapool', name: 'guineapool', color: '#ffffff', protocol: 'Lighter' },
+  { id: 'guineapool', name: 'Guinea Pool', color: '#ffffff', protocol: 'Lighter' },
   { id: 'jlp_neutral', name: 'JLP Delta Neutral', color: '#e9d5ff', protocol: 'Drift' } // Nama & Protokol diupdate
 ];
 
