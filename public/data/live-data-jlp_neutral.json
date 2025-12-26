@@ -7,7 +7,35 @@
         "value": 1000,
         "share_price": 0.176804,
         "collateral": 2311642.6205041693,
+<<<<<<< HEAD
         "drawdown": 0
+=======
+        "drawdown": 0.0
+      },
+      {
+        "date": "2025-12-26",
+        "timestamp": "2025-12-26 06:15:23",
+        "value": 1000.0,
+        "share_price": 0.176804,
+        "collateral": 2311642.6205041693,
+        "drawdown": 0.0
+      },
+      {
+        "date": "2025-12-26",
+        "timestamp": "2025-12-26 06:48:55",
+        "value": 1000.0,
+        "share_price": 0.176804,
+        "collateral": 2311642.6205041693,
+        "drawdown": 0.0
+      },
+      {
+        "date": "2025-12-26",
+        "timestamp": "2025-12-26 07:33:11",
+        "value": 1000.0,
+        "share_price": 0.176804,
+        "collateral": 2311642.6205041693,
+        "drawdown": 0.0
+>>>>>>> 43ac26aed7d0b428f074986593793890e64f6f59
       }
     ],
     "tvl": 2311642.6205041693,
