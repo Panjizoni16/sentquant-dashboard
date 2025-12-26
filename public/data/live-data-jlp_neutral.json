@@ -8,6 +8,14 @@
         "share_price": 0.176805,
         "collateral": 2311655.6951100635,
         "drawdown": 0
+      },
+      {
+        "date": "2025-12-26",
+        "timestamp": "2025-12-26 07:55:19",
+        "value": 1000.0,
+        "share_price": 0.176804,
+        "collateral": 2311642.6205041693,
+        "drawdown": 0
       }
     ],
     "tvl": 2311655.6951100635,
