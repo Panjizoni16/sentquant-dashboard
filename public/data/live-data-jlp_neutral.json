@@ -3,14 +3,14 @@
     "liveData": [
       {
         "date": "2025-12-26",
-        "timestamp": "2025-12-26 14:53:21",
+        "timestamp": "2025-12-26 15:01:57",
         "value": 1000,
-        "share_price": 0.176804,
-        "collateral": 2311642.6205041693,
+        "share_price": 0.176805,
+        "collateral": 2311655.6951100635,
         "drawdown": 0
       }
     ],
-    "tvl": 2311642.6205041693,
+    "tvl": 2311655.6951100635,
     "status": "Live"
   }
 }
