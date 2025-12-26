@@ -941,8 +941,9 @@ useEffect(() => {
       const newData = {};
       
   for (const strat of STRATEGIES_CONFIG) {
- if (strat.id === 'sentquant' || strat.id === 'systemic_hyper' || strat.id === 'systemicls' || strat.id === 'guineapool'|| 
-     strat.id === 'jlp_neutral' ) {
+if (strat.id) { // Membuka akses fetch untuk semua strategy ID yang terdaftar
+
+    // Fetch real data (existing code stays same)
 
     // Fetch real data (existing code stays same)
     const [histRes, heatRes, liveRes] = await Promise.all([
@@ -1957,10 +1958,8 @@ const mergedData = sortedTimestamps.map(timestamp => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Object.values(strategiesData).map(strat => {
             // Calculate live stats for this card
-            const cardStats = (() => {
-  if ((strat.id !== 'sentquant' && strat.id !== 'systemic_hyper') || 
-      !strat.liveData || 
-      strat.liveData.length === 0) {
+  const cardStats = (() => {
+  if (!strat.liveData || strat.liveData.length === 0) {
     return { apr: '-', maxDD: '-', totalReturn: '-' };
   }
   
