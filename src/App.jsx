@@ -54,10 +54,9 @@ const App = () => {
             const data = json[strat.id];
             const live = data.liveData;
             const latest = live[live.length - 1];
-            const profit = ((latest.value - 1000) / 1000) * 100;
             return {
               ...strat,
-              profitValue: profit,
+              profitValue: ((latest.value - 1000) / 1000) * 100,
               tvl: data.tvl || 0,
               drawdown: latest.drawdown,
               history: live,
@@ -69,9 +68,7 @@ const App = () => {
       );
       const filtered = results.filter(r => r !== null).sort((a, b) => b.profitValue - a.profitValue);
       setQuants(filtered);
-      const visibility = {};
-      filtered.forEach(q => visibility[q.id] = true);
-      setVisibleStrategies(visibility);
+      filtered.forEach(q => setVisibleStrategies(p => ({...p, [q.id]: true})));
       setLoading(false);
     };
     fetchData();
@@ -99,13 +96,13 @@ const App = () => {
       
       <main className="flex-1 relative z-10 flex flex-col overflow-hidden">
         
-        {/* TAB: ARENA - TIKTOK STYLE (CHART BACKGROUND) */}
+        {/* TAB: ARENA - TIKTOK FULLSCREEN */}
         {activeTab === 'arena' && (
           <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar">
             {quants.map((q, idx) => (
               <section key={q.id} className="h-full w-full snap-start relative flex flex-col overflow-hidden">
                 
-                {/* 1. LATAR BELAKANG GRAFIK - Garis diperhalus (strokeWidth: 3) */}
+                {/* CONTENT: BACKGROUND CHART (Garis Tipis: strokeWidth 2) */}
                 <div className="absolute inset-0 z-0 opacity-70">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={q.history} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
@@ -116,13 +113,13 @@ const App = () => {
                         </linearGradient>
                       </defs>
                       <YAxis hide domain={['auto', 'auto']} />
-                      {/* strokeWidth dikurangi jadi 3 agar lebih ramping */}
-                      <Area type="monotone" dataKey="value" stroke={q.color} strokeWidth={3} fill={`url(#glow-${q.id})`} dot={false} animationDuration={2000} />
+                      {/* strokeWidth dikurangi menjadi 2 agar lebih ramping */}
+                      <Area type="monotone" dataKey="value" stroke={q.color} strokeWidth={2} fill={`url(#glow-${q.id})`} dot={false} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
 
-                {/* 2. TOP HEADER: RANK & AGENT NAME */}
+                {/* UI: TOP HEADER (Rank & Small Name Sejajar) */}
                 <div className="absolute top-12 left-8 z-20 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
                     <User size={20} className="text-white/40" />
@@ -131,13 +128,13 @@ const App = () => {
                     <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest border border-white/10">
                       RANK #{idx + 1}
                     </span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white italic opacity-90">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90 italic">
                       {q.name}
                     </span>
                   </div>
                 </div>
 
-                {/* 3. BOTTOM INFO: METRICS */}
+                {/* UI: BOTTOM INFO */}
                 <div className="absolute inset-0 z-10 p-8 flex flex-col justify-end bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none">
                   <div className="mb-24 animate-fade-in">
                     <div className="flex flex-col gap-1">
@@ -152,19 +149,12 @@ const App = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Progress Indicators */}
-                <div className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col gap-2 opacity-20">
-                  {quants.map((_, i) => (
-                    <div key={i} className={`w-1 rounded-full transition-all ${i === idx ? 'h-8 bg-white' : 'h-4 bg-white/50'}`} />
-                  ))}
-                </div>
               </section>
             ))}
           </div>
         )}
 
-        {/* TAB: ANALYTIC - TERMINAL STYLE */}
+        {/* TAB: ANALYTIC - TERMINAL */}
         {activeTab === 'benchmark' && (
           <div className="h-full w-full p-6 md:p-12 overflow-y-auto no-scrollbar animate-fade-in flex flex-col items-center bg-[#070707]">
             <div className="max-w-[1400px] w-full space-y-10 pb-32">
@@ -178,9 +168,7 @@ const App = () => {
               </div>
 
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
-                <div>
-                  <h1 className="text-6xl md:text-[100px] font-black italic tracking-tighter uppercase leading-none">COMPARISON</h1>
-                </div>
+                <h1 className="text-6xl md:text-[100px] font-black italic tracking-tighter uppercase leading-none">COMPARISON</h1>
                 <div className="relative group">
                   <button className="px-10 py-5 bg-neutral-900 border border-white/10 rounded-2xl text-[10px] font-black uppercase text-white shadow-2xl flex items-center gap-3">
                     <LayoutGrid size={16} />
@@ -216,40 +204,13 @@ const App = () => {
                     <YAxis domain={['auto', 'auto']} hide />
                     <Tooltip contentStyle={{backgroundColor: '#000', border: 'none', borderRadius: '25px', padding: '20px'}} />
                     {quants.map(q => visibleStrategies[q.id] !== false && (
-                      /* strokeWidth dikurangi jadi 2 agar perbandingan terlihat lebih rapi */
-                      <Area key={q.id} type="monotone" dataKey={q.id} name={q.name} stroke={q.color} strokeWidth={2} fill={`url(#grad-bench-${q.id})`} dot={false} connectNulls={true} />
+                      /* strokeWidth dikurangi menjadi 1.5 agar terlihat sangat tajam */
+                      <Area key={q.id} type="monotone" dataKey={q.id} name={q.name} stroke={q.color} strokeWidth={1.5} fill={`url(#grad-bench-${q.id})`} dot={false} connectNulls={true} />
                     ))}
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* TAB: RANK */}
-        {activeTab === 'rank' && (
-          <div className="h-full w-full p-8 lg:p-20 overflow-y-auto no-scrollbar animate-fade-in flex flex-col items-center bg-[#070707]">
-             <div className="max-w-6xl w-full pb-32">
-                <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter mb-16 text-center">Leaderboard</h1>
-                <div className="space-y-4">
-                  {quants.map((q, i) => (
-                    <div key={q.id} className="group flex items-center justify-between p-6 md:p-8 rounded-[30px] md:rounded-[40px] bg-white/[0.02] border border-white/5 backdrop-blur-xl hover:bg-white/[0.05] transition-all">
-                      <div className="flex items-center gap-6">
-                        <span className="text-2xl font-mono text-white/10">0{i+1}</span>
-                        <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-white/10 flex items-center justify-center shadow-xl"><User size={24} className="text-white/10" /></div>
-                        <div>
-                          <span className="text-lg font-black italic text-white uppercase">{q.name}</span>
-                          <div className="text-[9px] text-zinc-500 font-mono uppercase mt-1">{q.protocol} Protocol</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[9px] text-white/20 uppercase font-black block">Profit</span>
-                        <span className="text-xl md:text-2xl font-black text-emerald-400 italic">{q.profitValue.toFixed(2)}%</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-             </div>
           </div>
         )}
 
