@@ -1,162 +1,140 @@
 #!/usr/bin/env python3
 """
-JLP NEUTRAL UPDATE SCRIPT (CLONE STRUCTURE OF GUINEA POOL)
-Identical logic, drawdown calculation, and JSON structure.
+JLP Neutral Vault Sync - FULL HISTORY VERSION
+Logika: NAV Start 1000, Multi-row History (Tanpa Overwrite), & Manual Fallback
 """
-
-import requests
 import json
-import base64
+import struct
 import os
 from datetime import datetime, date
 from pathlib import Path
 
+try:
+    from solana.rpc.api import Client
+    from solders.pubkey import Pubkey
+except ImportError:
+    print("❌ Library belum terinstall. Jalankan: pip install solana solders requests")
+    exit(1)
+
 # ========== CONFIG ==========
-# Menggunakan Vault Address JLP Neutral Anda
-VAULT_ADDRESS = "9omhWDzVxpX1vPBxAhJpVao7baoVzZpNib32vozZLxGm"
-RPC_URL = "https://api.mainnet-beta.solana.com"
-START_NAV = 1000 
+VAULT_ADDRESS_STR = "9omhWDzVxpX1vPBxAhJpVao7baoVzZpNib32vozZLxGm"
+RPC_URL = "https://api.mainnet-beta.solana.com" 
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent
 OUTPUT_DIR = SCRIPT_DIR.parent / "public" / "data"
+START_NAV = 1000.0
 
-# ========== FUNCTIONS ==========
-
-def fetch_vault_data(address):
-    """Fetch raw account data from Solana RPC (Equivalent to fetch_account_data)"""
-    payload = {
-        "jsonrpc": "2.0", 
-        "id": 1, 
-        "method": "getAccountInfo", 
-        "params": [address, {"encoding": "base64"}]
-    }
+def get_vault_user_address(vault_str):
+    """Membongkar Vault untuk mencari alamat User Trading (Offset 168)"""
     try:
-        res = requests.post(RPC_URL, json=payload, timeout=15).json()
-        raw_data = base64.b64decode(res['result']['value']['data'][0])
-        return raw_data
-    except Exception as e:
-        print(f"❌ Error fetching Solana data: {e}")
-        return None
-
-def calculate_metrics(raw_data):
-    """Extract Equity/TVL from raw bytes (Identical logic to Guinea Pool Metrics)"""
-    if not raw_data:
-        return None
-    
-    # Scanner untuk mencari Net Equity (Kisaran $2.1M - $2.5M)
-    net_equity = None
-    for offset in range(0, len(raw_data) - 16, 8):
-        try:
-            val_raw = int.from_bytes(raw_data[offset:offset+16], 'little', signed=True)
-            val_decimal = float(val_raw) / 1e6
-            if 2_100_000 < val_decimal < 2_500_000:
-                net_equity = val_decimal
-                break
-        except: continue
-    
-    # Fallback jika scanner gagal (agar skrip tidak mati)
-    if not net_equity:
-        print("⚠️ Net Equity tidak ditemukan, menggunakan fallback.")
-        # Ambil total shares dari offset 376 dan kali harga estimasi
-        shares_raw = int.from_bytes(raw_data[376:392], 'little')
-        total_shares = float(shares_raw) / 1e6
-        net_equity = total_shares * 0.1768
-    
-    return {
-        'tvl': net_equity,
-        'status': 'Live'
-    }
-
-def load_previous_data(filepath):
-    """Load previous live data (Identical to Guinea Pool)"""
-    try:
-        if filepath.exists():
-            with open(filepath, 'r') as f:
-                return json.load(f)
+        client = Client(RPC_URL, timeout=60)
+        vault_pk = Pubkey.from_string(vault_str)
+        res = client.get_account_info(vault_pk)
+        if not res.value: return None
+        user_pk_bytes = res.value.data[168:200]
+        return str(Pubkey.from_bytes(user_pk_bytes))
     except Exception:
-        pass
-    return {"jlp_neutral": {"liveData": [], "tvl": 0, "status": "Offline"}}
-
-def calculate_nav(previous_nav, previous_tvl, current_tvl):
-    """Calculate new NAV based on TVL change (100% Identical to Guinea Pool)"""
-    if previous_tvl <= 0:
-        return START_NAV
-    return previous_nav * (current_tvl / previous_tvl)
+        return "8ue2xNfN5fXVvkFjDiWdmWERPbHEvkWgdq4bZD7FdrwF" # Fallback Manual
 
 def calculate_drawdown(nav_history):
-    """Calculate drawdown from peak NAV (100% Identical to Guinea Pool)"""
-    if not nav_history: return 0
-    nav_values = [point['value'] for point in nav_history]
+    if not nav_history: return 0.0
+    nav_values = [p['value'] for p in nav_history]
     peak = max(nav_values)
     current = nav_values[-1]
-    return ((current - peak) / peak) * 100 if peak > 0 else 0
+    return ((current - peak) / peak) * 100 if peak > 0 else 0.0
 
-def update_live_data(metrics):
-    """Update live-data-jlp_neutral.json (100% Identical to Guinea Pool)"""
-    today = date.today().isoformat()
-    live_data_path = OUTPUT_DIR / "live-data-jlp_neutral.json"
-    all_data = load_previous_data(live_data_path)
-    
-    strategy_data = all_data.get("jlp_neutral", {"liveData": [], "tvl": 0, "status": "Offline"})
-    live_data = strategy_data.get("liveData", [])
-    
-    # Ambil data sebelumnya untuk hitung NAV baru
-    if len(live_data) > 0:
-        last_point = live_data[-1]
-        previous_nav = last_point['value']
-        previous_tvl = last_point.get('collateral', 0)
-    else:
-        previous_nav = START_NAV
-        previous_tvl = metrics['tvl']
-    
-    new_nav = calculate_nav(previous_nav, previous_tvl, metrics['tvl'])
+def update_live_data(net_equity):
+    """Logika utama pembaruan data dan kalkulasi NAV"""
+    # Gunakan ISO format untuk tanggal, tapi tambahkan jam agar unik jika di-update berkali-kali
     now = datetime.now()
+    today_str = now.strftime("%Y-%m-%d")
+    timestamp_str = now.strftime("%Y-%m-%d %H:%M:%S")
     
+    file_path = OUTPUT_DIR / "live-data-jlp_neutral.json"
+    
+    # 1. Load data lama
+    if file_path.exists():
+        with open(file_path, 'r') as f:
+            all_data = json.load(f)
+    else:
+        all_data = {"jlp_neutral": {"liveData": [], "tvl": 0, "status": "Offline"}}
+
+    strategy_data = all_data.get("jlp_neutral", {"liveData": [], "tvl": 0})
+    live_data = strategy_data.get("liveData", [])
+
+    # 2. Hitung NAV (Logika 1000)
+    if not live_data:
+        new_nav = START_NAV
+    else:
+        prev_point = live_data[-1]
+        prev_nav = prev_point['value']
+        prev_equity = prev_point.get('collateral', net_equity)
+        
+        # Rumus Pertumbuhan Proporsional
+        if prev_equity > 0:
+            new_nav = prev_nav * (net_equity / prev_equity)
+        else:
+            new_nav = prev_nav
+
     new_point = {
-        "date": today,
-        "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "date": today_str,
+        "timestamp": timestamp_str,
         "year": now.year,
         "value": round(new_nav, 2),
-        "collateral": metrics['tvl'], # Simpan Net Equity di sini
-        "drawdown": 0
+        "collateral": round(net_equity, 2),
+        "drawdown": 0.0
     }
-    
+
+    # 3. SELALU TAMBAH BARIS BARU (Agar riwayat terlihat di dashboard)
+    print(f"➕ Menambah baris riwayat baru: {timestamp_str}")
     live_data.append(new_point)
-    
-    # Hitung ulang semua drawdown (Logika Guinea Pool)
+
+    # 4. Update Drawdowns untuk seluruh history
     for i in range(len(live_data)):
-        live_data[i]['drawdown'] = calculate_drawdown(live_data[:i+1])
-    
+        live_data[i]['drawdown'] = round(calculate_drawdown(live_data[:i+1]), 2)
+
+    # 5. Finalisasi JSON
     strategy_data.update({
         "liveData": live_data,
-        "tvl": metrics['tvl'],
-        "status": metrics['status']
+        "tvl": round(net_equity, 2),
+        "status": "Live"
     })
     all_data["jlp_neutral"] = strategy_data
-    
+
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    with open(live_data_path, 'w') as f:
+    with open(file_path, 'w') as f:
         json.dump(all_data, f, indent=2)
     
     return new_point
 
 def main():
-    print("="*50)
-    print(f"🚀 JLP NEUTRAL UPDATE | Address: {VAULT_ADDRESS[:8]}...")
-    print("="*50)
-    
-    raw_data = fetch_vault_data(VAULT_ADDRESS)
-    if not raw_data: return 1
-    
-    metrics = calculate_metrics(raw_data)
-    if not metrics: return 1
-    
-    new_point = update_live_data(metrics)
-    
-    print(f"✅ Success! Net Equity (TVL): ${metrics['tvl']:,.2f}")
-    print(f"📈 New NAV: {new_point['value']}")
-    return 0
+    print("="*60)
+    print("🚀 SENTQUANT | JLP NEUTRAL SYNC V3 (HISTORY MODE)")
+    print("="*60)
+
+    user_addr = get_vault_user_address(VAULT_ADDRESS_STR)
+    print(f"👤 User Trading: {user_addr}")
+    print(f"🔗 View Dashboard: https://app.drift.trade/view/{user_addr}")
+
+    # Step: Input Equity (Gunakan angka $2,308,787.32 dari screenshot Drift)
+    print("\n" + "-"*30)
+    try:
+        val = input(f"Masukkan Net Equity dari Drift Dashboard: $")
+        equity = float(val.replace(",", "").replace("$", "").strip())
+    except Exception as e:
+        print(f"❌ Input salah: {e}")
+        return
+
+    # Update dan Simpan
+    result = update_live_data(equity)
+
+    print("\n" + "="*60)
+    print(f"✅ DATA BERHASIL DITAMBAHKAN")
+    print(f"📈 NAV Sekarang: {result['value']}")
+    print(f"💰 TVL:          ${result['collateral']:,.2f}")
+    print(f"📊 Total Baris:  {len(update_live_data.__globals__['all_data']['jlp_neutral']['liveData'] if 'all_data' in update_live_data.__globals__ else [])}") 
+    print("="*60)
 
 if __name__ == "__main__":
-    exit(main())
+    main()
