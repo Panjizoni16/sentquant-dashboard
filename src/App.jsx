@@ -815,47 +815,49 @@ const LighterMatrix = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    let w, h, cols, rows;
-    const size = 12;
-    let frame = 0;
+    let w, h;
+    let particles = [];
 
     const init = () => {
       w = canvas.width = window.innerWidth;
       h = canvas.height = window.innerHeight;
-      cols = Math.ceil(w / size);
-      rows = Math.ceil(h / size);
+      particles = [];
+      // Cukup 4 bola besar supaya super ringan
+      for (let i = 0; i < 4; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          res: Math.random() * 400 + 300, // Ukuran diperbesar agar liquid terasa luas
+          vx: (Math.random() - 0.5) * 0.4, // Gerakan sangat tenang
+          vy: (Math.random() - 0.5) * 0.4
+        });
+      }
     };
 
     const draw = () => {
-      // Background hitam pekat
-      ctx.fillStyle = "black";
+      // Hitam pekat sebagai dasar
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, w, h);
 
-      ctx.font = `${size - 2}px monospace`;
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
 
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          // LOGIKA WAVE & DITHER:
-          // Kita bikin gelombang sinus yang bergerak (frame)
-          // Gabungan x dan y bikin efek diagonal/fluid
-          const wave = Math.sin(x * 0.15 + frame * 0.05) + Math.cos(y * 0.15 + frame * 0.03);
-          
-          // Noise statis untuk efek "Dither" (bintik-bintik digital)
-          const noise = Math.random() * 0.5;
-          const brightness = wave + noise;
+        // Pantulan halus di dinding
+        if (p.x < -p.res/2 || p.x > w + p.res/2) p.vx *= -1;
+        if (p.y < -p.res/2 || p.y > h + p.res/2) p.vy *= -1;
 
-          if (brightness > 0.6) {
-            const char = Math.random() > 0.5 ? "1" : "0";
-            
-            // Warna: Biru Navy redup ke arah Ungu (Dark Vibes)
-            const opacity = Math.min(brightness * 0.3, 0.5);
-            ctx.fillStyle = `rgba(100, 110, 180, ${opacity})`;
-            
-            ctx.fillText(char, x * size, y * size);
-          }
-        }
-      }
-      frame++;
+        // Gradien abu-abu ke transparan
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.res);
+        grad.addColorStop(0, 'rgba(100, 100, 100, 0.5)'); // Kita bikin lebih terang dulu buat testing
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');      // Menghilang ke hitam
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.res, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
       requestAnimationFrame(draw);
     };
 
@@ -867,11 +869,9 @@ const LighterMatrix = () => {
 
   return (
     <div className="fixed inset-0 z-0 pointer-events-none bg-black">
-      <canvas ref={canvasRef} />
-      {/* SCANLINES: Efek garis monitor terminal */}
-      <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.3)_50%)] bg-[length:100%_4px]" />
-      {/* VIGNETTE: Biar tengah layar lebih terang, pinggir gelap */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_80%)]" />
+      <canvas ref={canvasRef} className="opacity-80" />
+      {/* Efek Vignette: Pinggiran layar dibuat lebih gelap/hitam */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#000000_100%)]" />
     </div>
   );
 };
@@ -1624,12 +1624,11 @@ if (loading) return (
         </div>
       )}
 
-      {/* MAIN CONTENT WRAPPER */}
-      <div className="flex-1 overflow-y-auto no-scrollbar relative z-10 h-full flex flex-col">
-        <LighterMatrix />
-        
-        {/* MAIN CONTENT CONSTRAINT */}
-        <main className="flex-1 flex flex-col relative z-20">
+ <div className="flex-1 overflow-y-auto no-scrollbar relative h-full flex flex-col">
+  <LighterMatrix />
+
+  {/* Kita hilangkan z-10 dan bg-black di kontainer ini agar background terlihat */}
+  <main className="flex-1 flex flex-col relative z-10 bg-transparent">
            {/* TICKER BAR - STICKY */}
   {Object.keys(strategiesData).length > 0 && (
     <div className="sticky top-0 z-50 h-[40px] flex-none bg-black/40 backdrop-blur-sm border-b border-white/5 overflow-hidden">
