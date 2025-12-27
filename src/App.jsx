@@ -809,72 +809,27 @@ const AboutModelsCard = ({ t }) => (
 );
 
 // --- OPTION L: CYBER FLUX (ASCII Waves - No Install Required) ---
-const LighterMatrix = () => {
-  const canvasRef = useRef(null);
+const LighterMatrix = () => (
+  <div className="fixed inset-0 z-0 bg-[#0a0a0a]"> {/* Kembali ke hitam obsidian yang lebih dalam */}
+    {/* 1. Grid Layer - Opacity diturunkan ke 18% dan warna abu-abu disamarkan ke #333 */}
+    <div 
+      className="absolute inset-0 opacity-[0.18]" 
+      style={{ 
+        backgroundImage: `linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)`,
+        backgroundSize: '50px 50px' 
+      }} 
+    />
+    
+    {/* 2. Surface Light - Rona metalik dibuat sangat tipis agar tidak 'foggy' */}
+    <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/10 via-transparent to-zinc-800/10" />
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    let w, h;
-    let particles = [];
-
-    const init = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-      particles = [];
-      // Cukup 4 bola besar supaya super ringan
-      for (let i = 0; i < 4; i++) {
-        particles.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          res: Math.random() * 400 + 300, // Ukuran diperbesar agar liquid terasa luas
-          vx: (Math.random() - 0.5) * 0.4, // Gerakan sangat tenang
-          vy: (Math.random() - 0.5) * 0.4
-        });
-      }
-    };
-
-    const draw = () => {
-      // Hitam pekat sebagai dasar
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, w, h);
-
-      particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Pantulan halus di dinding
-        if (p.x < -p.res/2 || p.x > w + p.res/2) p.vx *= -1;
-        if (p.y < -p.res/2 || p.y > h + p.res/2) p.vy *= -1;
-
-        // Gradien abu-abu ke transparan
-        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.res);
-        grad.addColorStop(0, 'rgba(100, 100, 100, 0.5)'); // Kita bikin lebih terang dulu buat testing
-        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');      // Menghilang ke hitam
-
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.res, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      requestAnimationFrame(draw);
-    };
-
-    init();
-    draw();
-    window.addEventListener('resize', init);
-    return () => window.removeEventListener('resize', init);
-  }, []);
-
-  return (
-    <div className="fixed inset-0 z-0 pointer-events-none bg-black">
-      <canvas ref={canvasRef} className="opacity-80" />
-      {/* Efek Vignette: Pinggiran layar dibuat lebih gelap/hitam */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#000000_100%)]" />
-    </div>
-  );
-};
+    {/* 3. Main Center Glow - Cahaya pusat diredupkan ke Zinc-600 dengan opasitas 15% */}
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-zinc-600/15 via-transparent to-transparent" />
+    
+    {/* 4. Focus Vignette - Penggelap pinggiran dinaikkan sedikit untuk efek depth yang lebih kuat */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/60 pointer-events-none" />
+  </div>
+);
 // --- CUSTOM TOOLTIP FOR BENCHMARK CHART ---
 const CustomBenchmarkTooltip = ({ active, payload, label }) => {
   // CRITICAL: Only show if active AND has valid payload
