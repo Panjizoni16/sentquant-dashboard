@@ -21,7 +21,7 @@ const STRATEGIES_CONFIG = [
 ];
 
 // ==========================================
-// 2. HELPER COMPONENTS (WAJIB ADA)
+// 2. HELPER COMPONENTS
 // ==========================================
 const NavItem = ({ active, icon, label, onClick }) => (
   <button onClick={onClick} className={`flex flex-col items-center gap-1 transition-all duration-300 ${active ? 'scale-110 opacity-100' : 'opacity-40 hover:opacity-70'}`}>
@@ -31,7 +31,7 @@ const NavItem = ({ active, icon, label, onClick }) => (
 );
 
 // ==========================================
-// 3. MAIN APP (IMMERSIVE & FULLSCREEN)
+// 3. MAIN APP
 // ==========================================
 const App = () => {
   const [activeTab, setActiveTab] = useState('arena');
@@ -99,13 +99,13 @@ const App = () => {
       
       <main className="flex-1 relative z-10 flex flex-col overflow-hidden">
         
-        {/* TAB: ARENA - TIKTOK STYLE BACKGROUND CHART */}
+        {/* TAB: ARENA - TIKTOK STYLE (CHART BACKGROUND) */}
         {activeTab === 'arena' && (
           <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar">
             {quants.map((q, idx) => (
               <section key={q.id} className="h-full w-full snap-start relative flex flex-col overflow-hidden">
                 
-                {/* 1. BACKGROUND CONTENT (FULLSCREEN CHART) */}
+                {/* 1. LATAR BELAKANG GRAFIK - Garis diperhalus (strokeWidth: 3) */}
                 <div className="absolute inset-0 z-0 opacity-70">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={q.history} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
@@ -116,12 +116,13 @@ const App = () => {
                         </linearGradient>
                       </defs>
                       <YAxis hide domain={['auto', 'auto']} />
-                      <Area type="monotone" dataKey="value" stroke={q.color} strokeWidth={6} fill={`url(#glow-${q.id})`} dot={false} animationDuration={2000} />
+                      {/* strokeWidth dikurangi jadi 3 agar lebih ramping */}
+                      <Area type="monotone" dataKey="value" stroke={q.color} strokeWidth={3} fill={`url(#glow-${q.id})`} dot={false} animationDuration={2000} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
 
-                {/* 2. UI OVERLAY: TOP HEADER (RANK & SMALL NAME) */}
+                {/* 2. TOP HEADER: RANK & AGENT NAME */}
                 <div className="absolute top-12 left-8 z-20 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
                     <User size={20} className="text-white/40" />
@@ -130,14 +131,13 @@ const App = () => {
                     <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest border border-white/10">
                       RANK #{idx + 1}
                     </span>
-                    {/* NAMA AGEN: KECIL DI SAMPING RANK */}
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white italic opacity-90">
                       {q.name}
                     </span>
                   </div>
                 </div>
 
-                {/* 3. UI OVERLAY: BOTTOM INFO (PROFIT & TVL) */}
+                {/* 3. BOTTOM INFO: METRICS */}
                 <div className="absolute inset-0 z-10 p-8 flex flex-col justify-end bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none">
                   <div className="mb-24 animate-fade-in">
                     <div className="flex flex-col gap-1">
@@ -153,7 +153,7 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* Swipe Indicators */}
+                {/* Progress Indicators */}
                 <div className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col gap-2 opacity-20">
                   {quants.map((_, i) => (
                     <div key={i} className={`w-1 rounded-full transition-all ${i === idx ? 'h-8 bg-white' : 'h-4 bg-white/50'}`} />
@@ -169,7 +169,6 @@ const App = () => {
           <div className="h-full w-full p-6 md:p-12 overflow-y-auto no-scrollbar animate-fade-in flex flex-col items-center bg-[#070707]">
             <div className="max-w-[1400px] w-full space-y-10 pb-32">
               
-              {/* TOTAL TVL BOX */}
               <div className="w-full bg-white/[0.02] border border-white/10 rounded-[40px] p-8 md:p-16 text-center flex flex-col items-center justify-center space-y-3 backdrop-blur-xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-zinc-500 to-transparent opacity-50"></div>
                 <Zap size={24} className="text-white/20 mb-2" />
@@ -178,14 +177,12 @@ const App = () => {
                 <p className="text-[10px] font-bold text-white/10 tracking-[0.5em] italic uppercase">Across 6 Global Strategies</p>
               </div>
 
-              {/* HEADER LAYOUT: TITLE LEFT, FILTER RIGHT */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
                 <div>
                   <h1 className="text-6xl md:text-[100px] font-black italic tracking-tighter uppercase leading-none">COMPARISON</h1>
-                  <p className="text-zinc-600 font-mono text-[10px] uppercase tracking-[0.4em] mt-3">Advanced Multi-Agent Analytic Infrastructure</p>
                 </div>
                 <div className="relative group">
-                  <button className="px-10 py-5 bg-neutral-900 border border-white/10 rounded-2xl text-[10px] font-black uppercase text-white shadow-2xl hover:bg-neutral-800 transition-all flex items-center gap-3">
+                  <button className="px-10 py-5 bg-neutral-900 border border-white/10 rounded-2xl text-[10px] font-black uppercase text-white shadow-2xl flex items-center gap-3">
                     <LayoutGrid size={16} />
                     <span>Filter Agents</span>
                   </button>
@@ -203,7 +200,6 @@ const App = () => {
                 </div>
               </div>
 
-              {/* MAIN COMPARISON CHART */}
               <div className="h-[400px] md:h-[600px] bg-white/[0.01] border border-white/5 rounded-[60px] p-8 md:p-16 relative overflow-hidden backdrop-blur-sm shadow-inner">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={benchmarkData}>
@@ -220,7 +216,8 @@ const App = () => {
                     <YAxis domain={['auto', 'auto']} hide />
                     <Tooltip contentStyle={{backgroundColor: '#000', border: 'none', borderRadius: '25px', padding: '20px'}} />
                     {quants.map(q => visibleStrategies[q.id] !== false && (
-                      <Area key={q.id} type="monotone" dataKey={q.id} name={q.name} stroke={q.color} strokeWidth={4} fill={`url(#grad-bench-${q.id})`} dot={false} connectNulls={true} />
+                      /* strokeWidth dikurangi jadi 2 agar perbandingan terlihat lebih rapi */
+                      <Area key={q.id} type="monotone" dataKey={q.id} name={q.name} stroke={q.color} strokeWidth={2} fill={`url(#grad-bench-${q.id})`} dot={false} connectNulls={true} />
                     ))}
                   </AreaChart>
                 </ResponsiveContainer>
@@ -229,7 +226,7 @@ const App = () => {
           </div>
         )}
 
-        {/* TAB: RANK & PORTFOLIO (SIMPLIFIED FOR TIKTOK VIBES) */}
+        {/* TAB: RANK */}
         {activeTab === 'rank' && (
           <div className="h-full w-full p-8 lg:p-20 overflow-y-auto no-scrollbar animate-fade-in flex flex-col items-center bg-[#070707]">
              <div className="max-w-6xl w-full pb-32">
@@ -239,7 +236,7 @@ const App = () => {
                     <div key={q.id} className="group flex items-center justify-between p-6 md:p-8 rounded-[30px] md:rounded-[40px] bg-white/[0.02] border border-white/5 backdrop-blur-xl hover:bg-white/[0.05] transition-all">
                       <div className="flex items-center gap-6">
                         <span className="text-2xl font-mono text-white/10">0{i+1}</span>
-                        <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-white/10 flex items-center justify-center"><User size={24} className="text-white/10" /></div>
+                        <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-white/10 flex items-center justify-center shadow-xl"><User size={24} className="text-white/10" /></div>
                         <div>
                           <span className="text-lg font-black italic text-white uppercase">{q.name}</span>
                           <div className="text-[9px] text-zinc-500 font-mono uppercase mt-1">{q.protocol} Protocol</div>
