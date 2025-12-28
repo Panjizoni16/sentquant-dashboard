@@ -306,11 +306,11 @@ const App = () => {
                 </div>
 
                 {/* 2. IDENTITY SECTION (OVERLAPPING BANNER) */}
-                <div className="px-6 flex flex-col items-center -mt-20 md:-mt-28 relative z-10 pb-10 border-b border-white/5">
+               <div className="px-6 flex flex-col items-center -mt-20 md:-mt-32 relative z-10 pb-12 border-b border-white/5">
                   
-                 {/* Badge ELITE Emas (Smaller & Balanced) */}
-                  <div className="mb-6 transform hover:scale-105 transition-all duration-700 ease-in-out cursor-pointer">
-                    <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 120 : 160} /> 
+                {/* Badge ELITE Emas (Ultra Compact for Mobile) */}
+                  <div className="mb-5 transform hover:scale-105 transition-all duration-700 ease-in-out cursor-pointer">
+                    <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 90 : 160} /> 
                   </div>
 
                   {/* Info Agen */}
