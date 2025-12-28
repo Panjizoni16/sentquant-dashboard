@@ -9,9 +9,7 @@ import {
   Calendar
 } from 'lucide-react';
 
-// ==========================================
-// 1. CONFIG & DATA MOCK
-// ==========================================
+// 1. CONFIG
 const STRATEGIES_CONFIG = [
   { id: 'sentquant', name: 'Sentquant Core', protocol: 'Sentquant', color: '#f3f4f5', bio: "Sentquant flagship quantitative infrastructure.", joined: "Jan 2024", status: "Live" },
   { id: 'systemic_hyper', name: 'Systemic Hyper', protocol: 'Hyperliquid', color: '#10b981', bio: "High-frequency market making on Hyperliquid L1.", joined: "Mar 2024", status: "Live" },
@@ -21,14 +19,7 @@ const STRATEGIES_CONFIG = [
   { id: 'systemicls', name: 'Systemic Strategies L/S', protocol: 'Hyperliquid', color: '#6366f1', bio: "Long/Short systemic algorithmic rebalancing.", joined: "Jan 2024", status: "Live" }
 ];
 
-const generateMonthlyReturns = () => [
-  { year: 2025, months: [1.2, 2.5, -0.5, 3.1, null, null, null, null, null, null, null, null] },
-  { year: 2024, months: [2.1, 1.8, 3.2, -1.2, 0.5, 2.7, 1.9, -0.8, 4.2, 1.5, 2.2, 3.0] }
-];
-
-// ==========================================
-// 2. REUSABLE COMPONENTS
-// ==========================================
+// 2. COMPONENTS
 const NavItem = ({ active, icon, label, onClick }) => (
   <button onClick={onClick} className={`flex flex-col items-center gap-1 transition-all duration-300 ${active ? 'scale-110 opacity-100' : 'opacity-30 hover:opacity-60'}`}>
     <div className={`p-1 ${active ? 'text-white' : 'text-zinc-500'}`}>{icon}</div>
@@ -47,9 +38,6 @@ const MetricBoxUnified = ({ label, value }) => (
   </div>
 );
 
-// ==========================================
-// 3. MAIN APPLICATION
-// ==========================================
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [quants, setQuants] = useState([]);
@@ -57,9 +45,7 @@ const App = () => {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [visibleStrategies, setVisibleStrategies] = useState({});
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-US', { 
-    style: 'currency', currency: 'USD', minimumFractionDigits: 0 
-  }).format(val || 0);
+  const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(val || 0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,14 +54,7 @@ const App = () => {
           const res = await fetch(`/data/live-data-${strat.id}.json`);
           const json = await res.json();
           const data = json[strat.id];
-          const live = data.liveData;
-          return {
-            ...strat,
-            profitValue: ((live[live.length - 1].value - 1000) / 1000) * 100,
-            tvl: data.tvl || 0,
-            history: live,
-            annualReturns: [{year: '2024', value: 24.5}, {year: '2025', value: 8.2}]
-          };
+          return { ...strat, profitValue: ((data.liveData[data.liveData.length - 1].value - 1000) / 1000) * 100, tvl: data.tvl || 0, history: data.liveData, annualReturns: [{year: '2024', value: 24.5}, {year: '2025', value: 8.2}] };
         } catch { return null; }
       }));
       const filtered = results.filter(r => r !== null).sort((a, b) => b.profitValue - a.profitValue);
@@ -87,72 +66,39 @@ const App = () => {
   }, []);
 
   const totalTVL = useMemo(() => quants.reduce((acc, curr) => acc + (curr.tvl || 0), 0), [quants]);
-  const benchmarkData = useMemo(() => {
-    if (!quants.length) return [];
-    const times = [...new Set(quants.flatMap(q => q.history.map(h => h.timestamp || h.date)))].sort();
-    return times.map(time => {
-      const p = { time };
-      quants.forEach(q => { const m = q.history.find(h => (h.timestamp || h.date) === time); p[q.id] = m ? m.value : null; });
-      return p;
-    });
-  }, [quants]);
 
   if (loading) return <div className="h-[100dvh] bg-black flex items-center justify-center text-white font-black italic animate-pulse">ARENA SYNCING...</div>;
 
   return (
     <div className="h-[100dvh] w-screen bg-black text-white overflow-hidden flex flex-col relative font-sans">
-      
       <main className="flex-1 relative z-10 flex flex-col overflow-hidden">
         
-        {/* --- TAB: HOME --- */}
+        {/* TAB HOME */}
         {activeTab === 'home' && (
-          <div className="w-full p-6 md:p-20 animate-fade-in flex flex-col items-center justify-center h-full text-center">
-             <h1 className="text-5xl md:text-[120px] font-black italic text-white tracking-tighter uppercase mb-4 leading-none">
-               SENTQUANT<br/><span className="text-zinc-600">ARENA</span>
-             </h1>
-             <p className="text-sm md:text-xl text-white/30 italic tracking-[0.2em] uppercase">Global Quantitative Infrastructure Tier 1</p>
-             <button onClick={() => setActiveTab('arena')} className="mt-12 px-12 py-5 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:scale-110 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)]">Masuk Arena</button>
+          <div className="w-full p-6 animate-fade-in flex flex-col items-center justify-center h-full text-center">
+             <h1 className="text-5xl md:text-[120px] font-black italic text-white tracking-tighter uppercase mb-4 leading-none">SENTQUANT<br/><span className="text-zinc-600">ARENA</span></h1>
+             <button onClick={() => setActiveTab('arena')} className="mt-12 px-12 py-5 bg-white text-black font-black uppercase rounded-2xl">Masuk Arena</button>
           </div>
         )}
 
-        {/* --- TAB: ARENA --- */}
+        {/* TAB ARENA / PROFILE */}
         {activeTab === 'arena' && (
           selectedProfile ? (
             <div className="h-full w-full bg-[#050505] overflow-y-auto no-scrollbar animate-fade-in p-4 md:p-8 pb-32">
               <div className="max-w-[1600px] mx-auto space-y-12">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                  <button onClick={() => setSelectedProfile(null)} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
-                    <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                    <span className="font-bold text-xs tracking-wider uppercase">Back to Arena</span>
-                  </button>
-                  <button className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-zinc-200 text-black font-black rounded-xl text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-2xl hover:scale-105">
-                    <span>Trade Now</span>
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center"><User size={30} className="text-white/20" /></div>
-                    <div>
-                      <h1 className="text-3xl md:text-5xl font-black italic uppercase text-white">{selectedProfile.name}</h1>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Trading Active</span>
-                      </div>
-                    </div>
-                  </div>
+                {/* Unified Dashboard UI */}
+                <div className="flex justify-between items-center mb-6">
+                  <button onClick={() => setSelectedProfile(null)} className="flex items-center gap-2 text-gray-400"><ArrowLeft size={20} /> BACK</button>
+                  <button className="px-8 py-4 bg-white text-black font-black rounded-xl text-sm uppercase">TRADE</button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <MetricBoxUnified label="NAV" value={selectedProfile.history[selectedProfile.history.length-1].value.toFixed(2)} />
-                  <MetricBoxUnified label="TVL" value={selectedProfile.id === 'sentquant' ? 'LOCKED' : formatCurrency(selectedProfile.tvl)} />
+                  <MetricBoxUnified label="TVL" value={formatCurrency(selectedProfile.tvl)} />
                   <MetricBoxUnified label="PROTOCOL" value={selectedProfile.protocol} />
                 </div>
-                <div className="h-[400px] w-full bg-white/[0.02] border border-white/5 rounded-[40px] p-6 backdrop-blur-md">
+                <div className="h-[400px] bg-white/[0.02] border border-white/5 rounded-[40px] p-6">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={selectedProfile.history}>
-                      <defs><linearGradient id="colorVis" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={selectedProfile.color} stopOpacity={0.3}/><stop offset="95%" stopColor={selectedProfile.color} stopOpacity={0}/></linearGradient></defs>
-                      <Area type="monotone" dataKey="value" stroke={selectedProfile.color} strokeWidth={2} fill="url(#colorVis)" dot={false} />
-                    </AreaChart>
+                    <AreaChart data={selectedProfile.history}><Area type="monotone" dataKey="value" stroke={selectedProfile.color} strokeWidth={2} fill={selectedProfile.color} fillOpacity={0.1} dot={false} /></AreaChart>
                   </ResponsiveContainer>
                 </div>
               </div>
@@ -163,81 +109,39 @@ const App = () => {
                 <section key={q.id} className="h-full w-full snap-start relative flex flex-col overflow-hidden">
                   <div className="absolute inset-0 z-0 opacity-70">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={q.history} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                        <YAxis hide domain={['auto', 'auto']} />
-                        <Area type="monotone" dataKey="value" stroke={q.color} strokeWidth={2} fill={q.color} fillOpacity={0.1} dot={false} />
-                      </AreaChart>
+                      <AreaChart data={q.history} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}><YAxis hide domain={['auto', 'auto']} /><Area type="monotone" dataKey="value" stroke={q.color} strokeWidth={2} fill={q.color} fillOpacity={0.1} dot={false} /></AreaChart>
                     </ResponsiveContainer>
                   </div>
                   <div className="absolute top-12 left-8 z-20 flex items-center gap-4">
-                    <button onClick={() => setSelectedProfile(q)} className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
-                      <User size={24} className="text-white/40" />
-                    </button>
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded w-fit mb-1 border border-white/5">Rank #{idx+1}</span>
-                      <span className="text-sm font-black italic uppercase">{q.name}</span>
-                    </div>
+                    <button onClick={() => setSelectedProfile(q)} className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center"><User size={24} className="text-white/40" /></button>
+                    <div className="flex flex-col"><span className="text-[10px] font-black uppercase bg-white/10 px-2 py-0.5 rounded w-fit mb-1">Rank #{idx+1}</span><span className="text-sm font-black italic uppercase">{q.name}</span></div>
                   </div>
-                  <div className="absolute inset-0 z-10 p-10 flex flex-col justify-end bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none pb-32">
-                    <div className="text-emerald-400 font-mono text-5xl md:text-8xl font-bold tracking-tighter drop-shadow-2xl">
-                      {q.profitValue.toFixed(2)}% <span className="text-white/20 text-xs md:text-xl font-black italic uppercase">Profit</span>
-                    </div>
-                  </div>
+                  <div className="absolute inset-0 z-10 p-10 flex flex-col justify-end pb-32"><div className="text-emerald-400 font-mono text-5xl md:text-8xl font-bold tracking-tighter">{q.profitValue.toFixed(2)}% <span className="text-white/20 text-xs font-black italic uppercase">Profit</span></div></div>
                 </section>
               ))}
             </div>
           )
         )}
 
-        {/* --- TAB: ANALYTIC --- */}
+        {/* TAB ANALYTIC */}
         {activeTab === 'benchmark' && (
-          <div className="h-full w-full p-6 md:p-12 overflow-y-auto no-scrollbar animate-fade-in flex flex-col bg-black">
-            <div className="max-w-[1400px] mx-auto w-full space-y-10 pb-32">
-              <div className="w-full bg-white/[0.02] border border-white/10 rounded-[40px] p-8 md:p-16 text-center backdrop-blur-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-zinc-500 to-transparent opacity-50"></div>
-                <h2 className="text-[10px] md:text-sm font-bold text-white/30 uppercase tracking-[0.4em]">Total Tracked TVL</h2>
+          <div className="h-full w-full p-6 md:p-12 overflow-y-auto no-scrollbar animate-fade-in bg-black">
+            <div className="max-w-[1400px] mx-auto w-full space-y-10 pb-32 text-center">
+              <div className="w-full bg-white/[0.02] border border-white/10 rounded-[40px] p-8 md:p-16 relative overflow-hidden">
+                <h2 className="text-[10px] font-bold text-white/30 uppercase tracking-[0.4em]">Total Tracked TVL</h2>
                 <div className="text-4xl md:text-9xl font-black italic tracking-tighter leading-none">{formatCurrency(totalTVL)}</div>
-              </div>
-              <div className="h-[400px] md:h-[600px] bg-white/[0.01] border border-white/5 rounded-[60px] p-8 md:p-16 relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={benchmarkData}>
-                    <XAxis dataKey="time" hide />
-                    <YAxis domain={['auto', 'auto']} hide />
-                    {quants.map(q => visibleStrategies[q.id] && (
-                      <Area key={q.id} type="monotone" dataKey={q.id} stroke={q.color} strokeWidth={1.5} fillOpacity={0} dot={false} connectNulls />
-                    ))}
-                  </AreaChart>
-                </ResponsiveContainer>
               </div>
             </div>
           </div>
         )}
 
-        {/* --- TAB: RANK --- */}
-        {activeTab === 'rank' && (
-          <div className="h-full w-full p-8 lg:p-20 overflow-y-auto no-scrollbar flex flex-col items-center bg-black">
-             <div className="max-w-6xl w-full pb-32 space-y-4">
-                {quants.map((q, i) => (
-                  <div key={q.id} className="flex items-center justify-between p-6 rounded-[30px] bg-white/[0.02] border border-white/5">
-                    <div className="flex items-center gap-6">
-                      <span className="text-2xl font-mono text-white/10">0{i+1}</span>
-                      <div className="w-12 h-12 rounded-2xl bg-neutral-900 flex items-center justify-center"><User size={24} className="text-white/10" /></div>
-                      <div><span className="text-lg font-black italic text-white uppercase">{q.name}</span></div>
-                    </div>
-                    <div className="text-right"><span className="text-xl font-black text-emerald-400 italic">{q.profitValue.toFixed(2)}%</span></div>
-                  </div>
-                ))}
-             </div>
-          </div>
-        )}
-
-        {/* --- BOTTOM NAVIGATION (SEJAJAR & FLAT) --- */}
-        <nav className="fixed bottom-0 left-0 w-full h-24 bg-black/90 backdrop-blur-2xl border-t border-white/5 flex items-center justify-center px-4 z-[100]">
+        {/* --- BOTTOM NAVIGATION (TOTAL FLAT & SEJAJAR) --- */}
+        <nav className="fixed bottom-0 left-0 w-full h-24 bg-black/95 backdrop-blur-2xl border-t border-white/5 flex items-center justify-center px-4 z-[100]">
            <div className="flex w-full max-w-2xl justify-between items-center px-4">
              <NavItem active={activeTab === 'arena'} icon={<LayoutGrid size={24} />} label="Arena" onClick={() => {setActiveTab('arena'); setSelectedProfile(null);}} />
              <NavItem active={activeTab === 'rank'} icon={<Award size={24} />} label="Rank" onClick={() => setActiveTab('rank')} />
              
-             {/* Tombol Home Sekarang Sejajar dengan yang lain */}
+             {/* Tombol Home Sejajar (Flat Design) */}
              <NavItem active={activeTab === 'home'} icon={<Zap size={24} />} label="Home" onClick={() => {setActiveTab('home'); setSelectedProfile(null);}} />
              
              <NavItem active={activeTab === 'benchmark'} icon={<BarChart3 size={24} />} label="Analytic" onClick={() => setActiveTab('benchmark')} />
