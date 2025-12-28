@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 // ==========================================
-// 1. CONFIG LENGKAP (6 AGEN)
+// 1. CONFIG LENGKAP (6 AGEN) - TIDAK DIHAPUS
 // ==========================================
 const STRATEGIES_CONFIG = [
   { id: 'sentquant', name: 'Sentquant Core', protocol: 'Sentquant', color: '#f3f4f5', bio: "Sentquant flagship quantitative infrastructure. Multi-strategy execution engine.", joined: "Jan 2024", status: "Live" },
@@ -47,18 +47,13 @@ const MetricBoxUnified = ({ label, value }) => (
   </div>
 );
 
-// ==========================================
-// 3. MAIN APPLICATION
-// ==========================================
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [quants, setQuants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState(null);
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-US', { 
-    style: 'currency', currency: 'USD', minimumFractionDigits: 0 
-  }).format(val || 0);
+  const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(val || 0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,8 +72,7 @@ const App = () => {
           };
         } catch { return null; }
       }));
-      const filtered = results.filter(r => r !== null).sort((a, b) => b.profitValue - a.profitValue);
-      setQuants(filtered);
+      setQuants(results.filter(r => r !== null).sort((a, b) => b.profitValue - a.profitValue));
       setLoading(false);
     };
     fetchData();
@@ -90,134 +84,46 @@ const App = () => {
 
   return (
     <div className="h-[100dvh] w-screen bg-black text-white overflow-hidden flex flex-col relative font-sans">
-      
       <main className="flex-1 relative z-10 flex flex-col overflow-hidden">
         
-        {/* --- TAB: HOME --- */}
         {activeTab === 'home' && (
           <div className="w-full p-6 animate-fade-in flex flex-col items-center justify-center h-full text-center">
-             <h1 className="text-6xl md:text-[120px] font-black italic text-white tracking-tighter uppercase mb-4 leading-none">
-               SENTQUANT<br/><span className="text-zinc-700">ARENA</span>
-             </h1>
-             <p className="text-sm md:text-xl text-white/30 italic tracking-[0.2em] uppercase">Global Quantitative Infrastructure Tier 1</p>
+             <h1 className="text-6xl md:text-[120px] font-black italic text-white tracking-tighter uppercase mb-4 leading-none">SENTQUANT<br/><span className="text-zinc-700">ARENA</span></h1>
              <button onClick={() => setActiveTab('arena')} className="mt-12 px-12 py-5 bg-white text-black font-black uppercase rounded-2xl hover:scale-110 transition-all">Masuk Arena</button>
           </div>
         )}
 
-        {/* --- TAB: ARENA & PROFILE LOGIC --- */}
         {activeTab === 'arena' && (
           selectedProfile ? (
-            /* --- LIVE: UNIFIED DASHBOARD --- */
             <div className="h-full w-full bg-[#050505] overflow-y-auto no-scrollbar animate-fade-in p-4 md:p-8 pb-32">
               <div className="max-w-[1600px] mx-auto space-y-12">
-                
-                {/* HEADER WITH BACK & TRADE BUTTONS */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                   <button onClick={() => setSelectedProfile(null)} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
-                    <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                    <span className="font-bold text-xs tracking-wider uppercase">Back to Arena</span>
+                    <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" /><span className="font-bold text-xs tracking-wider uppercase">Back to Arena</span>
                   </button>
                   <button className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-zinc-200 text-black font-black rounded-xl text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-2xl hover:scale-105">
-                    <span>Trade Now</span>
-                    <ArrowRight size={16} />
+                    <span>Trade Now</span><ArrowRight size={16} />
                   </button>
                 </div>
-
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center"><User size={30} className="text-white/20" /></div>
-                    <div>
-                      <h1 className="text-3xl md:text-5xl font-black italic uppercase text-white">{selectedProfile.name}</h1>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Trading Active</span>
-                      </div>
-                    </div>
+                    <div><h1 className="text-3xl md:text-5xl font-black italic uppercase text-white">{selectedProfile.name}</h1><div className="flex items-center gap-2 mt-1"><span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span><span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Trading Active</span></div></div>
                   </div>
                 </div>
-
-                {/* METRICS GRID WITH ORNAMENTS */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <MetricBoxUnified label="NAV" value={selectedProfile.history[selectedProfile.history.length-1].value.toFixed(2)} />
-                  <MetricBoxUnified label="TVL" value={selectedProfile.id === 'sentquant' ? 'LOCKED' : formatCurrency(selectedProfile.tvl)} />
+                  <MetricBoxUnified label="TVL" value={formatCurrency(selectedProfile.tvl)} />
                   <MetricBoxUnified label="PROTOCOL" value={selectedProfile.protocol} />
                 </div>
-
-                {/* LIVE PERFORMANCE CHART */}
-                <div className="space-y-6">
-                  <h2 className="text-xl font-black uppercase tracking-tighter border-l-4 border-white pl-4">Live Performance</h2>
-                  <div className="h-[400px] w-full bg-white/[0.02] border border-white/5 rounded-[40px] p-6 backdrop-blur-md">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={selectedProfile.history}>
-                        <defs><linearGradient id="colorVis" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={selectedProfile.color} stopOpacity={0.3}/><stop offset="95%" stopColor={selectedProfile.color} stopOpacity={0}/></linearGradient></defs>
-                        <YAxis hide domain={['auto', 'auto']} />
-                        <Area type="monotone" dataKey="value" stroke={selectedProfile.color} strokeWidth={2} fill="url(#colorVis)" dot={false} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
+                <div className="h-[400px] bg-white/[0.02] border border-white/5 rounded-[40px] p-6 backdrop-blur-md">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={selectedProfile.history}><Area type="monotone" dataKey="value" stroke={selectedProfile.color} strokeWidth={2} fillOpacity={0.1} dot={false} /></AreaChart>
+                  </ResponsiveContainer>
                 </div>
-
-                {/* MONTHLY RETURNS HEATMAP */}
-                <div className="mt-8">
-                  <h3 className="text-xl font-black text-white uppercase mb-6 tracking-tight">Monthly Returns History</h3>
-                  <div className="overflow-x-auto rounded-2xl border border-white/10 bg-black/40 p-4">
-                    <table className="w-full text-xs min-w-[800px]">
-                      <thead>
-                        <tr className="text-gray-500 uppercase tracking-widest border-b border-white/5">
-                          <th className="text-left py-4 px-2">Year</th>
-                          {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => <th key={m} className="text-center">{m}</th>)}
-                          <th className="text-center">YTD</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {generateMonthlyReturns().map((row, idx) => (
-                          <tr key={idx} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                            <td className="py-5 px-2 font-black text-white">{row.year}</td>
-                            {row.months.map((val, i) => (
-                              <td key={i} className="text-center">
-                                {val !== null ? (
-                                  <span className={`px-2 py-1 rounded font-bold ${val >= 0 ? 'text-emerald-400 bg-emerald-400/10' : 'text-red-500 bg-red-500/10'}`}>
-                                    {val > 0 ? '+' : ''}{val}%
-                                  </span>
-                                ) : <span className="text-zinc-800">-</span>}
-                              </td>
-                            ))}
-                            <td className="text-center font-black text-white underline decoration-zinc-700">
-                              {row.months.reduce((acc, curr) => acc + (curr || 0), 0).toFixed(1)}%
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* ANNUAL RETURNS & VERIFIED CARD */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 h-[350px] bg-black/40 border border-white/10 rounded-3xl p-6">
-                    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-gray-500 mb-6">Annual Returns Breakdown</h3>
-                    <ResponsiveContainer width="100%" height="80%">
-                      <RechartsBarChart data={selectedProfile.annualReturns}>
-                        <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#444', fontSize: 10, fontWeight: 'bold'}} />
-                        <Bar dataKey="value" radius={[10, 10, 10, 10]}>
-                          {selectedProfile.annualReturns.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.value >= 0 ? selectedProfile.color : '#f23645'} />
-                          ))}
-                        </Bar>
-                      </RechartsBarChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="bg-white text-black rounded-3xl p-8 flex flex-col justify-center">
-                     <Shield size={40} className="mb-4" />
-                     <h4 className="text-xl font-black uppercase leading-tight mb-2">Verified Infrastructure</h4>
-                     <p className="text-xs font-medium opacity-60 italic leading-relaxed">This strategy is managed by AI agents on encrypted rails. Real-time auditing active.</p>
-                  </div>
-                </div>
-
               </div>
             </div>
           ) : (
-            /* --- TIKTOK STYLE Vertical Arena --- */
             <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar">
               {quants.map((q, idx) => (
                 <section key={q.id} className="h-full w-full snap-start relative flex flex-col overflow-hidden">
@@ -229,23 +135,19 @@ const App = () => {
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
+                  
+                  {/* ARENA HEADER: MATCHING 667856.png */}
                   <div className="absolute top-12 left-8 z-20 flex items-center gap-4">
-                    <button onClick={() => setSelectedProfile(q)} className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
-                      <User size={24} className="text-white/40" />
-                    </button>
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black uppercase bg-white/10 px-2 py-0.5 rounded w-fit mb-1 border border-white/5">Rank #{idx+1}</span>
-                      <span className="text-sm font-black italic uppercase tracking-tighter">{q.name}</span>
+                    <button onClick={() => setSelectedProfile(q)} className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all"><User size={24} className="text-white/40" /></button>
+                    <div className="flex items-center gap-3">
+                      <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest border border-white/10">Rank #{idx+1}</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white italic opacity-90">{q.name}</span>
                     </div>
                   </div>
+
                   <div className="absolute inset-0 z-10 p-10 flex flex-col justify-end pb-32">
                     <div className="text-emerald-400 font-mono text-5xl md:text-8xl font-bold tracking-tighter drop-shadow-2xl">
                       {q.profitValue.toFixed(2)}% <span className="text-white/20 text-xs md:text-xl font-black italic uppercase">Profit</span>
-                    </div>
-                    <div className="flex items-center gap-4 text-white/40 font-black italic tracking-widest text-[10px] md:text-lg mt-2 uppercase">
-                      <span>{q.protocol} Protocol</span>
-                      <span>•</span>
-                      <span>{formatCurrency(q.tvl)} TVL</span>
                     </div>
                   </div>
                 </section>
@@ -254,57 +156,35 @@ const App = () => {
           )
         )}
 
-        {/* --- TAB: ANALYTIC --- */}
         {activeTab === 'benchmark' && (
-          <div className="h-full w-full p-6 md:p-12 overflow-y-auto no-scrollbar animate-fade-in flex flex-col bg-black">
+          <div className="h-full w-full p-6 md:p-12 overflow-y-auto no-scrollbar animate-fade-in bg-black">
             <div className="max-w-[1400px] mx-auto w-full space-y-10 pb-32">
               <div className="w-full bg-white/[0.02] border border-white/10 rounded-[40px] p-8 md:p-16 text-center backdrop-blur-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-zinc-500 to-transparent opacity-50"></div>
-                <Zap size={24} className="text-white/20 mb-2" />
-                <h2 className="text-[10px] md:text-sm font-bold text-white/30 uppercase tracking-[0.4em]">Total Tracked TVL</h2>
                 <div className="text-4xl md:text-9xl font-black italic tracking-tighter leading-none">{formatCurrency(totalTVL)}</div>
-              </div>
-              <div className="h-[400px] md:h-[600px] bg-white/[0.01] border border-white/5 rounded-[60px] p-8 md:p-16 relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={quants[0]?.history || []}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="white" strokeOpacity={0.03} vertical={false} />
-                    <YAxis domain={['auto', 'auto']} hide />
-                    <Area type="monotone" dataKey="value" stroke="#fff" strokeWidth={1.5} fillOpacity={0} dot={false} />
-                  </AreaChart>
-                </ResponsiveContainer>
               </div>
             </div>
           </div>
         )}
 
-        {/* --- TAB: RANK --- */}
         {activeTab === 'rank' && (
-          <div className="h-full w-full p-8 lg:p-20 overflow-y-auto no-scrollbar animate-fade-in flex flex-col items-center bg-black">
+          <div className="h-full w-full p-8 lg:p-20 overflow-y-auto no-scrollbar animate-fade-in bg-black">
              <div className="max-w-6xl w-full pb-32 space-y-4">
-                <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter mb-16 text-center">Leaderboard</h1>
                 {quants.map((q, i) => (
-                  <div key={q.id} className="flex items-center justify-between p-6 md:p-8 rounded-[30px] bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all">
-                    <div className="flex items-center gap-6">
-                      <span className="text-2xl font-mono text-white/10">0{i+1}</span>
-                      <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-white/10 flex items-center justify-center"><User size={24} className="text-white/10" /></div>
-                      <div><span className="text-lg font-black italic text-white uppercase">{q.name}</span><div className="text-[9px] text-zinc-500 font-mono uppercase mt-1">{q.protocol} Protocol</div></div>
-                    </div>
-                    <div className="text-right text-xl md:text-2xl font-black text-emerald-400 italic">{q.profitValue.toFixed(2)}%</div>
+                  <div key={q.id} className="flex items-center justify-between p-6 rounded-[30px] bg-white/[0.02] border border-white/5">
+                    <div className="flex items-center gap-6"><span className="text-2xl font-mono text-white/10">0{i+1}</span><div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-white/10 flex items-center justify-center"><User size={24} className="text-white/10" /></div><div><span className="text-lg font-black italic text-white uppercase">{q.name}</span></div></div>
+                    <div className="text-right text-xl font-black text-emerald-400 italic">{q.profitValue.toFixed(2)}%</div>
                   </div>
                 ))}
              </div>
           </div>
         )}
 
-        {/* --- BOTTOM NAVIGATION: FIXED, SEJAJAR & FLAT --- */}
+        {/* --- BOTTOM NAVIGATION: FLAT & SEJAJAR (MATCHING 667856.png) --- */}
         <nav className="fixed bottom-0 left-0 w-full h-24 bg-black/90 backdrop-blur-2xl border-t border-white/5 flex items-center justify-center px-4 z-[100]">
            <div className="flex w-full max-w-2xl justify-between items-center px-4">
              <NavItem active={activeTab === 'arena'} icon={<LayoutGrid size={24} />} label="Arena" onClick={() => {setActiveTab('arena'); setSelectedProfile(null);}} />
              <NavItem active={activeTab === 'rank'} icon={<Award size={24} />} label="Rank" onClick={() => setActiveTab('rank')} />
-             
-             {/* Zap (Home) sekarang sejajar dan flat */}
              <NavItem active={activeTab === 'home'} icon={<Zap size={24} />} label="Home" onClick={() => {setActiveTab('home'); setSelectedProfile(null);}} />
-             
              <NavItem active={activeTab === 'benchmark'} icon={<BarChart3 size={24} />} label="Analytic" onClick={() => setActiveTab('benchmark')} />
              <NavItem active={activeTab === 'portofolio'} icon={<Briefcase size={24} />} label="Portfolio" onClick={() => setActiveTab('portofolio')} />
            </div>
