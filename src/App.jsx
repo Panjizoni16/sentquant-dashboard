@@ -1,29 +1,65 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart as RechartsBarChart, Bar, Cell } from 'recharts';
-import { User, Zap, LayoutGrid, Award, BarChart3, Briefcase, ArrowLeft, ArrowRight, Shield, ChevronLeft } from 'lucide-react';
+import { 
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, 
+  CartesianGrid, BarChart as RechartsBarChart, Bar, Cell 
+} from 'recharts';
+import { 
+  User, ShieldCheck, Zap, ChevronLeft, LayoutGrid, Award, 
+  BarChart3, Briefcase, ArrowLeft, ArrowRight, ChevronDown, Shield, 
+  Calendar
+} from 'lucide-react';
 
-// 1. DATA CONFIG
+// ==========================================
+// 1. CONFIG & DATA MOCK
+// ==========================================
 const STRATEGIES_CONFIG = [
-  { id: 'sentquant', name: 'Sentquant Core', protocol: 'Sentquant', color: '#f3f4f5', bio: "Sentquant flagship quantitative infrastructure.", joined: "Jan 2024" },
-  { id: 'systemic_hyper', name: 'Systemic Hyper', protocol: 'Hyperliquid', color: '#10b981', bio: "High-frequency market making on Hyperliquid L1.", joined: "Mar 2024" },
-  { id: 'jlp_neutral', name: 'JLP Delta Neutral', protocol: 'Drift', color: '#a5b4fc', bio: "Consistent yield through funding rate arbitrage.", joined: "Feb 2024" }
+  { id: 'sentquant', name: 'Sentquant Core', protocol: 'Sentquant', color: '#f3f4f5', bio: "Sentquant flagship quantitative infrastructure.", joined: "Jan 2024", status: "Live" },
+  { id: 'systemic_hyper', name: 'Systemic Hyper', protocol: 'Hyperliquid', color: '#10b981', bio: "High-frequency market making on Hyperliquid L1.", joined: "Mar 2024", status: "Live" },
+  { id: 'jlp_neutral', name: 'JLP Delta Neutral', protocol: 'Drift', color: '#a5b4fc', bio: "Consistent yield through funding rate arbitrage.", joined: "Feb 2024", status: "Live" },
+  { id: 'guineapool', name: 'Guinea Pool', protocol: 'Lighter', color: '#f59e0b', bio: "Advanced MEV-protected liquidity pool.", joined: "Dec 2023", status: "Live" },
+  { id: 'edgehedge', name: 'Edge and Hedge', protocol: 'Lighter', color: '#ebfd4a', bio: "Hedging edge scenarios with directional volatility.", joined: "Apr 2024", status: "Live" },
+  { id: 'systemicls', name: 'Systemic Strategies L/S', protocol: 'Hyperliquid', color: '#6366f1', bio: "Long/Short systemic algorithmic rebalancing.", joined: "Jan 2024", status: "Live" }
 ];
 
-// 2. NAV ITEM COMPONENT (FLAT STYLE)
+const generateMonthlyReturns = () => [
+  { year: 2025, months: [1.2, 2.5, -0.5, 3.1, null, null, null, null, null, null, null, null] },
+  { year: 2024, months: [2.1, 1.8, 3.2, -1.2, 0.5, 2.7, 1.9, -0.8, 4.2, 1.5, 2.2, 3.0] }
+];
+
+// ==========================================
+// 2. REUSABLE COMPONENTS
+// ==========================================
 const NavItem = ({ active, icon, label, onClick }) => (
-  <button onClick={onClick} className={`flex flex-col items-center gap-1 transition-all duration-300 flex-1 ${active ? 'opacity-100' : 'opacity-30'}`}>
-    <div className={active ? 'text-white' : 'text-zinc-500'}>{icon}</div>
-    <span className={`text-[8px] font-black uppercase tracking-widest ${active ? 'text-white' : 'text-zinc-600'}`}>{label}</span>
+  <button onClick={onClick} className={`flex flex-col items-center gap-1 transition-all duration-300 ${active ? 'scale-110 opacity-100' : 'opacity-30 hover:opacity-60'}`}>
+    <div className={`p-1 ${active ? 'text-white' : 'text-zinc-500'}`}>{icon}</div>
+    <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${active ? 'text-white' : 'text-zinc-600'}`}>{label}</span>
   </button>
 );
 
+const MetricBoxUnified = ({ label, value }) => (
+  <div className="relative border border-white/10 bg-black/40 backdrop-blur-sm p-6 flex flex-col items-center justify-center">
+    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40"></div>
+    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40"></div>
+    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40"></div>
+    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40"></div>
+    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">{label}</span>
+    <span className="text-2xl md:text-3xl font-black text-white tracking-tighter">{value}</span>
+  </div>
+);
+
+// ==========================================
+// 3. MAIN APPLICATION
+// ==========================================
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [quants, setQuants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [visibleStrategies, setVisibleStrategies] = useState({});
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(val || 0);
+  const formatCurrency = (val) => new Intl.NumberFormat('en-US', { 
+    style: 'currency', currency: 'USD', minimumFractionDigits: 0 
+  }).format(val || 0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,57 +68,90 @@ const App = () => {
           const res = await fetch(`/data/live-data-${strat.id}.json`);
           const json = await res.json();
           const data = json[strat.id];
-          return { ...strat, profitValue: ((data.liveData[data.liveData.length - 1].value - 1000) / 1000) * 100, tvl: data.tvl || 0, history: data.liveData };
+          const live = data.liveData;
+          return {
+            ...strat,
+            profitValue: ((live[live.length - 1].value - 1000) / 1000) * 100,
+            tvl: data.tvl || 0,
+            history: live,
+            annualReturns: [{year: '2024', value: 24.5}, {year: '2025', value: 8.2}]
+          };
         } catch { return null; }
       }));
-      setQuants(results.filter(r => r !== null));
+      const filtered = results.filter(r => r !== null).sort((a, b) => b.profitValue - a.profitValue);
+      setQuants(filtered);
+      filtered.forEach(q => setVisibleStrategies(p => ({...p, [q.id]: true})));
       setLoading(false);
     };
     fetchData();
   }, []);
 
-  if (loading) return <div className="h-[100dvh] bg-black flex items-center justify-center text-white font-black italic animate-pulse">SYNCING...</div>;
+  const totalTVL = useMemo(() => quants.reduce((acc, curr) => acc + (curr.tvl || 0), 0), [quants]);
+  const benchmarkData = useMemo(() => {
+    if (!quants.length) return [];
+    const times = [...new Set(quants.flatMap(q => q.history.map(h => h.timestamp || h.date)))].sort();
+    return times.map(time => {
+      const p = { time };
+      quants.forEach(q => { const m = q.history.find(h => (h.timestamp || h.date) === time); p[q.id] = m ? m.value : null; });
+      return p;
+    });
+  }, [quants]);
+
+  if (loading) return <div className="h-[100dvh] bg-black flex items-center justify-center text-white font-black italic animate-pulse">ARENA SYNCING...</div>;
 
   return (
-    <div className="h-[100dvh] w-screen bg-black text-white overflow-hidden flex flex-col relative">
+    <div className="h-[100dvh] w-screen bg-black text-white overflow-hidden flex flex-col relative font-sans">
+      
       <main className="flex-1 relative z-10 flex flex-col overflow-hidden">
         
-        {/* --- TAB HOME --- */}
+        {/* --- TAB: HOME --- */}
         {activeTab === 'home' && (
-          <div className="flex flex-col items-center justify-center h-full text-center p-6 animate-fade-in">
-             <h1 className="text-6xl md:text-[120px] font-black italic tracking-tighter uppercase leading-none mb-6">SENTQUANT<br/><span className="text-zinc-700">ARENA</span></h1>
-             <button onClick={() => setActiveTab('arena')} className="px-12 py-5 bg-white text-black font-black uppercase rounded-2xl hover:scale-105 transition-all">Enter Arena</button>
+          <div className="w-full p-6 md:p-20 animate-fade-in flex flex-col items-center justify-center h-full text-center">
+             <h1 className="text-5xl md:text-[120px] font-black italic text-white tracking-tighter uppercase mb-4 leading-none">
+               SENTQUANT<br/><span className="text-zinc-600">ARENA</span>
+             </h1>
+             <p className="text-sm md:text-xl text-white/30 italic tracking-[0.2em] uppercase">Global Quantitative Infrastructure Tier 1</p>
+             <button onClick={() => setActiveTab('arena')} className="mt-12 px-12 py-5 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:scale-110 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)]">Masuk Arena</button>
           </div>
         )}
 
-        {/* --- TAB ARENA / PROFILE --- */}
+        {/* --- TAB: ARENA --- */}
         {activeTab === 'arena' && (
           selectedProfile ? (
-            <div className="h-full w-full bg-[#050505] overflow-y-auto p-4 md:p-8 pb-32 animate-fade-in">
-              <div className="max-w-[1400px] mx-auto space-y-8">
-                <div className="flex justify-between items-center">
-                  <button onClick={() => setSelectedProfile(null)} className="flex items-center gap-2 text-zinc-500 hover:text-white font-bold text-xs"><ChevronLeft size={20}/> BACK</button>
-                  <button className="px-6 py-3 bg-white text-black font-black rounded-xl text-xs uppercase">TRADE</button>
+            <div className="h-full w-full bg-[#050505] overflow-y-auto no-scrollbar animate-fade-in p-4 md:p-8 pb-32">
+              <div className="max-w-[1600px] mx-auto space-y-12">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                  <button onClick={() => setSelectedProfile(null)} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
+                    <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                    <span className="font-bold text-xs tracking-wider uppercase">Back to Arena</span>
+                  </button>
+                  <button className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-zinc-200 text-black font-black rounded-xl text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-2xl hover:scale-105">
+                    <span>Trade Now</span>
+                    <ArrowRight size={16} />
+                  </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-6 bg-white/[0.03] border border-white/10 rounded-2xl text-center">
-                    <span className="text-[10px] text-zinc-500 font-bold block mb-2">NAV</span>
-                    <span className="text-2xl font-black">{selectedProfile.history[selectedProfile.history.length-1].value.toFixed(2)}</span>
-                  </div>
-                  <div className="p-6 bg-white/[0.03] border border-white/10 rounded-2xl text-center">
-                    <span className="text-[10px] text-zinc-500 font-bold block mb-2">TVL</span>
-                    <span className="text-2xl font-black">{formatCurrency(selectedProfile.tvl)}</span>
-                  </div>
-                  <div className="p-6 bg-white/[0.03] border border-white/10 rounded-2xl text-center">
-                    <span className="text-[10px] text-zinc-500 font-bold block mb-2">PROTOCOL</span>
-                    <span className="text-2xl font-black uppercase">{selectedProfile.protocol}</span>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center"><User size={30} className="text-white/20" /></div>
+                    <div>
+                      <h1 className="text-3xl md:text-5xl font-black italic uppercase text-white">{selectedProfile.name}</h1>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Trading Active</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="h-[300px] md:h-[500px] bg-white/[0.02] rounded-[40px] p-6 border border-white/5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <MetricBoxUnified label="NAV" value={selectedProfile.history[selectedProfile.history.length-1].value.toFixed(2)} />
+                  <MetricBoxUnified label="TVL" value={selectedProfile.id === 'sentquant' ? 'LOCKED' : formatCurrency(selectedProfile.tvl)} />
+                  <MetricBoxUnified label="PROTOCOL" value={selectedProfile.protocol} />
+                </div>
+                <div className="h-[400px] w-full bg-white/[0.02] border border-white/5 rounded-[40px] p-6 backdrop-blur-md">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={selectedProfile.history}>
-                      <YAxis hide domain={['auto', 'auto']} />
-                      <Area type="monotone" dataKey="value" stroke={selectedProfile.color} strokeWidth={2} fill={selectedProfile.color} fillOpacity={0.1} dot={false} />
+                      <defs><linearGradient id="colorVis" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={selectedProfile.color} stopOpacity={0.3}/><stop offset="95%" stopColor={selectedProfile.color} stopOpacity={0}/></linearGradient></defs>
+                      <Area type="monotone" dataKey="value" stroke={selectedProfile.color} strokeWidth={2} fill="url(#colorVis)" dot={false} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -92,20 +161,27 @@ const App = () => {
             <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar">
               {quants.map((q, idx) => (
                 <section key={q.id} className="h-full w-full snap-start relative flex flex-col overflow-hidden">
-                  <div className="absolute inset-0 z-0 opacity-60">
+                  <div className="absolute inset-0 z-0 opacity-70">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={q.history} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                         <YAxis hide domain={['auto', 'auto']} />
-                        <Area type="monotone" dataKey="value" stroke={q.color} strokeWidth={2} fill={q.color} fillOpacity={0.05} dot={false} />
+                        <Area type="monotone" dataKey="value" stroke={q.color} strokeWidth={2} fill={q.color} fillOpacity={0.1} dot={false} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                   <div className="absolute top-12 left-8 z-20 flex items-center gap-4">
-                    <button onClick={() => setSelectedProfile(q)} className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:scale-110 transition-all"><User size={24} className="text-white/40" /></button>
-                    <div className="flex flex-col"><span className="text-[10px] font-black uppercase bg-white/10 px-2 py-0.5 rounded border border-white/5 w-fit mb-1">Rank #{idx+1}</span><span className="text-sm font-black italic uppercase">{q.name}</span></div>
+                    <button onClick={() => setSelectedProfile(q)} className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+                      <User size={24} className="text-white/40" />
+                    </button>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded w-fit mb-1 border border-white/5">Rank #{idx+1}</span>
+                      <span className="text-sm font-black italic uppercase">{q.name}</span>
+                    </div>
                   </div>
-                  <div className="absolute inset-0 z-10 p-10 flex flex-col justify-end pb-32 text-emerald-400 font-mono text-5xl md:text-8xl font-bold tracking-tighter">
-                    {q.profitValue.toFixed(2)}% <span className="text-white/20 text-xs font-black italic uppercase">Profit</span>
+                  <div className="absolute inset-0 z-10 p-10 flex flex-col justify-end bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none pb-32">
+                    <div className="text-emerald-400 font-mono text-5xl md:text-8xl font-bold tracking-tighter drop-shadow-2xl">
+                      {q.profitValue.toFixed(2)}% <span className="text-white/20 text-xs md:text-xl font-black italic uppercase">Profit</span>
+                    </div>
                   </div>
                 </section>
               ))}
@@ -113,35 +189,66 @@ const App = () => {
           )
         )}
 
-        {/* --- TAB ANALYTIC --- */}
+        {/* --- TAB: ANALYTIC --- */}
         {activeTab === 'benchmark' && (
-          <div className="h-full w-full p-6 animate-fade-in bg-black flex flex-col items-center justify-center text-center">
-             <div className="p-10 md:p-20 bg-white/[0.02] border border-white/10 rounded-[40px] w-full max-w-4xl">
-                <span className="text-zinc-500 font-bold uppercase tracking-[0.4em] text-[10px]">Total Tracked TVL</span>
-                <div className="text-4xl md:text-8xl font-black italic tracking-tighter my-4">{formatCurrency(quants.reduce((a,c) => a+c.tvl, 0))}</div>
-                <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent"></div>
+          <div className="h-full w-full p-6 md:p-12 overflow-y-auto no-scrollbar animate-fade-in flex flex-col bg-black">
+            <div className="max-w-[1400px] mx-auto w-full space-y-10 pb-32">
+              <div className="w-full bg-white/[0.02] border border-white/10 rounded-[40px] p-8 md:p-16 text-center backdrop-blur-xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-zinc-500 to-transparent opacity-50"></div>
+                <h2 className="text-[10px] md:text-sm font-bold text-white/30 uppercase tracking-[0.4em]">Total Tracked TVL</h2>
+                <div className="text-4xl md:text-9xl font-black italic tracking-tighter leading-none">{formatCurrency(totalTVL)}</div>
+              </div>
+              <div className="h-[400px] md:h-[600px] bg-white/[0.01] border border-white/5 rounded-[60px] p-8 md:p-16 relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={benchmarkData}>
+                    <XAxis dataKey="time" hide />
+                    <YAxis domain={['auto', 'auto']} hide />
+                    {quants.map(q => visibleStrategies[q.id] && (
+                      <Area key={q.id} type="monotone" dataKey={q.id} stroke={q.color} strokeWidth={1.5} fillOpacity={0} dot={false} connectNulls />
+                    ))}
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- TAB: RANK --- */}
+        {activeTab === 'rank' && (
+          <div className="h-full w-full p-8 lg:p-20 overflow-y-auto no-scrollbar flex flex-col items-center bg-black">
+             <div className="max-w-6xl w-full pb-32 space-y-4">
+                {quants.map((q, i) => (
+                  <div key={q.id} className="flex items-center justify-between p-6 rounded-[30px] bg-white/[0.02] border border-white/5">
+                    <div className="flex items-center gap-6">
+                      <span className="text-2xl font-mono text-white/10">0{i+1}</span>
+                      <div className="w-12 h-12 rounded-2xl bg-neutral-900 flex items-center justify-center"><User size={24} className="text-white/10" /></div>
+                      <div><span className="text-lg font-black italic text-white uppercase">{q.name}</span></div>
+                    </div>
+                    <div className="text-right"><span className="text-xl font-black text-emerald-400 italic">{q.profitValue.toFixed(2)}%</span></div>
+                  </div>
+                ))}
              </div>
           </div>
         )}
 
-        {/* --- BOTTOM NAVIGATION: FIXED & SEJAJAR (FLAT) --- */}
-        <nav className="fixed bottom-0 left-0 w-full h-24 bg-black/95 backdrop-blur-2xl border-t border-white/5 flex items-center justify-center z-[100]">
-           <div className="flex w-full max-w-lg justify-around items-center px-4">
-             <NavItem active={activeTab === 'arena'} icon={<LayoutGrid size={22} />} label="Arena" onClick={() => {setActiveTab('arena'); setSelectedProfile(null);}} />
-             <NavItem active={activeTab === 'rank'} icon={<Award size={22} />} label="Rank" onClick={() => setActiveTab('rank')} />
+        {/* --- BOTTOM NAVIGATION (SEJAJAR & FLAT) --- */}
+        <nav className="fixed bottom-0 left-0 w-full h-24 bg-black/90 backdrop-blur-2xl border-t border-white/5 flex items-center justify-center px-4 z-[100]">
+           <div className="flex w-full max-w-2xl justify-between items-center px-4">
+             <NavItem active={activeTab === 'arena'} icon={<LayoutGrid size={24} />} label="Arena" onClick={() => {setActiveTab('arena'); setSelectedProfile(null);}} />
+             <NavItem active={activeTab === 'rank'} icon={<Award size={24} />} label="Rank" onClick={() => setActiveTab('rank')} />
              
-             {/* SEJAJAR: Tidak menonjol lagi */}
-             <NavItem active={activeTab === 'home'} icon={<Zap size={22} />} label="Home" onClick={() => {setActiveTab('home'); setSelectedProfile(null);}} />
+             {/* Tombol Home Sekarang Sejajar dengan yang lain */}
+             <NavItem active={activeTab === 'home'} icon={<Zap size={24} />} label="Home" onClick={() => {setActiveTab('home'); setSelectedProfile(null);}} />
              
-             <NavItem active={activeTab === 'benchmark'} icon={<BarChart3 size={22} />} label="Analytic" onClick={() => setActiveTab('benchmark')} />
-             <NavItem active={activeTab === 'portofolio'} icon={<Briefcase size={22} />} label="Portfolio" onClick={() => setActiveTab('portofolio')} />
+             <NavItem active={activeTab === 'benchmark'} icon={<BarChart3 size={24} />} label="Analytic" onClick={() => setActiveTab('benchmark')} />
+             <NavItem active={activeTab === 'portofolio'} icon={<Briefcase size={24} />} label="Portfolio" onClick={() => setActiveTab('portofolio')} />
            </div>
         </nav>
       </main>
 
       <style>{`
-        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
@@ -150,4 +257,3 @@ const App = () => {
 };
 
 export default App;
-// update v2.1
