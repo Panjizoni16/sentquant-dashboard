@@ -38,6 +38,82 @@ const generateHistory = (baseValue = 1000, points = 60, volatility = 0.015) => {
 // ==========================================
 // 2. KOMPONEN DASHBOARD UTAMA
 // ==========================================
+// --- HELPER COMPONENTS DARI SKRIP 1 ---
+// --- KOMPONEN BADGE TITAN (PB STYLE) ---
+// --- KOMPONEN TITAN BADGE (SQUARE RED EDITION - BINTANG 5) ---
+// --- KOMPONEN TITAN BADGE (BLUE PENTAGON EDITION - BINTANG 5) ---
+// --- KOMPONEN TITAN BADGE (BULAT BIRU REACTOR) ---
+// --- 1. KOMPONEN TITAN BADGE (BULAT BIRU + 5 BINTANG KUNING) ---
+// --- TITAN BADGE: ELITE TEXT EDITION ---
+// --- TITAN BADGE: ELITE TEXT EDITION (PERFECT FIT) ---
+// --- TITAN BADGE: ELITE TEXT EDITION (FINAL PERFECT POSITION) ---
+// --- TITAN BADGE: ELITE TEXT EDITION (PURE STARS) ---
+// --- TITAN BADGE: ELITE TEXT EDITION (FINAL CLEAN CODE) ---
+// --- TITAN BADGE: ELITE TEXT EDITION (DIPERBAIKI UNTUK RESPONSIF) ---
+const TitanBadge = ({ size = 160 }) => (
+  <div className="relative inline-block" style={{ width: size, height: size * 1.2 }}>
+    <svg width="100%" height="100%" viewBox="0 0 500 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="eliteGold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#FCD34D" /> 
+          <stop offset="50%" stopColor="#F59E0B" /> 
+          <stop offset="100%" stopColor="#B45309" />
+        </linearGradient>
+        <filter id="textGlow">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+      </defs>
+      
+      <rect width="500" height="500" rx="100" fill="#1a1a1a" stroke="#F39237" strokeWidth="8"/>
+      <rect x="20" y="20" width="460" height="460" rx="80" fill="#F39237" opacity="0.1"/>
+
+      <text x="50%" y="47%" textAnchor="middle" dominantBaseline="central" fill="url(#eliteGold)" fontSize="110" fontWeight="900" fontStyle="italic" style={{ letterSpacing: '0.05em', fontFamily: 'Inter, sans-serif' }} filter="url(#textGlow)">
+        ELITE
+      </text>
+      
+      <g transform="translate(65, 530)">
+        {[0, 85, 170, 255, 340].map((x) => (
+          <path key={x} transform={`translate(${x}, 0) scale(2.5)`} d="M10 0L13.09 6.26L20 7.27L15 12.14L16.18 19.02L10 15.77L3.82 19.02L5 12.14L0 7.27L6.91 6.26L10 0Z" fill="url(#eliteGold)" />
+        ))}
+      </g>
+    </svg>
+  </div>
+);
+
+const KeyMetricsGrid = ({ stats }) => {
+  const metrics = [
+    { label: "Total Return", value: `${stats.totalReturn.toFixed(2)}%`, color: stats.totalReturn >= 0 ? 'text-[#10b981]' : 'text-red-500' },
+    { label: "Max Drawdown", value: `${stats.maxDrawdown.toFixed(2)}%`, color: 'text-red-500' },
+    { label: "Sharpe Ratio", value: stats.sharpe.toFixed(2), color: 'text-white' },
+    { label: "Win Rate", value: `${stats.winRate}%`, color: 'text-white' }
+  ];
+  return (
+    <div className="grid grid-cols-2 gap-3 mb-6">
+      {metrics.map((m, i) => (
+        <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-4">
+          <div className="text-[8px] uppercase font-bold text-zinc-500 tracking-wider mb-1">{m.label}</div>
+          <div className={`text-xl font-black italic ${m.color}`}>{m.value}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const DetailedStatCard = ({ title, metrics }) => (
+  <div className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden mb-4">
+    <div className="bg-white/5 px-4 py-2 text-[9px] font-black uppercase tracking-widest text-zinc-400 border-b border-white/5">{title}</div>
+    <div className="p-4 space-y-2">
+      {metrics.map((m, i) => (
+        <div key={i} className="flex justify-between items-center text-[10px] uppercase tracking-wider">
+          <span className="text-zinc-500 font-bold">{m.l}</span>
+          <span className="text-white font-black">{m.v}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [quants, setQuants] = useState([]);
@@ -104,7 +180,28 @@ const App = () => {
 
     initData();
   }, []);
-
+// --- CALCULATOR LOGIC DARI SKRIP 1 ---
+  const profileStats = useMemo(() => {
+    if (!selectedProfile || !selectedProfile.history.length) return null;
+    const data = selectedProfile.history;
+    const startVal = data[0].value;
+    const endVal = data[data.length - 1].value;
+    
+    const returns = [];
+    for (let i = 1; i < data.length; i++) {
+      returns.push((data[i].value - data[i-1].value) / data[i-1].value);
+    }
+    
+    const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
+    const stdDev = Math.sqrt(returns.reduce((s, r) => s + Math.pow(r - mean, 2), 0) / returns.length);
+    
+    return {
+      totalReturn: ((endVal - startVal) / startVal) * 100,
+      maxDrawdown: Math.min(...data.map(d => d.drawdown || 0)),
+      sharpe: stdDev !== 0 ? (mean / stdDev) * Math.sqrt(252) : 0,
+      winRate: returns.length > 0 ? ((returns.filter(r => r > 0).length / returns.length) * 100).toFixed(1) : "0"
+    };
+  }, [selectedProfile]);
   const totalTVL = useMemo(() => quants.reduce((acc, curr) => acc + (curr.tvl || 0), 0), [quants]);
   
  const benchmarkData = useMemo(() => {
@@ -182,69 +279,102 @@ const App = () => {
         )}
 
         {/* --- TAMPILAN: ARENA --- */}
-        {activeTab === 'arena' && (
+       {activeTab === 'arena' && (
           selectedProfile ? (
-            /* DETAIL PROFIL */
-            <div className="h-full w-full overflow-y-auto no-scrollbar p-5 md:p-12 pb-32 animate-fade-in bg-black">
-              <div className="max-w-4xl mx-auto space-y-8">
-                <button 
-                  onClick={() => setSelectedProfile(null)} 
-                  className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors active:scale-95"
-                >
-                  <ArrowLeft size={16}/> 
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Back</span>
-                </button>
+           /* --- DETAIL PROFIL DENGAN X-STYLE HEADER --- */
+            <div className="h-full w-full overflow-y-auto no-scrollbar p-0 pb-32 animate-fade-in bg-black">
+              <div className="max-w-4xl mx-auto space-y-0">
                 
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-white/5 pb-8 gap-4">
-                  <div>
-                    <h1 className="text-3xl md:text-7xl font-black italic uppercase tracking-tighter mb-1">{selectedProfile.name}</h1>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
-                      <span className="text-[9px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest">Live • {selectedProfile.protocol}</span>
-                    </div>
-                  </div>
-                  <div className="text-left md:text-right">
-                    <div className="text-[#10b981] text-4xl md:text-7xl font-black italic tracking-tighter" style={{ textShadow: '0 0 20px rgba(16,185,129,0.4)' }}>
-                      +{selectedProfile.profitValue.toFixed(2)}%
-                    </div>
-                    <div className="text-[8px] font-bold text-zinc-600 uppercase tracking-[0.1em]">Performance</div>
+                {/* 1. THE HEADER BANNER (ALA X) */}
+                <div className="relative h-40 md:h-64 w-full bg-[#0a0a0a] overflow-hidden border-b border-white/5">
+                  {/* Efek Cahaya di Banner */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-transparent"></div>
+                  <div className="absolute -bottom-1/2 left-1/2 -translate-x-1/2 w-full h-full bg-emerald-500/5 blur-[100px] rounded-full"></div>
+                  
+                  {/* Navigasi Melayang di Banner */}
+                  <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-30">
+                    <button 
+                      onClick={() => setSelectedProfile(null)} 
+                      className="p-2.5 bg-black/50 backdrop-blur-xl rounded-full text-white/50 hover:text-white transition-all border border-white/10 shadow-2xl"
+                    >
+                      <ArrowLeft size={20}/>
+                    </button>
+                    <button className="px-6 py-2.5 bg-[#10b981] text-black font-black uppercase text-[10px] tracking-widest rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transform active:scale-95 transition-all">
+                      Trade Now
+                    </button>
                   </div>
                 </div>
 
-                <div className="h-56 md:h-96 bg-zinc-900/30 border border-white/5 rounded-[30px] p-4 md:p-8 relative overflow-hidden">
-                   <ResponsiveContainer width="100%" height="100%">
+                {/* 2. IDENTITY SECTION (OVERLAPPING BANNER) */}
+                <div className="px-6 flex flex-col items-center -mt-20 md:-mt-28 relative z-10 pb-10 border-b border-white/5">
+                  
+                  {/* Badge ELITE (Menumpuk di Banner) */}
+                  <div className="mb-6 transform hover:scale-105 transition-all duration-700 ease-out cursor-pointer">
+                    <TitanBadge size={160} /> 
+                  </div>
+
+                  {/* Info Agen */}
+                  <div className="text-center">
+                    <h1 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-white leading-none">
+                      {selectedProfile.name}
+                    </h1>
+
+                    <div className="mt-4 mb-6 space-y-2">
+                      <p className="text-sm md:text-lg text-zinc-500 font-bold tracking-wider">
+                        @{selectedProfile.id.replace('_', '')}_official
+                      </p>
+                      <p className="text-[11px] md:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed uppercase tracking-[0.2em] font-bold px-8 italic">
+                       {selectedProfile.bio || "Quantitative execution layer. Dominating market alpha via Systemic Intelligence."}
+                      </p>
+                    </div>
+
+                    {/* Metadata ala X */}
+                    <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-[10px] text-zinc-600 font-black uppercase tracking-widest">
+                      <span className="flex items-center gap-2"><Calendar size={14} className="text-zinc-700"/> Joined Jan 2025</span>
+                      <span className="flex items-center gap-2 text-orange-500/80"><LinkIcon size={14}/> sentquant.ai</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. CONTENT AREA (METRICS & CHART) */}
+                <div className="px-6 py-10 space-y-8">
+                  {/* Metadata Boxes */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white/5 border border-white/10 p-5 rounded-2xl text-center backdrop-blur-sm">
+                      <div className="text-[8px] text-zinc-500 font-bold uppercase mb-1 tracking-widest">NAV</div>
+                      <div className="text-sm md:text-xl font-black italic text-white">${selectedProfile.history[selectedProfile.history.length-1]?.value.toFixed(2)}</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 p-5 rounded-2xl text-center backdrop-blur-sm">
+                      <div className="text-[8px] text-zinc-500 font-bold uppercase mb-1 tracking-widest">TVL</div>
+                      <div className="text-sm md:text-xl font-black italic text-white">{formatCurrency(selectedProfile.tvl)}</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 p-5 rounded-2xl text-center backdrop-blur-sm">
+                      <div className="text-[8px] text-zinc-500 font-bold uppercase mb-1 tracking-widest">Risk</div>
+                      <div className="text-sm md:text-xl font-black italic text-[#10b981] uppercase">{selectedProfile.risk}</div>
+                    </div>
+                  </div>
+
+                  {/* Key Metrics Grid */}
+                  {profileStats && <KeyMetricsGrid stats={profileStats} />}
+
+                  {/* Equity Chart */}
+                  <div className="h-64 md:h-96 bg-zinc-900/30 border border-white/5 rounded-[40px] p-6 overflow-hidden relative backdrop-blur-md">
+                    <div className="absolute top-6 left-8 text-[8px] font-bold text-zinc-600 uppercase tracking-[0.4em] z-10">Historical Growth</div>
+                    <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={selectedProfile.history}>
                         <defs>
-                          <linearGradient id="detailGlow" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.5}/>
+                          <linearGradient id="liveGlow" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
                             <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
                           </linearGradient>
-                          <filter id="neonFilter"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
                         </defs>
                         <YAxis hide domain={['auto', 'auto']} />
-                        <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} fill="url(#detailGlow)" filter="url(#neonFilter)" dot={false} />
+                        <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} fill="url(#liveGlow)" dot={false} animationDuration={1000} />
                       </AreaChart>
-                   </ResponsiveContainer>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                   <div className="bg-white/5 p-5 md:p-8 rounded-2xl border border-white/10 text-center">
-                     <div className="text-[8px] md:text-[10px] text-zinc-500 uppercase mb-1">NAV</div>
-                     <div className="text-base md:text-2xl font-black italic">$1,240.50</div>
-                   </div>
-                   <div className="bg-white/5 p-5 md:p-8 rounded-2xl border border-white/10 text-center">
-                     <div className="text-[8px] md:text-[10px] text-zinc-500 uppercase mb-1">Risk</div>
-                     <div className="text-base md:text-2xl font-black italic text-[#10b981]">{selectedProfile.risk}</div>
-                   </div>
-                   <div className="hidden md:block bg-white/5 p-8 rounded-2xl border border-white/10 text-center">
-                     <div className="text-[10px] text-zinc-500 uppercase mb-1">TVL</div>
-                     <div className="text-2xl font-black italic">{formatCurrency(selectedProfile.tvl)}</div>
-                   </div>
-                </div>
-
-                <button className="w-full py-4 md:py-6 bg-white text-black font-black uppercase text-[10px] md:text-xs tracking-[0.2em] rounded-2xl active:scale-[0.98] transition-all">
-                  Allocate Capital
-                </button>
               </div>
             </div>
           ) : (
@@ -269,11 +399,17 @@ const App = () => {
                   </div>
                   
                   <div className="absolute top-10 left-6 md:top-20 md:left-20 z-20 pointer-events-none">
-                    <div className="flex items-center gap-3 mb-2 md:mb-4">
-                       <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-black border border-[#10b981]/20 flex items-center justify-center">
-                          <User size={18} className="text-[#10b981]/40" />
+                    <div className="flex items-center gap-4 mb-2 md:mb-6">
+                       {/* 1. BADGE TITAN ELITE (VERSI KECIL - TEGAK LURUS) */}
+                       <div className="drop-shadow-[0_0_15px_rgba(243,146,55,0.4)]">
+                          <TitanBadge size={45} /> 
                        </div>
-                       <span className="text-[8px] md:text-[12px] font-black uppercase tracking-[0.4em] text-[#10b981]/60">RANK #{idx+1}</span>
+
+                       {/* 2. RANK LABEL */}
+                       <div className="flex flex-col">
+                          <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.5em] text-orange-500/80 mb-0.5">VERIFIED AGENT</span>
+                          <span className="text-[10px] md:text-[14px] font-black uppercase tracking-[0.3em] text-white">RANK #{idx+1}</span>
+                       </div>
                     </div>
                     
                     <h2 className="text-2xl md:text-7xl font-black italic uppercase text-white mb-2 md:mb-6 tracking-tighter leading-tight">{q.name}</h2>
