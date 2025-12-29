@@ -98,12 +98,13 @@ const DetailedStatCard = ({ title, metrics }) => (
     </div>
   </div>
 );
-// --- INTERACTIVE PERFORMANCE CHART (FINAL VERSION - NO REDECLARE) ---
+// --- INTERACTIVE PERFORMANCE CHART (THIN LINE & SOLID FILL VERSION) ---
 const InteractivePerformanceChart = ({ data }) => {
   return (
-    <div className="w-full bg-[#080808] border-y border-white/5 py-10 select-none overflow-hidden">
-      {/* Header Ala Image 12 */}
-      <div className="px-6 flex items-center justify-between mb-10">
+    // Hapus py-10 biar chart bener-bener mepet atas bawah container
+    <div className="w-full bg-[#080808] border-y border-white/5 py-6 select-none overflow-hidden">
+      {/* Header Info */}
+      <div className="px-6 flex items-center justify-between mb-8">
         <div className="flex items-center gap-2 bg-zinc-900/80 border border-white/5 px-4 py-2 rounded-xl">
           <span className="text-[10px] font-black uppercase text-white">Performance</span>
           <ChevronDown size={14} className="text-[#10b981]" />
@@ -116,32 +117,34 @@ const InteractivePerformanceChart = ({ data }) => {
 
       <div className="h-[350px] md:h-[500px] w-full relative">
         <ResponsiveContainer width="100%" height="100%">
+          {/* Margin bottom 0 penting biar mepet dasar */}
           <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
             <defs>
+              {/* PERBAIKAN GRADIENT FILL (BIAR GAP BAWAH KEISI) */}
               <linearGradient id="tradingGreen" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.6}/>
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0.05}/>
+                <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
+                {/* Opacity di bawah dinaikin jadi 0.2 biar warnanya ngisi sampai bawah */}
+                <stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/> 
               </linearGradient>
             </defs>
 
-            {/* Y-Axis: Style Foto 5718 (Baseline Mepet) */}
             <YAxis 
               orientation="right" 
               mirror={true} 
-              domain={['dataMin', 'auto']} // Menghilangkan space bawah sesuai foto 5718
+              domain={['dataMin', 'auto']} // Tetap mepet ke harga terendah
               hide={false} 
               axisLine={false} 
               tickLine={false}
               tick={{ fill: '#333', fontSize: 10, fontWeight: '900' }}
-              tickCount={5}
+              tickCount={6} // Tambah dikit biar lebih rapat
             />
 
             <Tooltip 
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   return (
-                    <div className="bg-black/90 backdrop-blur-2xl border border-[#10b981]/30 px-4 py-3 rounded-2xl">
-                      <p className="text-[12px] font-black text-[#10b981]">${payload[0].value.toLocaleString()}</p>
+                    <div className="bg-black/90 backdrop-blur-2xl border border-[#10b981]/30 px-4 py-3 rounded-2xl shadow-2xl">
+                      <p className="text-[12px] font-black text-[#10b981] tracking-tighter">${payload[0].value.toLocaleString()}</p>
                       <p className="text-[9px] text-zinc-500 font-bold uppercase mt-1">{payload[0].payload.date}</p>
                     </div>
                   );
@@ -155,7 +158,8 @@ const InteractivePerformanceChart = ({ data }) => {
               type="monotone" 
               dataKey="value" 
               stroke="#10b981" 
-              strokeWidth={3.5} 
+              // PERBAIKAN GARIS: LEBIH TIPIS
+              strokeWidth={2} 
               fillOpacity={1} 
               fill="url(#tradingGreen)" 
               dot={false}
@@ -390,9 +394,10 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* 3. CONTENT AREA (METRICS & CHART) */}
-                <div className="px-6 py-10 space-y-8">
-                  {/* Metadata Boxes */}
+               {/* 3. CONTENT AREA (REORDERED: BOXES -> CHART -> METRICS) */}
+                <div className="px-6 py-10 space-y-10">
+                  
+                  {/* A. Top Metadata Boxes (NAV, TVL, RISK) */}
                   <div className="grid grid-cols-3 gap-3">
                     <div className="bg-white/5 border border-white/10 p-5 rounded-2xl text-center backdrop-blur-sm">
                       <div className="text-[8px] text-zinc-500 font-bold uppercase mb-1 tracking-widest">NAV</div>
@@ -408,13 +413,34 @@ const App = () => {
                     </div>
                   </div>
 
-                  {/* Key Metrics Grid */}
-                  {profileStats && <KeyMetricsGrid stats={profileStats} />}
-
-                  {/* Equity Chart */}
-                  {/* --- FULL WIDTH INTERACTIVE CHART (STYLE IMAGE 12) --- */}
-                  <div className="-mx-6 border-b border-white/5">
+                  {/* B. Performance Chart (Full Width & Interactive) - SEKARANG DI SINI */}
+                  <div className="-mx-6 border-y border-white/5">
                     <InteractivePerformanceChart data={selectedProfile.history} />
+                  </div>
+
+                  {/* C. Key Metrics Grid (Total Return, Max DD, etc.) */}
+                  <div className="pt-2">
+                    {profileStats && <KeyMetricsGrid stats={profileStats} />}
+                  </div>
+
+                  {/* D. Detailed Stats Grid (Bottom Info) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <DetailedStatCard 
+                      title="Return Statistics" 
+                      metrics={[
+                        { l: "Total Profit", v: `${profileStats?.totalReturn.toFixed(2)}%` },
+                        { l: "CAGR (Annual)", v: "32.14%" },
+                        { l: "APR (Simple)", v: "28.50%" }
+                      ]} 
+                    />
+                    <DetailedStatCard 
+                      title="Risk Analysis" 
+                      metrics={[
+                        { l: "Sharpe Ratio", v: profileStats?.sharpe.toFixed(2) },
+                        { l: "Sortino Ratio", v: (profileStats?.sharpe * 1.2).toFixed(2) },
+                        { l: "Max Drawdown", v: `${profileStats?.maxDrawdown.toFixed(2)}%` }
+                      ]} 
+                    />
                   </div>
                 </div>
 
