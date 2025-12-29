@@ -20,21 +20,6 @@ const STRATEGIES_CONFIG = [
   { id: 'edgehedge', name: 'Edge and Hedge', protocol: 'Lighter', color: '#10b981', bio: "Hedging terarah volatilitas.", risk: "Medium" },
   { id: 'systemicls', name: 'Systemic L/S', protocol: 'Hyperliquid', color: '#10b981', bio: "Rebalancing algoritmik L/S.", risk: "Medium" }
 ];
-
-const generateHistory = (baseValue = 1000, points = 60, volatility = 0.015) => {
-  let current = baseValue;
-  const history = [];
-  const now = new Date();
-  for (let i = points; i >= 0; i--) {
-    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    const direction = Math.random() > 0.45 ? 1 : -0.9; 
-    const change = current * (Math.random() * volatility * direction);
-    current += change;
-    history.push({ date: date.toISOString().split('T')[0], value: parseFloat(current.toFixed(2)) });
-  }
-  return history;
-};
-
 // ==========================================
 // 2. KOMPONEN DASHBOARD UTAMA
 // ==========================================
@@ -113,56 +98,69 @@ const DetailedStatCard = ({ title, metrics }) => (
     </div>
   </div>
 );
-// --- INTERACTIVE TRADING CHART (STYLE IMAGE 12) ---
+// --- INTERACTIVE PERFORMANCE CHART (FINAL VERSION - NO REDECLARE) ---
 const InteractivePerformanceChart = ({ data }) => {
   return (
-    <div className="w-full bg-[#080808] border-y border-white/5 py-6 select-none">
-      {/* Header Info ala Image 12 */}
-      <div className="px-6 flex items-center justify-between mb-8">
-        <div className="flex items-center gap-2 bg-zinc-900/50 border border-white/5 px-4 py-2 rounded-xl">
+    <div className="w-full bg-[#080808] border-y border-white/5 py-10 select-none overflow-hidden">
+      {/* Header Ala Image 12 */}
+      <div className="px-6 flex items-center justify-between mb-10">
+        <div className="flex items-center gap-2 bg-zinc-900/80 border border-white/5 px-4 py-2 rounded-xl">
           <span className="text-[10px] font-black uppercase text-white">Performance</span>
-          <ChevronDown size={14} className="text-zinc-500" />
+          <ChevronDown size={14} className="text-[#10b981]" />
         </div>
-        <div className="flex items-center gap-2 bg-zinc-900/50 border border-white/5 px-4 py-2 rounded-xl">
+        <div className="flex items-center gap-2 bg-zinc-900/80 border border-white/5 px-4 py-2 rounded-xl">
           <span className="text-[10px] font-black uppercase text-white">All</span>
-          <ChevronDown size={14} className="text-zinc-500" />
+          <ChevronDown size={14} className="text-[#10b981]" />
         </div>
       </div>
 
-      {/* Chart Area: Full Width & Interactive */}
-      <div className="h-[300px] md:h-[450px] w-full relative">
+      <div className="h-[350px] md:h-[500px] w-full relative">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="tradingGreen" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                <stop offset="0%" stopColor="#10b981" stopOpacity={0.6}/>
+                <stop offset="100%" stopColor="#10b981" stopOpacity={0.05}/>
               </linearGradient>
             </defs>
+
+            {/* Y-Axis: Style Foto 5718 (Baseline Mepet) */}
+            <YAxis 
+              orientation="right" 
+              mirror={true} 
+              domain={['dataMin', 'auto']} // Menghilangkan space bawah sesuai foto 5718
+              hide={false} 
+              axisLine={false} 
+              tickLine={false}
+              tick={{ fill: '#333', fontSize: 10, fontWeight: '900' }}
+              tickCount={5}
+            />
+
             <Tooltip 
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   return (
-                    <div className="bg-black/80 backdrop-blur-md border border-white/10 px-3 py-2 rounded-lg shadow-2xl">
-                      <p className="text-[10px] font-black text-[#10b981]">${payload[0].value.toLocaleString()}</p>
-                      <p className="text-[8px] text-zinc-500 font-bold uppercase">{payload[0].payload.date}</p>
+                    <div className="bg-black/90 backdrop-blur-2xl border border-[#10b981]/30 px-4 py-3 rounded-2xl">
+                      <p className="text-[12px] font-black text-[#10b981]">${payload[0].value.toLocaleString()}</p>
+                      <p className="text-[9px] text-zinc-500 font-bold uppercase mt-1">{payload[0].payload.date}</p>
                     </div>
                   );
                 }
                 return null;
               }}
-              cursor={{ stroke: '#ffffff20', strokeWidth: 1 }}
+              cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '4 4' }}
             />
+
             <Area 
               type="monotone" 
               dataKey="value" 
               stroke="#10b981" 
-              strokeWidth={2.5} 
+              strokeWidth={3.5} 
               fillOpacity={1} 
               fill="url(#tradingGreen)" 
               dot={false}
               isAnimationActive={true}
-              animationDuration={1500}
+              animationDuration={2000}
             />
           </AreaChart>
         </ResponsiveContainer>
