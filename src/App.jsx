@@ -98,13 +98,13 @@ const DetailedStatCard = ({ title, metrics }) => (
     </div>
   </div>
 );
-// --- INTERACTIVE PERFORMANCE CHART (THIN LINE & SOLID FILL VERSION) ---
+// --- INTERACTIVE PERFORMANCE CHART (FIXED & CLEAN) ---
 const InteractivePerformanceChart = ({ data }) => {
   return (
-    // Hapus py-10 biar chart bener-bener mepet atas bawah container
-    <div className="w-full bg-[#080808] border-y border-white/5 py-6 select-none overflow-hidden">
+    <div className="w-full bg-[#080808] border-y border-white/5 py-0 select-none overflow-hidden">
+      
       {/* Header Info */}
-      <div className="px-6 flex items-center justify-between mb-8">
+      <div className="px-6 pt-10 flex items-center justify-between mb-8">
         <div className="flex items-center gap-2 bg-zinc-900/80 border border-white/5 px-4 py-2 rounded-xl">
           <span className="text-[10px] font-black uppercase text-white">Performance</span>
           <ChevronDown size={14} className="text-[#10b981]" />
@@ -117,26 +117,23 @@ const InteractivePerformanceChart = ({ data }) => {
 
       <div className="h-[350px] md:h-[500px] w-full relative">
         <ResponsiveContainer width="100%" height="100%">
-          {/* Margin bottom 0 penting biar mepet dasar */}
-          <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: -1 }}>
             <defs>
-              {/* PERBAIKAN GRADIENT FILL (BIAR GAP BAWAH KEISI) */}
               <linearGradient id="tradingGreen" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
-                {/* Opacity di bawah dinaikin jadi 0.2 biar warnanya ngisi sampai bawah */}
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/> 
+                <stop offset="0%" stopColor="#10b981" stopOpacity={0.5}/>
+                <stop offset="100%" stopColor="#10b981" stopOpacity={0.15}/> 
               </linearGradient>
             </defs>
 
             <YAxis 
               orientation="right" 
               mirror={true} 
-              domain={['dataMin', 'auto']} // Tetap mepet ke harga terendah
+              domain={['dataMin', 'auto']} 
               hide={false} 
               axisLine={false} 
               tickLine={false}
               tick={{ fill: '#333', fontSize: 10, fontWeight: '900' }}
-              tickCount={6} // Tambah dikit biar lebih rapat
+              tickCount={6}
             />
 
             <Tooltip 
@@ -158,11 +155,11 @@ const InteractivePerformanceChart = ({ data }) => {
               type="monotone" 
               dataKey="value" 
               stroke="#10b981" 
-              // PERBAIKAN GARIS: LEBIH TIPIS
               strokeWidth={2} 
               fillOpacity={1} 
               fill="url(#tradingGreen)" 
               dot={false}
+              baseValue="dataMin" 
               isAnimationActive={true}
               animationDuration={2000}
             />
