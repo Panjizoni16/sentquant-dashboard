@@ -113,7 +113,63 @@ const DetailedStatCard = ({ title, metrics }) => (
     </div>
   </div>
 );
+// --- INTERACTIVE TRADING CHART (STYLE IMAGE 12) ---
+const InteractivePerformanceChart = ({ data }) => {
+  return (
+    <div className="w-full bg-[#080808] border-y border-white/5 py-6 select-none">
+      {/* Header Info ala Image 12 */}
+      <div className="px-6 flex items-center justify-between mb-8">
+        <div className="flex items-center gap-2 bg-zinc-900/50 border border-white/5 px-4 py-2 rounded-xl">
+          <span className="text-[10px] font-black uppercase text-white">Performance</span>
+          <ChevronDown size={14} className="text-zinc-500" />
+        </div>
+        <div className="flex items-center gap-2 bg-zinc-900/50 border border-white/5 px-4 py-2 rounded-xl">
+          <span className="text-[10px] font-black uppercase text-white">All</span>
+          <ChevronDown size={14} className="text-zinc-500" />
+        </div>
+      </div>
 
+      {/* Chart Area: Full Width & Interactive */}
+      <div className="h-[300px] md:h-[450px] w-full relative">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="tradingGreen" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <Tooltip 
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  return (
+                    <div className="bg-black/80 backdrop-blur-md border border-white/10 px-3 py-2 rounded-lg shadow-2xl">
+                      <p className="text-[10px] font-black text-[#10b981]">${payload[0].value.toLocaleString()}</p>
+                      <p className="text-[8px] text-zinc-500 font-bold uppercase">{payload[0].payload.date}</p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+              cursor={{ stroke: '#ffffff20', strokeWidth: 1 }}
+            />
+            <Area 
+              type="monotone" 
+              dataKey="value" 
+              stroke="#10b981" 
+              strokeWidth={2.5} 
+              fillOpacity={1} 
+              fill="url(#tradingGreen)" 
+              dot={false}
+              isAnimationActive={true}
+              animationDuration={1500}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [quants, setQuants] = useState([]);
@@ -358,20 +414,9 @@ const App = () => {
                   {profileStats && <KeyMetricsGrid stats={profileStats} />}
 
                   {/* Equity Chart */}
-                  <div className="h-64 md:h-96 bg-zinc-900/30 border border-white/5 rounded-[40px] p-6 overflow-hidden relative backdrop-blur-md">
-                    <div className="absolute top-6 left-8 text-[8px] font-bold text-zinc-600 uppercase tracking-[0.4em] z-10">Historical Growth</div>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={selectedProfile.history}>
-                        <defs>
-                          <linearGradient id="liveGlow" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
-                            <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <YAxis hide domain={['auto', 'auto']} />
-                        <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} fill="url(#liveGlow)" dot={false} animationDuration={1000} />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                  {/* --- FULL WIDTH INTERACTIVE CHART (STYLE IMAGE 12) --- */}
+                  <div className="-mx-6 border-b border-white/5">
+                    <InteractivePerformanceChart data={selectedProfile.history} />
                   </div>
                 </div>
 
