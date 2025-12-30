@@ -171,11 +171,13 @@ const InteractivePerformanceChart = ({ data }) => {
 };
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
+  const scrollRef = React.useRef(null); // TAMBAHKAN INI
   const [quants, setQuants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [walletConnected, setWalletConnected] = useState(false);
   const [visibleStrategies, setVisibleStrategies] = useState({});
+  
 
   const formatCurrency = (val) => new Intl.NumberFormat('en-US', { 
     style: 'currency', 
@@ -239,6 +241,31 @@ const App = () => {
 
     initData();
   }, []);
+  // --- LOGIKA BIAR SWIPE GAK ADA HABISNYA ---
+  const handleInfiniteScroll = (e) => {
+    if (activeTab !== 'arena' || selectedProfile) return;
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const oneThird = scrollHeight / 3;
+
+    // Pas sampe atas banget, teleport ke tengah
+    if (scrollTop <= 0) {
+      e.currentTarget.scrollTop = oneThird;
+    } 
+    // Pas sampe bawah banget, teleport ke tengah
+    else if (scrollTop + clientHeight >= scrollHeight) {
+      e.currentTarget.scrollTop = oneThird;
+    }
+  };
+
+  // Efek biar pas awal buka Arena, posisi langsung di tengah
+  useEffect(() => {
+    if (activeTab === 'arena' && scrollRef.current && !selectedProfile) {
+      const timer = setTimeout(() => {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight / 3;
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, selectedProfile, quants]);
 // --- CALCULATOR LOGIC DARI SKRIP 1 ---
   const profileStats = useMemo(() => {
     if (!selectedProfile || !selectedProfile.history.length) return null;
@@ -372,9 +399,9 @@ const App = () => {
                     <div className="drop-shadow-[0_0_30px_rgba(243,146,55,0.3)] transform hover:scale-105 transition-all duration-700">
                       <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 80 : 130} /> 
                     </div>
-                    <h1 className="text-3xl md:text-7xl font-black italic uppercase tracking-tighter text-white leading-none pt-2 md:pt-4">
-                      {selectedProfile.name}
-                    </h1>
+                    <h1 className="text-2xl md:text-5xl font-black italic uppercase tracking-tighter text-white leading-none pt-1 md:pt-2">
+  {selectedProfile.name}
+</h1>
                   </div>
 
                   {/* Handle & Bio (Rata Kiri, Spasi Nyaman) */}
@@ -447,8 +474,13 @@ const App = () => {
             </div>
           ) : (
             /* FEED ARENA (TIKTOK STYLE) */
-            <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black">
-              {quants.map((q, idx) => (
+            <div 
+  ref={scrollRef}
+  onScroll={handleInfiniteScroll}
+  className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black"
+>
+  {/* Kita duplikat list agen jadi 3 biar swipenya bisa muter terus */}
+  {[...quants, ...quants, ...quants].map((q, idx) => (
                 <section key={q.id} className="h-full w-full snap-start relative flex flex-col overflow-hidden bg-black">
                   <div className="absolute inset-0 z-0">
                     <ResponsiveContainer width="100%" height="100%">
@@ -472,9 +504,9 @@ const App = () => {
                        <div className="drop-shadow-[0_0_20px_rgba(243,146,55,0.4)]">
                           <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 45 : 75} /> 
                        </div>
-                       <h2 className="text-2xl md:text-6xl font-black italic uppercase text-white tracking-tighter leading-none">
-                        {q.name}
-                       </h2>
+                      <h2 className="text-xl md:text-4xl font-agent italic uppercase text-white tracking-tighter leading-none">
+  {q.name}
+</h2>
                     </div>
                     
           
@@ -633,6 +665,13 @@ const App = () => {
       <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/10 rounded-full z-[110] md:hidden"></div>
 
       <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@900&display=swap');
+        
+        /* Buat class khusus untuk font nama agen */
+        .font-agent { font-family: 'Outfit', sans-serif; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
