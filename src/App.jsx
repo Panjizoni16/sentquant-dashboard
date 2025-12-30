@@ -223,8 +223,12 @@ const App = () => {
         setQuants(fetchedData);
 
         // Update visibilitas benchmark agar semua muncul di awal
+        // --- LOGIKA RANDOMIZE (TIKTOK STYLE) ---
+        const randomizedData = [...fetchedData].sort(() => Math.random() - 0.5);
+        setQuants(randomizedData);
+
         const initialVisible = {};
-        fetchedData.forEach(q => (initialVisible[q.id] = true));
+        randomizedData.forEach(q => (initialVisible[q.id] = true));
         setVisibleStrategies(initialVisible);
       } catch (error) {
         console.error("Gagal inisialisasi Arena:", error);
@@ -360,37 +364,35 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* 2. IDENTITY SECTION (OVERLAPPING BANNER) */}
-               <div className="px-6 flex flex-col items-center -mt-20 md:-mt-32 relative z-10 pb-12 border-b border-white/5">
+               {/* 2. IDENTITY SECTION (BALANCED SIDE-BY-SIDE) */}
+                <div className="px-6 flex flex-col items-start -mt-20 md:-mt-36 relative z-10 pb-12 border-b border-white/5">
                   
-                {/* Badge ELITE Emas (Ultra Compact for Mobile) */}
-                  <div className="mb-5 transform hover:scale-105 transition-all duration-700 ease-in-out cursor-pointer">
-                    <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 90 : 160} /> 
-                  </div>
-
-                  {/* Info Agen */}
-                  <div className="text-center">
-                    <h1 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-white leading-none">
+                  {/* Container Utama: Badge & Nama Sejajar */}
+                  <div className="flex items-center gap-4 md:gap-8 mb-6">
+                    <div className="drop-shadow-[0_0_30px_rgba(243,146,55,0.3)] transform hover:scale-105 transition-all duration-700">
+                      <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 80 : 130} /> 
+                    </div>
+                    <h1 className="text-3xl md:text-7xl font-black italic uppercase tracking-tighter text-white leading-none pt-2 md:pt-4">
                       {selectedProfile.name}
                     </h1>
+                  </div>
 
-                    <div className="mt-4 mb-6 space-y-2">
-                      <p className="text-sm md:text-lg text-zinc-500 font-bold tracking-wider">
-                        @{selectedProfile.id.replace('_', '')}_official
-                      </p>
-                      <p className="text-[11px] md:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed uppercase tracking-[0.2em] font-bold px-8 italic">
-                       {selectedProfile.bio || "Quantitative execution layer. Dominating market alpha via Systemic Intelligence."}
-                      </p>
-                    </div>
+                  {/* Handle & Bio (Rata Kiri, Spasi Nyaman) */}
+                  <div className="space-y-3 mb-8 ml-2 md:ml-4 text-left">
+                    <p className="text-sm md:text-2xl text-zinc-500 font-bold tracking-wider">
+                      @{selectedProfile.id.replace('_', '')}_official
+                    </p>
+                    <p className="text-[10px] md:text-base text-zinc-400 max-w-2xl leading-relaxed uppercase tracking-[0.2em] font-bold italic">
+                     {selectedProfile.bio || "Deep intelligence layer execution. Verified Titan-class institutional strategy."}
+                    </p>
+                  </div>
 
-                    {/* Metadata ala X */}
-                    <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-[10px] text-zinc-600 font-black uppercase tracking-widest">
-                      <span className="flex items-center gap-2"><Calendar size={14} className="text-zinc-700"/> Joined Jan 2025</span>
-                      <span className="flex items-center gap-2 text-orange-500/80"><LinkIcon size={14}/> sentquant.ai</span>
-                    </div>
+                  {/* Metadata Icons ala X */}
+                  <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[10px] text-zinc-600 font-black uppercase tracking-widest ml-2 md:ml-4">
+                    <span className="flex items-center gap-2"><Calendar size={14} className="text-zinc-700"/> Joined Jan 2025</span>
+                    <span className="flex items-center gap-2 text-orange-500/80"><LinkIcon size={14}/> sentquant.ai</span>
                   </div>
                 </div>
-
                {/* 3. CONTENT AREA (REORDERED: BOXES -> CHART -> METRICS) */}
                 <div className="px-6 py-10 space-y-10">
                   
@@ -464,21 +466,19 @@ const App = () => {
                     </ResponsiveContainer>
                   </div>
                   
-                  <div className="absolute top-10 left-6 md:top-20 md:left-20 z-20 pointer-events-none">
-                    <div className="flex items-center gap-4 mb-2 md:mb-6">
-                       {/* 1. BADGE TITAN ELITE (VERSI KECIL - TEGAK LURUS) */}
-                       <div className="drop-shadow-[0_0_15px_rgba(243,146,55,0.4)]">
-                          <TitanBadge size={45} /> 
+                <div className="absolute top-10 left-6 md:top-20 md:left-20 z-20 pointer-events-none">
+                    {/* CONTAINER BADGE & NAMA (ALIGNED CENTER & SMALLER FONT) */}
+                    <div className="flex items-center gap-3 md:gap-5 mb-4">
+                       <div className="drop-shadow-[0_0_20px_rgba(243,146,55,0.4)]">
+                          <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 45 : 75} /> 
                        </div>
-
-                       {/* 2. RANK LABEL */}
-                       <div className="flex flex-col">
-                          <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.5em] text-orange-500/80 mb-0.5">VERIFIED AGENT</span>
-                          <span className="text-[10px] md:text-[14px] font-black uppercase tracking-[0.3em] text-white">RANK #{idx+1}</span>
-                       </div>
+                       <h2 className="text-2xl md:text-6xl font-black italic uppercase text-white tracking-tighter leading-none">
+                        {q.name}
+                       </h2>
                     </div>
                     
-                    <h2 className="text-2xl md:text-7xl font-black italic uppercase text-white mb-2 md:mb-6 tracking-tighter leading-tight">{q.name}</h2>
+          
+                  
                     
                     <div className={`text-5xl md:text-[140px] font-black italic tracking-tighter leading-none mb-3 md:mb-6 ${q.profitValue >= 0 ? 'text-[#10b981]' : 'text-red-500'}`} 
                          style={{ textShadow: '0 0 30px rgba(16,185,129,0.4), 0 4px 15px rgba(0,0,0,0.8)' }}>
