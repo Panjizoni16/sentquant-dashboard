@@ -624,12 +624,21 @@ const benchmarkData = useMemo(() => {
               </div>
 
            {/* Multi-Agent Chart: Version 1.0 Clean Lines */}
-              <div className="h-[350px] md:h-[550px] bg-black border border-white/5 rounded-[40px] md:rounded-[60px] p-6 md:p-10 relative">
+              <div className="w-full bg-[#080808] border-y border-white/5 py-0 select-none overflow-hidden h-[350px] md:h-[500px] relative">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={benchmarkData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                 <AreaChart data={benchmarkData} margin={{ top: 0, right: 0, left: 0, bottom: -1 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                     <XAxis dataKey="time" hide />
-                    <YAxis domain={['dataMin - 10', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
+                    <YAxis 
+                      orientation="right" 
+                      mirror={true} 
+                      domain={['dataMin - 10', 'auto']} 
+                      hide={false} 
+                      axisLine={false} 
+                      tickLine={false}
+                      tick={{ fill: '#333', fontSize: 10, fontWeight: '900' }}
+                      tickCount={6}
+                    />
                     
                     <Tooltip content={<CustomBenchmarkTooltip />} shared={true} />
 
