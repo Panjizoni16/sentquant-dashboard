@@ -13,12 +13,12 @@ import {
 // 1. DATA MOCK & KONFIGURASI
 // ==========================================
 const STRATEGIES_CONFIG = [
-  { id: 'sentquant', name: 'Sentquant Core', protocol: 'Sentquant', color: '#10b981', bio: "Mesin kuantitatif utama.", risk: "Low" },
-  { id: 'systemic_hyper', name: 'Systemic Hyper', protocol: 'Hyperliquid', color: '#10b981', bio: "HFT market making pada Hyperliquid L1.", risk: "Medium" },
-  { id: 'jlp_neutral', name: 'JLP Delta Neutral', protocol: 'Drift', color: '#10b981', bio: "Mesin arbitrase funding rate.", risk: "Low" },
-  { id: 'guineapool', name: 'Guinea Pool', protocol: 'Lighter', color: '#10b981', bio: "Likuiditas dengan proteksi MEV.", risk: "High" },
-  { id: 'edgehedge', name: 'Edge and Hedge', protocol: 'Lighter', color: '#10b981', bio: "Hedging terarah volatilitas.", risk: "Medium" },
-  { id: 'systemicls', name: 'Systemic L/S', protocol: 'Hyperliquid', color: '#10b981', bio: "Rebalancing algoritmik L/S.", risk: "Medium" }
+  { id: 'sentquant', name: 'Sentquant Core', protocol: 'Sentquant', color: '#f3f4f5', bio: "Mesin kuantitatif utama.", risk: "Low" },
+  { id: 'systemic_hyper', name: 'Systemic Hyper', protocol: 'Hyperliquid', color: '#5230e7', bio: "HFT market making pada Hyperliquid L1.", risk: "Medium" },
+  { id: 'jlp_neutral', name: 'JLP Delta Neutral', protocol: 'Drift', color: '#e9d5ff', bio: "Mesin arbitrase funding rate.", risk: "Low" },
+  { id: 'guineapool', name: 'Guinea Pool', protocol: 'Lighter', color: '#ffffff', bio: "Likuiditas dengan proteksi MEV.", risk: "High" },
+  { id: 'edgehedge', name: 'Edge and Hedge', protocol: 'Lighter', color: '#a54316', bio: "Hedging terarah volatilitas.", risk: "Medium" },
+  { id: 'systemicls', name: 'Systemic L/S', protocol: 'Hyperliquid', color: '#ebfd4a', bio: "Rebalancing algoritmik L/S.", risk: "Medium" }
 ];
 // ==========================================
 // 2. KOMPONEN DASHBOARD UTAMA
@@ -169,6 +169,22 @@ const InteractivePerformanceChart = ({ data }) => {
     </div>
   );
 };
+// --- TOOLTIP KHUSUS ANALYTICS (FIX ERROR) ---
+const CustomBenchmarkTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || payload.length === 0) return null;
+  const validData = payload.filter(p => p.value != null);
+  if (validData.length === 0) return null;
+  return (
+    <div className="bg-black/90 backdrop-blur-md border border-white/10 p-3 rounded-xl shadow-2xl">
+      <p className="text-[10px] text-zinc-500 font-bold mb-2 uppercase tracking-widest">{label}</p>
+      {validData.map((entry, index) => (
+        <p key={index} style={{ color: entry.color }} className="text-[11px] font-black uppercase mb-1">
+          {entry.name}: {entry.value.toFixed(2)}
+        </p>
+      ))}
+    </div>
+  );
+};
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
   const scrollRef = React.useRef(null); // TAMBAHKAN INI
@@ -290,25 +306,33 @@ const App = () => {
   }, [selectedProfile]);
   const totalTVL = useMemo(() => quants.reduce((acc, curr) => acc + (curr.tvl || 0), 0), [quants]);
   
- const benchmarkData = useMemo(() => {
+const benchmarkData = useMemo(() => {
     if (!quants.length || quants.every(q => q.history.length === 0)) return [];
     
-    // CLUE: Mencari strategi dengan jumlah data terbanyak sebagai acuan waktu (Timeline)
-    const longestHistory = quants.reduce((prev, current) => 
-      (prev.history.length > current.history.length) ? prev : current
-    ).history;
+    // 1. Ambil SETIAP DETIK update unik dari SEMUA agen
+    const allTimestamps = new Set();
+    quants.forEach(q => {
+      q.history.forEach(h => allTimestamps.add(h.timestamp || h.date));
+    });
 
-    return longestHistory.map((h, i) => {
-      const point = { time: h.date };
+    const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => new Date(a) - new Date(b));
+
+    // 2. Gunakan sistem "Ingatan Terakhir" (Forward Fill)
+    const memory = {};
+    quants.forEach(q => { memory[q.id] = null; });
+
+    // 3. Bangun timeline: Ambil data persis setiap ada update di profil
+    return sortedTimestamps.map(timestamp => {
+      const point = { time: timestamp };
       quants.forEach(q => {
-        // Kita cari data yang tanggalnya cocok atau ambil indeks yang tersedia
-        const dataPoint = q.history.find(d => d.date === h.date) || q.history[i];
-        point[q.id] = dataPoint ? dataPoint.value : null;
+        // Cari apakah agen ini punya data di jam/detik ini
+        const match = q.history.find(h => (h.timestamp || h.date) === timestamp);
+        if (match) { memory[q.id] = match.value; }
+        point[q.id] = memory[q.id];
       });
       return point;
     });
   }, [quants]);
-
   const NavItem = ({ id, icon, label }) => (
     <button 
       onClick={() => { setActiveTab(id); if(id !== 'arena') setSelectedProfile(null); }} 
@@ -481,7 +505,7 @@ const App = () => {
 >
   {/* Kita duplikat list agen jadi 3 biar swipenya bisa muter terus */}
   {[...quants, ...quants, ...quants].map((q, idx) => (
-                <section key={q.id} className="h-full w-full snap-start relative flex flex-col overflow-hidden bg-black">
+                <section key={`${q.id}-${idx}`} className="h-full w-full snap-start relative flex flex-col overflow-hidden bg-black">
                   <div className="absolute inset-0 z-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={q.history} margin={{ top: 120, right: 0, left: 0, bottom: 96 }}>
@@ -599,34 +623,27 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Multi-Agent Chart */}
+           {/* Multi-Agent Chart: Version 1.0 Clean Lines */}
               <div className="h-[350px] md:h-[550px] bg-black border border-white/5 rounded-[40px] md:rounded-[60px] p-6 md:p-10 relative">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={benchmarkData}>
-                    <defs>
-                      <filter id="neonBench" x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation="2.5" result="blur" />
-                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                      </filter>
-                    </defs>
-                    <CartesianGrid strokeDasharray="4 4" stroke="#111" vertical={false} />
+                  <AreaChart data={benchmarkData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                     <XAxis dataKey="time" hide />
-                    <YAxis domain={['auto', 'auto']} hide />
-                    <Tooltip 
-                      contentStyle={{backgroundColor: '#000', border: '1px solid #10b981', borderRadius: '15px', fontSize: '10px'}}
-                      labelStyle={{marginBottom: '8px', color: '#666'}}
-                    />
+                    <YAxis domain={['dataMin - 10', 'auto']} tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
+                    
+                    <Tooltip content={<CustomBenchmarkTooltip />} shared={true} />
+
                     {quants.map(q => visibleStrategies[q.id] && (
                       <Area 
                         key={q.id} 
                         type="monotone" 
                         dataKey={q.id} 
-                        stroke="#10b981" 
-                        strokeWidth={2.5} 
-                        fill="none" 
+                        stroke={q.color} 
+                        strokeWidth={2} 
+                        fill="none"
                         dot={false} 
-                        filter="url(#neonBench)"
-                        animationDuration={1500}
+                        connectNulls={true} 
+                        isAnimationActive={false} 
                       />
                     ))}
                   </AreaChart>
