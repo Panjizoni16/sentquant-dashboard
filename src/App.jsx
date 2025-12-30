@@ -589,27 +589,25 @@ const benchmarkData = useMemo(() => {
           </div>
         )}
 
-        {/* --- TAMPILAN: ANALYTICS --- */}
+       {/* --- TAMPILAN: ANALYTICS --- */}
         {activeTab === 'benchmark' && (
           <div className="h-full w-full p-5 md:p-12 overflow-y-auto no-scrollbar animate-fade-in bg-black">
             <div className="max-w-6xl mx-auto w-full space-y-8 md:space-y-12 pb-32">
               
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+              {/* Stats Grid - Sekarang cuma 1 kolom (TVL Saja) */}
+              <div className="grid grid-cols-1 gap-4 md:gap-8">
                 <div className="bg-white/[0.02] border border-white/5 rounded-[30px] md:rounded-[40px] p-8 flex flex-col justify-center relative overflow-hidden group">
                   <div className="absolute top-0 right-0 p-8 opacity-5"><Zap size={100} className="text-[#10b981]" /></div>
                   <h2 className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-[0.4em] mb-3">Network TVL</h2>
                   <div className="text-3xl md:text-7xl font-black italic tracking-tighter leading-none group-hover:scale-105 transition-transform duration-700">{formatCurrency(totalTVL)}</div>
                 </div>
-                <div className="bg-zinc-900 border border-emerald-500/10 rounded-[30px] md:rounded-[40px] p-8 flex flex-col justify-center relative overflow-hidden">
-                  <h2 className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-[0.4em] mb-3">Network Alpha</h2>
-                  <div className="text-3xl md:text-7xl font-black italic tracking-tighter leading-none text-[#10b981]">+$2.18M</div>
-                </div>
+      
+              
               </div>
 
               {/* Title & Filters */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
-                <h1 className="text-4xl md:text-8xl font-black italic tracking-tighter uppercase leading-none">ALPHA TREND</h1>
+               <h1 className="text-4xl md:text-8xl font-black italic tracking-tighter uppercase leading-none">THE BIG 5</h1>
                 <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
                    {quants.map(q => (
                      <button 
