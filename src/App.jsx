@@ -14,9 +14,9 @@ import {
 // ==========================================
 const STRATEGIES_CONFIG = [
   { id: 'sentquant', name: 'Sentquant Core', protocol: 'Sentquant', color: '#f3f4f5', bio: "Mesin kuantitatif utama.", risk: "Low" },
-  { id: 'systemic_hyper', name: 'Systemic Hyper', protocol: 'Hyperliquid', color: '#5230e7', bio: "HFT market making pada Hyperliquid L1.", risk: "Medium" },
+  { id: 'systemic_hyper', name: 'Systemic Hyper', protocol: 'Hyperliquid', color: '#3b1bccff', bio: "HFT market making pada Hyperliquid L1.", risk: "Medium" },
   { id: 'jlp_neutral', name: 'JLP Delta Neutral', protocol: 'Drift', color: '#e9d5ff', bio: "Mesin arbitrase funding rate.", risk: "Low" },
-  { id: 'guineapool', name: 'Guinea Pool', protocol: 'Lighter', color: '#ffffff', bio: "Likuiditas dengan proteksi MEV.", risk: "High" },
+  { id: 'guineapool', name: 'Guinea Pool', protocol: 'Lighter', color: '#9c69c5ff', bio: "Likuiditas dengan proteksi MEV.", risk: "High" },
   { id: 'edgehedge', name: 'Edge and Hedge', protocol: 'Lighter', color: '#a54316', bio: "Hedging terarah volatilitas.", risk: "Medium" },
   { id: 'systemicls', name: 'Systemic L/S', protocol: 'Hyperliquid', color: '#ebfd4a', bio: "Rebalancing algoritmik L/S.", risk: "Medium" }
 ];
