@@ -579,17 +579,28 @@ const benchmarkData = useMemo(() => {
             <div ref={scrollRef} onScroll={handleInfiniteScroll} className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black">
               {[...quants, ...quants, ...quants].map((q, idx) => (
                 <section key={`${q.id}-${idx}`} className="h-full w-full snap-start relative flex flex-col overflow-hidden bg-black">
+                 {/* --- BACKGROUND CHART DENGAN WARNA DINAMIS AGEN --- */}
                   <div className="absolute inset-0 z-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={q.history} margin={{ top: 120, right: 0, left: 0, bottom: 96 }}>
                         <defs>
                           <linearGradient id={`g-${q.id}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.7}/><stop offset="95%" stopColor="#10b981" stopOpacity={0.15}/>
+                            {/* stopColor sekarang mengikuti q.color */}
+                            <stop offset="0%" stopColor={q.color} stopOpacity={0.6}/>
+                            <stop offset="100%" stopColor={q.color} stopOpacity={0.05}/>
                           </linearGradient>
-                          <filter id="arenaNeon"><feGaussianBlur stdDeviation="4" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
                         </defs>
                         <YAxis hide domain={['auto', 'auto']} />
-                        <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} fill={`url(#g-${q.id})`} dot={false} filter="url(#arenaNeon)" />
+                        <Area 
+                          type="monotone" 
+                          dataKey="value" 
+                          stroke={q.color} 
+                          strokeWidth={3} 
+                          fill={`url(#g-${q.id})`} 
+                          dot={false}
+                          // Efek glow halus tanpa filter yang bikin berat
+                          style={{ filter: `drop-shadow(0 0 15px ${q.color}44)` }} 
+                        />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
