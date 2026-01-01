@@ -6,14 +6,14 @@ import {
 import { 
   User, ShieldCheck, Zap, ChevronLeft, LayoutGrid, Award, 
   BarChart3, Briefcase, ArrowLeft, ArrowRight, ChevronDown, Shield, 
-  Calendar, MapPin, Link as LinkIcon, Cpu, Globe, TrendingUp, Wallet, Home
+  Calendar, MapPin, Link as LinkIcon, Cpu,Play, Globe, TrendingUp, Wallet, Home
 } from 'lucide-react';
 
 // ==========================================
 // 1. DATA MOCK & KONFIGURASI
 // ==========================================
 const STRATEGIES_CONFIG = [
-  { id: 'sentquant', name: 'Sentquant Core', protocol: 'Sentquant', color: '#f3f4f5', bio: "Mesin kuantitatif utama.", risk: "Low" },
+  { id: 'sentquant', name: 'Sentquant', protocol: 'Lighter', color: '#f3f4f5', bio: "Mesin kuantitatif utama.", risk: "Low" },
   { id: 'systemic_hyper', name: 'Systemic Hyper', protocol: 'Hyperliquid', color: '#3b1bccff', bio: "HFT market making pada Hyperliquid L1.", risk: "Medium" },
   { id: 'jlp_neutral', name: 'JLP Delta Neutral', protocol: 'Drift', color: '#e9d5ff', bio: "Mesin arbitrase funding rate.", risk: "Low" },
   { id: 'guineapool', name: 'Guinea Pool', protocol: 'Lighter', color: '#9c69c5ff', bio: "Likuiditas dengan proteksi MEV.", risk: "High" },
@@ -187,13 +187,27 @@ const CustomBenchmarkTooltip = ({ active, payload, label }) => {
 };
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
-  const scrollRef = React.useRef(null); // TAMBAHKAN INI
+  const scrollRef = React.useRef(null);
   const [quants, setQuants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [walletConnected, setWalletConnected] = useState(false);
   const [visibleStrategies, setVisibleStrategies] = useState({});
-  
+  const [agentContentTab, setAgentContentTab] = useState('feed');
+
+  // --- LOGIKA PROFIL STYLE TRADINGVIEW (FIXED POSITION) ---
+  const latestValue = useMemo(() => {
+    if (!selectedProfile || !selectedProfile.history || !selectedProfile.history.length) return 0;
+    return selectedProfile.history[selectedProfile.history.length - 1].value;
+  }, [selectedProfile]);
+
+  const profitColor = useMemo(() => {
+    if (!selectedProfile) return 'text-white';
+    return selectedProfile.profitValue >= 0 ? 'text-[#10b981]' : 'text-red-500';
+  }, [selectedProfile]);
+
+  const profileTabs = ['Overview', 'Performance', 'Executions', 'Vault Info'];
+  // --- AKHIR LOGIKA PROFIL ---
 
   const formatCurrency = (val) => new Intl.NumberFormat('en-US', { 
     style: 'currency', 
@@ -389,130 +403,188 @@ const benchmarkData = useMemo(() => {
         )}
 
         {/* --- TAMPILAN: ARENA --- */}
-       {activeTab === 'arena' && (
+      {/* --- TAMPILAN: ARENA --- */}
+        {activeTab === 'arena' && (
           selectedProfile ? (
-           /* --- DETAIL PROFIL DENGAN X-STYLE HEADER --- */
-            <div className="h-full w-full overflow-y-auto no-scrollbar p-0 pb-32 animate-fade-in bg-black">
-              <div className="max-w-4xl mx-auto space-y-0">
+            /* --- 1. BOX PEMBUNGKUS UTAMA PROFIL (BIAR GAK ERROR PARENT) --- */
+          <div className="h-full w-full bg-black overflow-y-auto no-scrollbar animate-fade-in relative font-sans">
+              
+              {/* HEADER (BACK BUTTON) */}
+              <div className="sticky top-0 bg-[#080808]/80 backdrop-blur-md z-40 px-4 py-3 flex items-center justify-between border-b border-white/5">
+                <button onClick={() => setSelectedProfile(null)} className="p-2 -ml-2 text-zinc-400 hover:text-white transition-colors">
+                  <ChevronLeft size={24} />
+                </button>
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Market Profile</div>
+                <button className="px-5 py-1.5 bg-[#10b981] text-black font-black text-[9px] uppercase tracking-widest rounded-lg">Trade</button>
+              </div>
+
+              <div className="max-w-4xl mx-auto pb-40">
+               
+{/* --- 2. DISCORD STYLE BANNER (SHRUNK & NO GLOW) --- */}
+              <div className="relative h-40 md:h-52 w-full overflow-hidden border-b border-white/5 group">
                 
-                {/* 1. THE HEADER BANNER (ALA X) */}
-                <div className="relative h-40 md:h-64 w-full bg-[#0a0a0a] overflow-hidden border-b border-white/5">
-                  {/* Efek Cahaya di Banner */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-transparent"></div>
-                  <div className="absolute -bottom-1/2 left-1/2 -translate-x-1/2 w-full h-full bg-emerald-500/5 blur-[100px] rounded-full"></div>
+                {/* Background Layer */}
+                <div className="absolute inset-0 bg-[#0a0a0a]">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-emerald-900/30 via-black to-black opacity-90"></div>
+                  <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-emerald-500/10 blur-[120px] rounded-full"></div>
+                  <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+                </div>
+
+                {/* Content Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-transparent z-10 flex items-end p-6 md:px-8 pb-5">
+                  <div className="flex items-center gap-4">
+                    
+                    {/* Badge: UKURAN DIPERKECIL & GLOW DIHAPUS */}
+                    <div className="relative z-20">
+                      <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 45 : 65} />
+                    </div>
+
+                  {/* Nama: ULTRA CLEAN X-STYLE */}
+                    <div>
+                      <div className="flex items-center gap-1.5 md:gap-2">
+                        <h1 className="text-xl md:text-2xl font-sans font-bold text-white leading-tight tracking-tight">
+                          {selectedProfile.name}
+                        </h1>
+                        
+                        {/* ICON CENTANG BIRU TETAP ADA */}
+                        <div className="bg-[#1d9bf0] rounded-full flex items-center justify-center w-[14px] h-[14px] md:w-[18px] md:h-[18px] shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="w-[8px] h-[8px] md:w-[10px] md:h-[10px]">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {/* Metadata: Hanya Protocol Badge (Handle & Verified Text Dihapus) */}
+                      <div className="flex items-center gap-2 mt-2 opacity-80">
+                        <span className="text-[8px] md:text-[9px] font-black bg-white/10 text-zinc-300 border border-white/10 px-2 py-0.5 rounded uppercase tracking-widest backdrop-blur-sm">
+                          {selectedProfile.protocol}
+                        </span>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+              {/* --- END BANNER --- */}
+              {/* 3. SOCIAL METRICS SECTION (X-STYLE - FULL BLACK) */}
+              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-8 bg-black relative z-20">
+                
+                {/* Following Metric */}
+                <div className="flex items-center gap-2 cursor-pointer group">
+                  <span className="text-xl font-black text-white tracking-tight">128</span>
+                  <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest group-hover:underline decoration-zinc-700">Following</span>
+                </div>
+
+                {/* Followers Metric */}
+                <div className="flex items-center gap-2 cursor-pointer group">
+                  <span className="text-xl font-black text-white tracking-tight">15.4K</span>
+                  <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest group-hover:underline decoration-zinc-700">Followers</span>
+                </div>
+
+                {/* Verified Strategy Tag (Optional Add-on for more X vibe) */}
+                <div className="ml-auto hidden md:flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
+                  <div className="w-1.5 h-1.5 bg-[#10b981] rounded-full animate-pulse"></div>
+                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Active Signal</span>
+                </div>
+              </div>
+
+                {/* NAVIGATION TABS */}
+                <div className="flex items-center gap-8 px-6 border-b border-white/5 overflow-x-auto no-scrollbar mb-8">
+                  {profileTabs.map((tab, i) => (
+                    <button key={i} className={`py-4 text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap border-b-2 transition-all ${i === 0 ? 'text-white border-[#10b981]' : 'text-zinc-600 border-transparent hover:text-zinc-400'}`}>{tab}</button>
+                  ))}
+                </div>
+
+                {/* 5. IMMERSIVE CHART (PERFORMANCE OVERLAY) */}
+              <div className="w-full h-[400px] md:h-[600px] relative mb-10 overflow-hidden border-y border-white/5">
+                
+                {/* --- OVERLAY PERFORMA POJOK KIRI ATAS --- */}
+                <div className="absolute top-6 left-6 z-20 pointer-events-none">
+                  <div className={`text-2xl md:text-4xl font-black italic tracking-tighter ${profitColor}`} 
+                       style={{ textShadow: '0 0 20px rgba(0,0,0,0.5)' }}>
+                    {selectedProfile.profitValue >= 0 ? '+' : ''}{selectedProfile.profitValue.toFixed(2)}%
+                  </div>
+                  <div className="text-[8px] md:text-[10px] text-zinc-500 font-black uppercase tracking-[0.3em] mt-1">
+                    All-Time Performance
+                  </div>
+                </div>
+
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={selectedProfile.history} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="tradingViewFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={selectedProfile.color} stopOpacity={0.4} />
+                        <stop offset="100%" stopColor={selectedProfile.color} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.02)" vertical={false} />
+                    <YAxis 
+                      orientation="right" 
+                      mirror={true} 
+                      domain={['dataMin', 'auto']} 
+                      axisLine={false} 
+                      tickLine={false}
+                      tick={{ fill: '#444', fontSize: 11, fontWeight: '900' }}
+                      tickFormatter={(val) => `$${val.toFixed(0)}`}
+                    />
+                    <XAxis dataKey="date" hide />
+                    <Tooltip content={<CustomBenchmarkTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke={selectedProfile.color} 
+                      strokeWidth={3} 
+                      fill="url(#tradingViewFill)" 
+                      dot={false}
+                      connectNulls={true}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+             {/* TIKTOK GRID CONTAINER (THE MASTER CLEAN - NO TEXT, NO CIRCLES) */}
+                <div className="grid grid-cols-2 gap-px bg-white/5 min-h-[500px]">
                   
-                  {/* Navigasi Melayang di Banner */}
-                  <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-30">
-                    <button 
-                      onClick={() => setSelectedProfile(null)} 
-                      className="p-2.5 bg-black/50 backdrop-blur-xl rounded-full text-white/50 hover:text-white transition-all border border-white/10 shadow-2xl"
+                  {[1, 2, 3, 4].map((item) => (
+                    <div 
+                      key={item} 
+                      className="aspect-[9/12] relative bg-[#050505] flex flex-col items-center justify-center overflow-hidden group cursor-pointer"
                     >
-                      <ArrowLeft size={20}/>
-                    </button>
-                    <button className="px-6 py-2.5 bg-[#10b981] text-black font-black uppercase text-[10px] tracking-widest rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transform active:scale-95 transition-all">
-                      Trade Now
-                    </button>
-                  </div>
+                      {/* 1. HOVER OVERLAY: Sangat tipis hanya untuk feedback klik */}
+                      <div className="absolute inset-0 bg-white/0 group-hover:bg-white/[0.01] transition-colors z-10"></div>
+                      
+                      {/* 2. KONTEN PUSAT: HANYA PLAY & SOON */}
+                      <div className="relative z-20 flex flex-col items-center gap-6">
+                        
+                        {/* ICON PLAY: Ukuran Raksasa (64px), Tanpa Background, Tanpa Bulatan */}
+                        <div className="opacity-10 group-hover:opacity-40 group-hover:scale-110 transition-all duration-700 ease-out">
+                          <Play size={64} fill="white" className="text-white" />
+                        </div>
+
+                        {/* TEXT SOON: Tanpa sub-teks Content #1 di bawahnya */}
+                        <div className="text-3xl md:text-5xl font-black italic tracking-tighter text-white/5 uppercase select-none group-hover:text-white/15 transition-all duration-500">
+                          Soon
+                        </div>
+                      </div>
+
+                      {/* --- SEMUA ELEMEN SAMPING & ANGKA DI BAWAH SUDAH DIHAPUS TOTAL --- */}
+                    </div>
+                  ))}
+
                 </div>
-
-               {/* 2. IDENTITY SECTION (BALANCED SIDE-BY-SIDE) */}
-                <div className="px-6 flex flex-col items-start -mt-20 md:-mt-36 relative z-10 pb-12 border-b border-white/5">
-                  
-                  {/* Container Utama: Badge & Nama Sejajar */}
-                  <div className="flex items-center gap-4 md:gap-8 mb-6">
-                    <div className="drop-shadow-[0_0_30px_rgba(243,146,55,0.3)] transform hover:scale-105 transition-all duration-700">
-                      <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 80 : 130} /> 
-                    </div>
-                    <h1 className="text-2xl md:text-5xl font-black italic uppercase tracking-tighter text-white leading-none pt-1 md:pt-2">
-  {selectedProfile.name}
-</h1>
-                  </div>
-
-                  {/* Handle & Bio (Rata Kiri, Spasi Nyaman) */}
-                  <div className="space-y-3 mb-8 ml-2 md:ml-4 text-left">
-                    <p className="text-sm md:text-2xl text-zinc-500 font-bold tracking-wider">
-                      @{selectedProfile.id.replace('_', '')}_official
-                    </p>
-                    <p className="text-[10px] md:text-base text-zinc-400 max-w-2xl leading-relaxed uppercase tracking-[0.2em] font-bold italic">
-                     {selectedProfile.bio || "Deep intelligence layer execution. Verified Titan-class institutional strategy."}
-                    </p>
-                  </div>
-
-                  {/* Metadata Icons ala X */}
-                  <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[10px] text-zinc-600 font-black uppercase tracking-widest ml-2 md:ml-4">
-                    <span className="flex items-center gap-2"><Calendar size={14} className="text-zinc-700"/> Joined Jan 2025</span>
-                    <span className="flex items-center gap-2 text-orange-500/80"><LinkIcon size={14}/> sentquant.ai</span>
-                  </div>
-                </div>
-               {/* 3. CONTENT AREA (REORDERED: BOXES -> CHART -> METRICS) */}
-                <div className="px-6 py-10 space-y-10">
-                  
-                  {/* A. Top Metadata Boxes (NAV, TVL, RISK) */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-white/5 border border-white/10 p-5 rounded-2xl text-center backdrop-blur-sm">
-                      <div className="text-[8px] text-zinc-500 font-bold uppercase mb-1 tracking-widest">NAV</div>
-                      <div className="text-sm md:text-xl font-black italic text-white">${selectedProfile.history[selectedProfile.history.length-1]?.value.toFixed(2)}</div>
-                    </div>
-                    <div className="bg-white/5 border border-white/10 p-5 rounded-2xl text-center backdrop-blur-sm">
-                      <div className="text-[8px] text-zinc-500 font-bold uppercase mb-1 tracking-widest">TVL</div>
-                      <div className="text-sm md:text-xl font-black italic text-white">{formatCurrency(selectedProfile.tvl)}</div>
-                    </div>
-                    <div className="bg-white/5 border border-white/10 p-5 rounded-2xl text-center backdrop-blur-sm">
-                      <div className="text-[8px] text-zinc-500 font-bold uppercase mb-1 tracking-widest">Risk</div>
-                      <div className="text-sm md:text-xl font-black italic text-[#10b981] uppercase">{selectedProfile.risk}</div>
-                    </div>
-                  </div>
-
-                  {/* B. Performance Chart (Full Width & Interactive) - SEKARANG DI SINI */}
-                  <div className="-mx-6 border-y border-white/5">
-                    <InteractivePerformanceChart data={selectedProfile.history} />
-                  </div>
-
-                  {/* C. Key Metrics Grid (Total Return, Max DD, etc.) */}
-                  <div className="pt-2">
-                    {profileStats && <KeyMetricsGrid stats={profileStats} />}
-                  </div>
-
-                  {/* D. Detailed Stats Grid (Bottom Info) */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <DetailedStatCard 
-                      title="Return Statistics" 
-                      metrics={[
-                        { l: "Total Profit", v: `${profileStats?.totalReturn.toFixed(2)}%` },
-                        { l: "CAGR (Annual)", v: "32.14%" },
-                        { l: "APR (Simple)", v: "28.50%" }
-                      ]} 
-                    />
-                    <DetailedStatCard 
-                      title="Risk Analysis" 
-                      metrics={[
-                        { l: "Sharpe Ratio", v: profileStats?.sharpe.toFixed(2) },
-                        { l: "Sortino Ratio", v: (profileStats?.sharpe * 1.2).toFixed(2) },
-                        { l: "Max Drawdown", v: `${profileStats?.maxDrawdown.toFixed(2)}%` }
-                      ]} 
-                    />
-                  </div>
-                </div>
-
               </div>
             </div>
           ) : (
-            /* FEED ARENA (TIKTOK STYLE) */
-            <div 
-  ref={scrollRef}
-  onScroll={handleInfiniteScroll}
-  className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black"
->
-  {/* Kita duplikat list agen jadi 3 biar swipenya bisa muter terus */}
-  {[...quants, ...quants, ...quants].map((q, idx) => (
+            /* --- TAMPILAN FEED ARENA (TIKTOK STYLE) --- */
+            <div ref={scrollRef} onScroll={handleInfiniteScroll} className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black">
+              {[...quants, ...quants, ...quants].map((q, idx) => (
                 <section key={`${q.id}-${idx}`} className="h-full w-full snap-start relative flex flex-col overflow-hidden bg-black">
                   <div className="absolute inset-0 z-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={q.history} margin={{ top: 120, right: 0, left: 0, bottom: 96 }}>
                         <defs>
                           <linearGradient id={`g-${q.id}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.7}/>
-                            <stop offset="95%" stopColor="#10b981" stopOpacity={0.15}/>
+                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.7}/><stop offset="95%" stopColor="#10b981" stopOpacity={0.15}/>
                           </linearGradient>
                           <filter id="arenaNeon"><feGaussianBlur stdDeviation="4" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
                         </defs>
@@ -521,43 +593,21 @@ const benchmarkData = useMemo(() => {
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
-                  
-                <div className="absolute top-10 left-6 md:top-20 md:left-20 z-20 pointer-events-none">
-                    {/* CONTAINER BADGE & NAMA (ALIGNED CENTER & SMALLER FONT) */}
+                  <div className="absolute top-10 left-6 md:top-20 md:left-20 z-20 pointer-events-none">
                     <div className="flex items-center gap-3 md:gap-5 mb-4">
-                       <div className="drop-shadow-[0_0_20px_rgba(243,146,55,0.4)]">
-                          <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 45 : 75} /> 
-                       </div>
-                      <h2 className="text-xl md:text-4xl font-agent italic uppercase text-white tracking-tighter leading-none">
-  {q.name}
-</h2>
+                      <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 45 : 75} /> 
+                      <h2 className="text-xl md:text-4xl font-agent italic uppercase text-white tracking-tighter leading-none">{q.name}</h2>
                     </div>
-                    
-          
-                  
-                    
-                    <div className={`text-5xl md:text-[140px] font-black italic tracking-tighter leading-none mb-3 md:mb-6 ${q.profitValue >= 0 ? 'text-[#10b981]' : 'text-red-500'}`} 
-                         style={{ textShadow: '0 0 30px rgba(16,185,129,0.4), 0 4px 15px rgba(0,0,0,0.8)' }}>
+                    <div className={`text-5xl md:text-[140px] font-black italic tracking-tighter leading-none mb-3 md:mb-6 ${q.profitValue >= 0 ? 'text-[#10b981]' : 'text-red-500'}`} style={{ textShadow: '0 0 30px rgba(16,185,129,0.4), 0 4px 15px rgba(0,0,0,0.8)' }}>
                       +{q.profitValue.toFixed(2)}%
                     </div>
-                    
                     <div className="flex items-center gap-3 md:gap-6 text-[9px] md:text-sm font-bold text-white/40 uppercase tracking-[0.2em]">
-                      <span>{q.protocol}</span>
-                      <span className="w-1 h-1 bg-white/10 rounded-full"></span>
-                      <span>{formatCurrency(q.tvl)} TVL</span>
+                      <span>{q.protocol}</span><span className="w-1 h-1 bg-white/10 rounded-full"></span><span>{formatCurrency(q.tvl)} TVL</span>
                     </div>
                   </div>
-
                   <div className="absolute bottom-28 right-6 md:bottom-40 md:right-20 z-20">
-                    <button 
-                      onClick={() => setSelectedProfile(q)} 
-                      className="px-8 py-3.5 md:px-12 md:py-5 bg-white text-black font-black uppercase text-[10px] md:text-xs tracking-widest rounded-xl md:rounded-2xl shadow-2xl active:scale-90 transition-all flex items-center gap-3 group"
-                    >
-                      Analyze <ArrowRight size={16} />
-                    </button>
+                    <button onClick={() => setSelectedProfile(q)} className="px-8 py-3.5 md:px-12 md:py-5 bg-white text-black font-black uppercase text-[10px] md:text-xs tracking-widest rounded-xl md:rounded-2xl shadow-2xl active:scale-90 transition-all flex items-center gap-3 group">Analyze <ArrowRight size={16} /></button>
                   </div>
-                  
-                  {/* TIGA TOMBOL SAMPING TELAH DIHAPUS DARI SINI */}
                 </section>
               ))}
             </div>
@@ -621,8 +671,8 @@ const benchmarkData = useMemo(() => {
                 </div>
               </div>
 
-           {/* Multi-Agent Chart: Version 1.0 Clean Lines */}
-              <div className="w-full bg-[#080808] border-y border-white/5 py-0 select-none overflow-hidden h-[350px] md:h-[500px] relative">
+          {/* Multi-Agent Chart: Profile Style Implementation (FULL BLACK) */}
+              <div className="w-full bg-black border-y border-white/5 py-0 select-none overflow-hidden h-[350px] md:h-[500px] relative">
                 <ResponsiveContainer width="100%" height="100%">
                  <AreaChart data={benchmarkData} margin={{ top: 0, right: 0, left: 0, bottom: -1 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
