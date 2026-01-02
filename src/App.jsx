@@ -755,48 +755,44 @@ const benchmarkData = useMemo(() => {
                 </div>
 
               <div className="flex flex-col">
-                  {rankedQuants.map((q, idx) => (
-                    <div 
-                      key={q.id} 
-                      onClick={() => { setSelectedProfile(q); setActiveTab('arena'); }}
-                      className="group flex items-center justify-between py-6 border-b border-white/[0.03] hover:bg-white/[0.01] transition-all cursor-pointer px-2"
-                    >
-                      {/* 1. KIRI: RANK + IDENTITY */}
-                      <div className="flex items-center gap-4 flex-1 min-w-[180px]">
-                        <span className="text-[10px] font-black text-zinc-800 italic w-4 group-hover:text-[#10b981]">
-                          {(idx + 1).toString().padStart(2, '0')}
-                        </span>
-                        <div className="shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-                          <TitanBadge size={35} />
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-1.5 mb-1">
-                            {/* Ukuran diperkecil: text-base untuk mobile, md:text-xl tetap untuk desktop */}
-<span className="text-base md:text-xl font-sans font-bold text-white tracking-tight leading-none italic">
-  {q.name}
-</span>
-                            <div className="bg-[#1d9bf0] rounded-full flex items-center justify-center w-[12px] h-[12px] shrink-0">
-                              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="w-[8px] h-[8px]">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                            </div>
-                          </div>
-                        
-                        </div>
-                      </div>
+                 {rankedQuants.map((q, idx) => (
+  <div 
+    key={q.id} 
+    onClick={() => { setSelectedProfile(q); setActiveTab('arena'); }}
+    className="group flex items-center justify-between py-4 md:py-7 border-b border-white/[0.03] hover:bg-white/[0.01] transition-all cursor-pointer px-2 gap-4"
+  >
+    {/* BAGIAN KIRI: IDENTITY */}
+    <div className="flex items-center gap-4 flex-1">
+      <span className="text-[10px] font-black text-zinc-800 italic w-4 group-hover:text-[#10b981]">
+        {(idx + 1).toString().padStart(2, '0')}
+      </span>
+      <div className="shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+        <TitanBadge size={35} />
+      </div>
+      <div className="flex flex-col">
+        <div className="flex items-center gap-1.5">
+          <span className="text-base md:text-xl font-sans font-bold text-white tracking-tight leading-none italic">
+            {q.name}
+          </span>
+          <div className="bg-[#1d9bf0] rounded-full flex items-center justify-center w-[12px] h-[12px] shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="w-[8px] h-[8px]">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
 
-                      
-
-                      {/* 3. KANAN: PERFORMANCE PILL */}
-                      <div className="flex items-center justify-end ml-4">
-                        <div className={`px-2.5 py-1.5 rounded-[4px] text-[13px] font-black min-w-[85px] text-center shadow-lg transition-all ${
-                          (q?.profitValue || 0) >= 0 ? 'bg-[#10b981] text-black' : 'bg-red-500 text-white'
-                        }`}>
-                          {(q?.profitValue || 0) >= 0 ? '+' : ''}{(q?.profitValue || 0).toFixed(2)}%
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+    {/* BAGIAN KANAN: ROI */}
+    <div className="flex items-center justify-end ml-4">
+      <div className={`px-2.5 py-1.5 rounded-[4px] text-[13px] font-black min-w-[85px] text-center shadow-lg transition-all ${
+        (q?.profitValue || 0) >= 0 ? 'bg-[#10b981] text-black' : 'bg-red-500 text-white'
+      }`}>
+        {(q?.profitValue || 0) >= 0 ? '+' : ''}{(q?.profitValue || 0).toFixed(2)}%
+      </div>
+    </div>
+  </div>
+))}
                 </div>
               </div>
             </div>
