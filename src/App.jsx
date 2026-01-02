@@ -13,12 +13,12 @@ import {
 // 1. DATA MOCK & KONFIGURASI
 // ==========================================
 const STRATEGIES_CONFIG = [
-  { id: 'sentquant', name: 'Sentquant', protocol: 'Lighter', color: '#f3f4f5', bio: "Mesin kuantitatif utama.", risk: "Low" },
-  { id: 'systemic_hyper', name: 'Systemic Hyper', protocol: 'Hyperliquid', color: '#3b1bccff', bio: "HFT market making pada Hyperliquid L1.", risk: "Medium" },
-  { id: 'jlp_neutral', name: 'JLP Delta Neutral', protocol: 'Drift', color: '#e9d5ff', bio: "Mesin arbitrase funding rate.", risk: "Low" },
-  { id: 'guineapool', name: 'Guinea Pool', protocol: 'Lighter', color: '#9c69c5ff', bio: "Likuiditas dengan proteksi MEV.", risk: "High" },
-  { id: 'edgehedge', name: 'Edge and Hedge', protocol: 'Lighter', color: '#a54316', bio: "Hedging terarah volatilitas.", risk: "Medium" },
-  { id: 'systemicls', name: 'Systemic L/S', protocol: 'Hyperliquid', color: '#ebfd4a', bio: "Rebalancing algoritmik L/S.", risk: "Medium" }
+  { id: 'sentquant', name: 'Sentquant', protocol: 'Lighter', color: '#f3f4f5', srs: 562 },
+  { id: 'systemic_hyper', name: 'Systemic Hyper', protocol: 'Hyperliquid', color: '#3b1bccff', srs: 739 },
+  { id: 'jlp_neutral', name: 'JLP Delta Neutral', protocol: 'Drift', color: '#e9d5ff', srs: 260 },
+  { id: 'guineapool', name: 'Guinea Pool', protocol: 'Lighter', color: '#9c69c5ff', srs: 201 },
+  { id: 'edgehedge', name: 'Edge and Hedge', protocol: 'Lighter', color: '#a54316', srs: 260 },
+  { id: 'systemicls', name: 'Systemic L/S', protocol: 'Lighter', color: '#ebfd4a', srs: 862 },
 ];
 // ==========================================
 // 2. KOMPONEN DASHBOARD UTAMA
@@ -319,9 +319,16 @@ const App = () => {
     };
   }, [selectedProfile]);
   const totalTVL = useMemo(() => quants.reduce((acc, curr) => acc + (curr.tvl || 0), 0), [quants]);
+  // --- LOGIKA PERINGKAT GLOBAL BERDASARKAN SRS ---
+  const rankedQuants = useMemo(() => {
+    // Kita urutkan berdasarkan SRS tertinggi, lalu ROI sebagai cadangan
+    return [...quants].sort((a, b) => (b.srs || 0) - (a.srs || 0) || (b.profitValue - a.profitValue));
+  }, [quants]);
   
 const benchmarkData = useMemo(() => {
     if (!quants.length || quants.every(q => q.history.length === 0)) return [];
+
+    
     
     // 1. Ambil SETIAP DETIK update unik dari SEMUA agen
     const allTimestamps = new Set();
@@ -454,12 +461,20 @@ const benchmarkData = useMemo(() => {
                         </div>
                       </div>
 
-                      {/* Metadata: Hanya Protocol Badge (Handle & Verified Text Dihapus) */}
-                      <div className="flex items-center gap-2 mt-2 opacity-80">
-                        <span className="text-[8px] md:text-[9px] font-black bg-white/10 text-zinc-300 border border-white/10 px-2 py-0.5 rounded uppercase tracking-widest backdrop-blur-sm">
-                          {selectedProfile.protocol}
-                        </span>
-                      </div>
+                      {/* Metadata: Protocol Badge + Rank Indicator */}
+<div className="flex items-center gap-3 mt-2">
+  {/* Protocol Badge */}
+  <span className="text-[8px] md:text-[9px] font-black bg-white/10 text-zinc-300 border border-white/10 px-2 py-0.5 rounded uppercase tracking-widest backdrop-blur-sm opacity-80">
+    {selectedProfile.protocol}
+  </span>
+
+  {/* Rank Label - Warna Orange senada dengan Arena */}
+  <div className="flex items-center gap-2 border-l border-white/10 pl-3">
+    <span className="text-[10px] md:text-[11px] font-black text-orange-500 uppercase tracking-[0.2em] italic">
+      Rank {rankedQuants.findIndex(rq => rq.id === selectedProfile.id) + 1}
+    </span>
+  </div>
+</div>
                     </div>
 
                   </div>
@@ -575,80 +590,90 @@ const benchmarkData = useMemo(() => {
               </div>
             </div>
           ) : (
-            /* --- TAMPILAN FEED ARENA (TIKTOK STYLE) --- */
+           /* --- TAMPILAN FEED ARENA (TIKTOK STYLE) --- */
             <div ref={scrollRef} onScroll={handleInfiniteScroll} className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black">
-              {[...quants, ...quants, ...quants].map((q, idx) => (
-                <section key={`${q.id}-${idx}`} className="h-full w-full snap-start relative flex flex-col overflow-hidden bg-black">
-                 {/* --- BACKGROUND CHART DENGAN WARNA DINAMIS AGEN --- */}
-                  <div className="absolute inset-0 z-0">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={q.history} margin={{ top: 120, right: 0, left: 0, bottom: 96 }}>
-                        <defs>
-                          <linearGradient id={`g-${q.id}`} x1="0" y1="0" x2="0" y2="1">
-                            {/* stopColor sekarang mengikuti q.color */}
-                            <stop offset="0%" stopColor={q.color} stopOpacity={0.6}/>
-                            <stop offset="100%" stopColor={q.color} stopOpacity={0.05}/>
-                          </linearGradient>
-                        </defs>
-                        <YAxis hide domain={['auto', 'auto']} />
-                        <Area 
-                          type="monotone" 
-                          dataKey="value" 
-                          stroke={q.color} 
-                          strokeWidth={3} 
-                          fill={`url(#g-${q.id})`} 
-                          dot={false}
-                          // Efek glow halus tanpa filter yang bikin berat
-                          style={{ filter: `drop-shadow(0 0 15px ${q.color}44)` }} 
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="absolute top-10 left-6 md:top-20 md:left-20 z-20 pointer-events-none">
-                    <div className="flex items-center gap-3 md:gap-5 mb-4">
-                      <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 45 : 75} /> 
-                      <h2 className="text-xl md:text-4xl font-agent italic uppercase text-white tracking-tighter leading-none">{q.name}</h2>
+              {[...quants, ...quants, ...quants].map((q, idx) => {
+                // 1. HITUNG RANK DI SINI (Sekarang aman karena pake kurung kurawal {})
+                const agentRank = (rankedQuants.findIndex(rq => rq.id === q.id) + 1) || '-';
+
+                return (
+                  <section key={`${q.id}-${idx}`} className="h-full w-full snap-start relative flex flex-col overflow-hidden bg-black">
+                    {/* BACKGROUND CHART */}
+                    <div className="absolute inset-0 z-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={q.history} margin={{ top: 120, right: 0, left: 0, bottom: 96 }}>
+                          <defs>
+                            <linearGradient id={`g-${q.id}`} x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={q.color} stopOpacity={0.6}/>
+                              <stop offset="100%" stopColor={q.color} stopOpacity={0.05}/>
+                            </linearGradient>
+                          </defs>
+                          <YAxis hide domain={['auto', 'auto']} />
+                          <Area 
+                            type="monotone" 
+                            dataKey="value" 
+                            stroke={q.color} 
+                            strokeWidth={3} 
+                            fill={`url(#g-${q.id})`} 
+                            dot={false}
+                            style={{ filter: `drop-shadow(0 0 15px ${q.color}44)` }} 
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
                     </div>
-                    <div className={`text-5xl md:text-[140px] font-black italic tracking-tighter leading-none mb-3 md:mb-6 ${q.profitValue >= 0 ? 'text-[#10b981]' : 'text-red-500'}`} style={{ textShadow: '0 0 30px rgba(16,185,129,0.4), 0 4px 15px rgba(0,0,0,0.8)' }}>
-                      +{q.profitValue.toFixed(2)}%
+
+                    {/* --- INFO AGEN: X STYLE DENGAN CENTANG BIRU & RANK --- */}
+                    <div className="absolute top-10 left-6 md:top-20 md:left-20 z-20 pointer-events-none">
+                      <div className="flex items-center gap-4 md:gap-6 mb-6">
+                        <TitanBadge size={typeof window !== 'undefined' && window.innerWidth < 768 ? 45 : 75} /> 
+                        
+                        <div className="flex flex-col justify-center">
+                          <div className="flex items-center gap-2 md:gap-3">
+                            <h2 className="text-2xl md:text-5xl font-sans font-bold text-white tracking-tight leading-none">
+                              {q.name}
+                            </h2>
+                            {/* Centang Biru X-Style */}
+                            <div className="bg-[#1d9bf0] rounded-full flex items-center justify-center w-[16px] h-[16px] md:w-[24px] md:h-[24px] shrink-0 shadow-[0_0_15px_rgba(29,155,240,0.3)]">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="w-[10px] h-[10px] md:w-[14px] md:h-[14px]">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </div>
+                          </div>
+
+                          {/* Label Rank di Bawah Nama - WARNA ORANGE */}
+<div className="mt-2 flex items-center gap-2 opacity-90">
+  {/* Garis kecil di samping tulisan Rank */}
+  <div className="h-[1px] w-4 bg-orange-500/50"></div>
+  <span className="text-[10px] md:text-sm font-black text-orange-500 uppercase tracking-[0.4em] italic">
+    Rank {agentRank}
+  </span>
+</div>
+                        </div>
+                      </div>
+
+                      {/* Profit Value */}
+                      <div className={`text-5xl md:text-[140px] font-black italic tracking-tighter leading-none mb-3 md:mb-6 ${q.profitValue >= 0 ? 'text-[#10b981]' : 'text-red-500'}`} style={{ textShadow: '0 0 30px rgba(16,185,129,0.4), 0 4px 15px rgba(0,0,0,0.8)' }}>
+                        {(q.profitValue || 0) >= 0 ? '+' : ''}{q.profitValue.toFixed(2)}%
+                      </div>
+
+                      <div className="flex items-center gap-3 md:gap-6 text-[9px] md:text-sm font-bold text-white/40 uppercase tracking-[0.2em]">
+                        <span>{q.protocol}</span><span className="w-1 h-1 bg-white/10 rounded-full"></span><span>{formatCurrency(q.tvl)} TVL</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 md:gap-6 text-[9px] md:text-sm font-bold text-white/40 uppercase tracking-[0.2em]">
-                      <span>{q.protocol}</span><span className="w-1 h-1 bg-white/10 rounded-full"></span><span>{formatCurrency(q.tvl)} TVL</span>
+
+                    <div className="absolute bottom-28 right-6 md:bottom-40 md:right-20 z-20">
+                      <button onClick={() => setSelectedProfile(q)} className="px-8 py-3.5 md:px-12 md:py-5 bg-white text-black font-black uppercase text-[10px] md:text-xs tracking-widest rounded-xl md:rounded-2xl shadow-2xl active:scale-90 transition-all flex items-center gap-3 group">
+                        Analyze <ArrowRight size={16} />
+                      </button>
                     </div>
-                  </div>
-                  <div className="absolute bottom-28 right-6 md:bottom-40 md:right-20 z-20">
-                    <button onClick={() => setSelectedProfile(q)} className="px-8 py-3.5 md:px-12 md:py-5 bg-white text-black font-black uppercase text-[10px] md:text-xs tracking-widest rounded-xl md:rounded-2xl shadow-2xl active:scale-90 transition-all flex items-center gap-3 group">Analyze <ArrowRight size={16} /></button>
-                  </div>
-                </section>
-              ))}
+                  </section>
+                );
+              })}
             </div>
           )
         )}
 
-        {/* --- TAMPILAN: RANK --- */}
-        {activeTab === 'rank' && (
-          <div className="h-full w-full overflow-y-auto no-scrollbar p-5 md:p-8 bg-black animate-fade-in">
-             <div className="max-w-4xl mx-auto pb-32">
-                <h1 className="text-3xl md:text-7xl font-black italic uppercase tracking-tighter mb-8 text-center">LEADERBOARD</h1>
-                <div className="space-y-3">
-                  {quants.map((q, i) => (
-                    <div key={q.id} onClick={() => {setSelectedProfile(q); setActiveTab('arena');}} className="flex items-center justify-between p-4 md:p-8 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-md active:bg-white/5 transition-all">
-                      <div className="flex items-center gap-4 md:gap-8">
-                        <span className="text-lg md:text-3xl font-black font-mono text-zinc-800">0{i+1}</span>
-                        <div>
-                          <div className="text-sm md:text-2xl font-black italic uppercase text-white leading-none">{q.name}</div>
-                          <div className="text-[8px] md:text-[10px] text-zinc-600 uppercase mt-1 tracking-widest">{q.protocol} Protocol</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm md:text-3xl font-black italic text-[#10b981]">+{q.profitValue.toFixed(2)}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-             </div>
-          </div>
-        )}
+       
 
        {/* --- TAMPILAN: ANALYTICS --- */}
         {activeTab === 'benchmark' && (
@@ -717,6 +742,68 @@ const benchmarkData = useMemo(() => {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
+              {/* --- 4. INTEGRASI LEADERBOARD (STOCKS STYLE) --- */}
+              <div className="mt-16 animate-fade-in border-t border-white/5 pt-12">
+                
+                {/* Header Global Rankings */}
+                <div className="flex justify-between items-end mb-8 px-2">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Global Rankings</h3>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-[#10b981] rounded-full animate-pulse"></div>
+                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Live Alpha Stream</span>
+                  </div>
+                </div>
+
+              <div className="flex flex-col">
+                  {rankedQuants.map((q, idx) => (
+                    <div 
+                      key={q.id} 
+                      onClick={() => { setSelectedProfile(q); setActiveTab('arena'); }}
+                      className="group flex items-center justify-between py-6 border-b border-white/[0.03] hover:bg-white/[0.01] transition-all cursor-pointer px-2"
+                    >
+                      {/* 1. KIRI: RANK + IDENTITY */}
+                      <div className="flex items-center gap-4 flex-1 min-w-[180px]">
+                        <span className="text-[10px] font-black text-zinc-800 italic w-4 group-hover:text-[#10b981]">
+                          {(idx + 1).toString().padStart(2, '0')}
+                        </span>
+                        <div className="shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                          <TitanBadge size={35} />
+                        </div>
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className="text-lg font-sans font-bold text-white tracking-tight leading-none italic">
+                              {q.name}
+                            </span>
+                            <div className="bg-[#1d9bf0] rounded-full flex items-center justify-center w-[12px] h-[12px] shrink-0">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="w-[8px] h-[8px]">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="text-[10px] font-bold text-zinc-700 uppercase tracking-[0.2em]">{q.protocol} Protocol</div>
+                        </div>
+                      </div>
+
+                      {/* 2. TENGAH: SRS ALPHA RATING (VISUAL BARU) */}
+                      <div className="flex flex-col items-center justify-center px-6 border-x border-white/5">
+                        <span className="text-[8px] font-black text-zinc-700 uppercase tracking-[0.3em] mb-1">SRS Rating</span>
+                        <span className="text-xl font-black text-[#10b981] italic tracking-tighter leading-none group-hover:scale-110 transition-transform srs-glow">
+                          {q.srs}
+                        </span>
+                      </div>
+
+                      {/* 3. KANAN: PERFORMANCE PILL */}
+                      <div className="flex items-center justify-end ml-4">
+                        <div className={`px-2.5 py-1.5 rounded-[4px] text-[13px] font-black min-w-[85px] text-center shadow-lg transition-all ${
+                          (q?.profitValue || 0) >= 0 ? 'bg-[#10b981] text-black' : 'bg-red-500 text-white'
+                        }`}>
+                          {(q?.profitValue || 0) >= 0 ? '+' : ''}{(q?.profitValue || 0).toFixed(2)}%
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -739,7 +826,6 @@ const benchmarkData = useMemo(() => {
       <nav className="absolute bottom-0 left-0 w-full h-20 md:h-24 bg-black/60 backdrop-blur-3xl border-t border-white/5 flex items-center justify-between px-2 md:px-4 z-[100] pb-4 md:pb-6">
           <div className="flex w-full max-w-5xl justify-between items-center mx-auto">
             <NavItem id="arena" icon={<LayoutGrid />} label="Arena" />
-            <NavItem id="rank" icon={<Award />} label="Rank" />
             <NavItem id="home" icon={<Home />} label="Home" />
             <NavItem id="benchmark" icon={<BarChart3 />} label="Analytics" />
             <NavItem id="portofolio" icon={<Briefcase />} label="Vault" />
@@ -754,6 +840,7 @@ const benchmarkData = useMemo(() => {
         
         /* Buat class khusus untuk font nama agen */
         .font-agent { font-family: 'Outfit', sans-serif; }
+        .srs-glow { text-shadow: 0 0 15px rgba(16,185,129,0.3); }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
