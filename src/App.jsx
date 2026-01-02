@@ -771,9 +771,10 @@ const benchmarkData = useMemo(() => {
                         </div>
                         <div className="flex flex-col">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-lg font-sans font-bold text-white tracking-tight leading-none italic">
-                              {q.name}
-                            </span>
+                            {/* Ukuran diperkecil: text-base untuk mobile, md:text-xl tetap untuk desktop */}
+<span className="text-base md:text-xl font-sans font-bold text-white tracking-tight leading-none italic">
+  {q.name}
+</span>
                             <div className="bg-[#1d9bf0] rounded-full flex items-center justify-center w-[12px] h-[12px] shrink-0">
                               <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="w-[8px] h-[8px]">
                                 <polyline points="20 6 9 17 4 12" />
