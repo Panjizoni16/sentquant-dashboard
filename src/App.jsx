@@ -780,17 +780,11 @@ const benchmarkData = useMemo(() => {
                               </svg>
                             </div>
                           </div>
-                          <div className="text-[10px] font-bold text-zinc-700 uppercase tracking-[0.2em]">{q.protocol} Protocol</div>
+                        
                         </div>
                       </div>
 
-                      {/* 2. TENGAH: SRS ALPHA RATING (VISUAL BARU) */}
-                      <div className="flex flex-col items-center justify-center px-6 border-x border-white/5">
-                        <span className="text-[8px] font-black text-zinc-700 uppercase tracking-[0.3em] mb-1">SRS Rating</span>
-                        <span className="text-xl font-black text-[#10b981] italic tracking-tighter leading-none group-hover:scale-110 transition-transform srs-glow">
-                          {q.srs}
-                        </span>
-                      </div>
+                      
 
                       {/* 3. KANAN: PERFORMANCE PILL */}
                       <div className="flex items-center justify-end ml-4">
