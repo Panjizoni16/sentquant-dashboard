@@ -584,7 +584,7 @@ const benchmarkData = useMemo(() => {
                       ];
 
                       return (
-                        <div className="h-[200px] w-full relative bg-white/[0.02] border border-white/5 rounded-sm p-4">
+                        <div className="h-[320px] w-full relative bg-white/[0.02] border border-white/5 rounded-sm p-4">
                            <ResponsiveContainer width="100%" height="100%">
                             <RechartsBarChart data={mockMonthlyReturns} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
