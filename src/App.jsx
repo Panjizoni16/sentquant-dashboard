@@ -36,8 +36,19 @@ const STRATEGIES_CONFIG = [
 // --- TITAN BADGE: ELITE TEXT EDITION (FINAL CLEAN CODE) ---
 // --- TITAN BADGE: ELITE TEXT EDITION (DIPERBAIKI UNTUK RESPONSIF) ---
 const TitanBadge = ({ size = 160 }) => (
-  <div className="relative inline-block" style={{ width: size, height: size * 1.2 }}>
-    <svg width="100%" height="100%" viewBox="0 0 500 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <div className="relative inline-block group" style={{ width: size, height: size * 1.2 }}>
+    
+    {/* --- ANIMASI CAHAYA PINGGIRAN (BORDER BEAM) --- */}
+    <div className="absolute inset-0 rounded-[22%] p-[2px] overflow-hidden">
+      {/* 1. Cahaya Muter (Satu Titik Tajam) */}
+      <div className="absolute inset-[-200%] bg-[conic-gradient(from_0deg,transparent_40%,#f59e0b_50%,transparent_60%)] animate-spin-slow"></div>
+      
+      {/* 2. Layer Hitam Dalam (Buat Masking biar cuma pinggiran yang nyala) */}
+      <div className="absolute inset-[1px] bg-[#050505] rounded-[22%]"></div>
+    </div>
+
+    {/* --- SVG BADGE ASLI (Diletakkan di atas cahaya) --- */}
+    <svg width="100%" height="100%" viewBox="0 0 500 600" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
       <defs>
         <linearGradient id="eliteGold" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#FCD34D" /> 
@@ -50,7 +61,8 @@ const TitanBadge = ({ size = 160 }) => (
         </filter>
       </defs>
       
-      <rect width="500" height="500" rx="100" fill="#1a1a1a" stroke="#F39237" strokeWidth="8"/>
+      {/* Rect Background (Transparan biar cahaya di belakang kelihatan) */}
+      <rect width="500" height="500" rx="100" fill="#1a1a1a" stroke="#F39237" strokeWidth="8" opacity="0.9"/>
       <rect x="20" y="20" width="460" height="460" rx="80" fill="#F39237" opacity="0.1"/>
 
       <text x="50%" y="47%" textAnchor="middle" dominantBaseline="central" fill="url(#eliteGold)" fontSize="110" fontWeight="900" fontStyle="italic" style={{ letterSpacing: '0.05em', fontFamily: 'Inter, sans-serif' }} filter="url(#textGlow)">
@@ -63,6 +75,9 @@ const TitanBadge = ({ size = 160 }) => (
         ))}
       </g>
     </svg>
+
+    {/* EFEK GLOW LUAR (Statis/Pulsing) */}
+    <div className="absolute inset-0 bg-orange-500/10 blur-2xl rounded-full -z-10 animate-pulse"></div>
   </div>
 );
 
@@ -166,6 +181,7 @@ const InteractivePerformanceChart = ({ data }) => {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+      
     </div>
   );
 };
@@ -193,7 +209,7 @@ const App = () => {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [walletConnected, setWalletConnected] = useState(false);
   const [visibleStrategies, setVisibleStrategies] = useState({});
-  const [agentContentTab, setAgentContentTab] = useState('feed');
+  const [activeProfileTab, setActiveProfileTab] = useState('Overview');
 
   // --- LOGIKA PROFIL STYLE TRADINGVIEW (FIXED POSITION) ---
   const latestValue = useMemo(() => {
@@ -503,90 +519,130 @@ const benchmarkData = useMemo(() => {
                 </div>
               </div>
 
-                {/* NAVIGATION TABS */}
+{/* --- 1. NAVIGATION TABS (BISA DIKLIK) --- */}
                 <div className="flex items-center gap-8 px-6 border-b border-white/5 overflow-x-auto no-scrollbar mb-8">
-                  {profileTabs.map((tab, i) => (
-                    <button key={i} className={`py-4 text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap border-b-2 transition-all ${i === 0 ? 'text-white border-[#10b981]' : 'text-zinc-600 border-transparent hover:text-zinc-400'}`}>{tab}</button>
+                  {profileTabs.map((tab) => (
+                    <button 
+                      key={tab} 
+                      onClick={() => setActiveProfileTab(tab)}
+                      className={`py-4 text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap border-b-2 transition-all ${activeProfileTab === tab ? 'text-white border-[#10b981]' : 'text-zinc-600 border-transparent hover:text-zinc-400'}`}
+                    >
+                      {tab}
+                    </button>
                   ))}
                 </div>
 
-                {/* 5. IMMERSIVE CHART (PERFORMANCE OVERLAY) */}
-              <div className="w-full h-[400px] md:h-[600px] relative mb-10 overflow-hidden border-y border-white/5">
-                
-                {/* --- OVERLAY PERFORMA POJOK KIRI ATAS --- */}
-                <div className="absolute top-6 left-6 z-20 pointer-events-none">
-                  <div className={`text-2xl md:text-4xl font-black italic tracking-tighter ${profitColor}`} 
-                       style={{ textShadow: '0 0 20px rgba(0,0,0,0.5)' }}>
-                    {selectedProfile.profitValue >= 0 ? '+' : ''}{selectedProfile.profitValue.toFixed(2)}%
+                {/* --- 2. GRAFIK UTAMA (TAMPIL DI SEMUA TAB PROFIL) --- */}
+                <div className="w-full h-[400px] md:h-[600px] relative mb-10 overflow-hidden border-y border-white/5">
+                  <div className="absolute top-6 left-6 z-20 pointer-events-none">
+                    <div className={`text-2xl md:text-4xl font-black italic tracking-tighter ${profitColor}`} style={{ textShadow: '0 0 20px rgba(0,0,0,0.5)' }}>
+                      {selectedProfile.profitValue >= 0 ? '+' : ''}{selectedProfile.profitValue.toFixed(2)}%
+                    </div>
+                    <div className="text-[8px] md:text-[10px] text-zinc-500 font-black uppercase tracking-[0.3em] mt-1">All-Time Performance</div>
                   </div>
-                  <div className="text-[8px] md:text-[10px] text-zinc-500 font-black uppercase tracking-[0.3em] mt-1">
-                    All-Time Performance
-                  </div>
+
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={selectedProfile.history} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="tradingViewFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={selectedProfile.color} stopOpacity={0.4} />
+                          <stop offset="100%" stopColor={selectedProfile.color} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.02)" vertical={false} />
+                      <YAxis orientation="right" mirror={true} domain={['dataMin', 'auto']} axisLine={false} tickLine={false} tick={{ fill: '#444', fontSize: 11, fontWeight: '900' }} tickFormatter={(val) => `$${val.toFixed(0)}`} />
+                      <XAxis dataKey="date" hide />
+                      <Tooltip content={<CustomBenchmarkTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
+                      <Area type="monotone" dataKey="value" stroke={selectedProfile.color} strokeWidth={3} fill="url(#tradingViewFill)" dot={false} connectNulls={true} />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
 
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={selectedProfile.history} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="tradingViewFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={selectedProfile.color} stopOpacity={0.4} />
-                        <stop offset="100%" stopColor={selectedProfile.color} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.02)" vertical={false} />
-                    <YAxis 
-                      orientation="right" 
-                      mirror={true} 
-                      domain={['dataMin', 'auto']} 
-                      axisLine={false} 
-                      tickLine={false}
-                      tick={{ fill: '#444', fontSize: 11, fontWeight: '900' }}
-                      tickFormatter={(val) => `$${val.toFixed(0)}`}
-                    />
-                    <XAxis dataKey="date" hide />
-                    <Tooltip content={<CustomBenchmarkTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke={selectedProfile.color} 
-                      strokeWidth={3} 
-                      fill="url(#tradingViewFill)" 
-                      dot={false}
-                      connectNulls={true}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+                {/* --- 3. KONTEN DINAMIS (BERDASARKAN TAB) --- */}
 
-             {/* TIKTOK GRID CONTAINER (THE MASTER CLEAN - NO TEXT, NO CIRCLES) */}
-                <div className="grid grid-cols-2 gap-px bg-white/5 min-h-[500px]">
-                  
-                  {[1, 2, 3, 4].map((item) => (
-                    <div 
-                      key={item} 
-                      className="aspect-[9/12] relative bg-[#050505] flex flex-col items-center justify-center overflow-hidden group cursor-pointer"
-                    >
-                      {/* 1. HOVER OVERLAY: Sangat tipis hanya untuk feedback klik */}
-                      <div className="absolute inset-0 bg-white/0 group-hover:bg-white/[0.01] transition-colors z-10"></div>
-                      
-                      {/* 2. KONTEN PUSAT: HANYA PLAY & SOON */}
-                      <div className="relative z-20 flex flex-col items-center gap-6">
-                        
-                        {/* ICON PLAY: Ukuran Raksasa (64px), Tanpa Background, Tanpa Bulatan */}
-                        <div className="opacity-10 group-hover:opacity-40 group-hover:scale-110 transition-all duration-700 ease-out">
-                          <Play size={64} fill="white" className="text-white" />
+                {/* A. TAB PERFORMANCE: METRIK BLOOMBERG */}
+                {activeProfileTab === 'Performance' && (
+                  <div className="p-6 animate-fade-in space-y-10 bg-black border-t border-white/5 pb-20">
+                    <div>
+                      <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
+                        <div className="w-1 h-3 bg-orange-500"></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Risk-Adjusted Ratios</h3>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 border border-white/5 rounded-sm overflow-hidden">
+                        {[
+                          { label: 'Sharpe Ratio', value: profileStats?.sharpe.toFixed(2) || '0.00', sub: 'Annualized', color: 'text-white' },
+                          { label: 'Sortino Ratio', value: '3.12', sub: 'Downside Risk', color: 'text-[#10b981]' },
+                          { label: 'Calmar Ratio', value: '1.85', sub: 'vs Max DD', color: 'text-white' },
+                          { label: 'Profit Factor', value: '1.64', sub: 'Gross W/L', color: 'text-white' }
+                        ].map((m, i) => (
+                          <div key={i} className="bg-[#080808] p-5 hover:bg-white/[0.02] transition-colors">
+                            <div className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest mb-1">{m.label}</div>
+                            <div className={`text-2xl font-mono font-bold tracking-tighter ${m.color}`}>{m.value}</div>
+                            <div className="text-[7px] font-bold text-zinc-800 uppercase mt-1 tracking-tighter">{m.sub}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                      <div>
+                        <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
+                          <div className="w-1 h-3 bg-red-500"></div>
+                          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Drawdown Analysis</h3>
                         </div>
-
-                        {/* TEXT SOON: Tanpa sub-teks Content #1 di bawahnya */}
-                        <div className="text-3xl md:text-5xl font-black italic tracking-tighter text-white/5 uppercase select-none group-hover:text-white/15 transition-all duration-500">
-                          Soon
+                        <div className="space-y-4">
+                          {[
+                            { l: 'Maximum Drawdown', v: `${profileStats?.maxDrawdown.toFixed(2)}%`, c: 'text-red-500' },
+                            { l: 'Average Drawdown', v: '-1.15%', c: 'text-zinc-300' },
+                            { l: 'Recovery Period', v: '14 Days', c: 'text-zinc-300' },
+                            { l: 'Current Drawdown', v: '-0.24%', c: 'text-zinc-500' }
+                          ].map((item, i) => (
+                            <div key={i} className="flex justify-between items-end border-b border-white/[0.02] pb-1">
+                              <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">{item.l}</span>
+                              <span className={`text-xs font-mono font-bold ${item.c}`}>{item.v}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
-
-                      {/* --- SEMUA ELEMEN SAMPING & ANGKA DI BAWAH SUDAH DIHAPUS TOTAL --- */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
+                          <div className="w-1 h-3 bg-[#10b981]"></div>
+                          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Execution Quality</h3>
+                        </div>
+                        <div className="space-y-4">
+                          {[
+                            { l: 'Win Rate', v: `${profileStats?.winRate}%`, c: 'text-[#10b981]' },
+                            { l: 'Avg Win / Avg Loss', v: '1.45x', c: 'text-zinc-300' },
+                            { l: 'Expectancy', v: '0.28%', c: 'text-zinc-300' },
+                            { l: 'Tail Risk (VaR)', v: '1.82%', c: 'text-zinc-500' }
+                          ].map((item, i) => (
+                            <div key={i} className="flex justify-between items-end border-b border-white/[0.02] pb-1">
+                              <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">{item.l}</span>
+                              <span className={`text-xs font-mono font-bold ${item.c}`}>{item.v}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                  </div>
+                )}
 
-                </div>
+                {/* B. TAB OVERVIEW: TIKTOK STYLE GRID */}
+                {activeProfileTab === 'Overview' && (
+                  <div className="grid grid-cols-2 gap-px bg-white/5 min-h-[500px]">
+                    {[1, 2, 3, 4].map((item) => (
+                      <div key={item} className="aspect-[9/12] relative bg-[#050505] flex flex-col items-center justify-center overflow-hidden group cursor-pointer">
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/[0.01] transition-colors z-10"></div>
+                        <div className="relative z-20 flex flex-col items-center gap-6">
+                          <div className="opacity-10 group-hover:opacity-40 group-hover:scale-110 transition-all duration-700 ease-out">
+                            <Play size={64} fill="white" className="text-white" />
+                          </div>
+                          <div className="text-3xl md:text-5xl font-black italic tracking-tighter text-white/5 uppercase select-none group-hover:text-white/15 transition-all duration-500">Soon</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -828,6 +884,15 @@ const benchmarkData = useMemo(() => {
 
       <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@900&display=swap');
+
+      @keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 4s linear infinite;
+}
         
         /* Buat class khusus untuk font nama agen */
         .font-agent { font-family: 'Outfit', sans-serif; }
