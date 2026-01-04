@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, 
-  CartesianGrid, BarChart as RechartsBarChart, Bar, Cell, LineChart, Line
+  CartesianGrid, BarChart as RechartsBarChart, Bar, Cell, LineChart, Line,
+  ReferenceLine // <--- INI YANG TADI KETINGGALAN
 } from 'recharts';
 import { 
   User, ShieldCheck, Zap, ChevronLeft, LayoutGrid, Award, 
@@ -560,73 +561,134 @@ const benchmarkData = useMemo(() => {
 
                 {/* --- 3. KONTEN DINAMIS (BERDASARKAN TAB) --- */}
 
-                {/* A. TAB PERFORMANCE: METRIK BLOOMBERG */}
-                {activeProfileTab === 'Performance' && (
-                  <div className="p-6 animate-fade-in space-y-10 bg-black border-t border-white/5 pb-20">
+               {/* A. TAB PERFORMANCE: BLOOMBERG METRICS & HISTOGRAM */}
+              {activeProfileTab === 'Performance' && (
+                <div className="p-6 animate-fade-in space-y-12 bg-black border-t border-white/5 pb-20">
+                  
+                  {/* --- 1. NEW: MONTHLY RETURN HISTOGRAM --- */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-6 border-b border-white/5 pb-2">
+                      <div className="w-1 h-3 bg-[#10b981]"></div>
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Monthly Return Histogram</h3>
+                    </div>
+                    
+                    {/* Data Mock Bulanan (Nanti bisa diganti real data) */}
+                    {(() => {
+                      const mockMonthlyReturns = [
+                        { month: 'Jan', value: 4.5 }, { month: 'Feb', value: -2.1 },
+                        { month: 'Mar', value: 3.8 }, { month: 'Apr', value: 1.2 },
+                        { month: 'May', value: -0.8 }, { month: 'Jun', value: 5.1 },
+                        { month: 'Jul', value: 2.4 }, { month: 'Aug', value: -1.5 },
+                        { month: 'Sep', value: 4.0 }, { month: 'Oct', value: 6.2 },
+                        { month: 'Nov', value: -3.0 }, { month: 'Dec', value: 1.8 },
+                      ];
+
+                      return (
+                        <div className="h-[200px] w-full relative bg-white/[0.02] border border-white/5 rounded-sm p-4">
+                           <ResponsiveContainer width="100%" height="100%">
+                            <RechartsBarChart data={mockMonthlyReturns} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#666', fontSize: 9, fontWeight: '700' }} />
+                              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#666', fontSize: 9, fontWeight: '700' }} tickFormatter={(val) => `${val}%`} />
+                              <Tooltip 
+                                content={({ active, payload }) => {
+                                  if (active && payload && payload.length) {
+                                    const data = payload[0].payload;
+                                    return (
+                                      <div className="bg-black/90 backdrop-blur-md border border-white/10 p-2 rounded-lg shadow-xl">
+                                        <p className="text-[9px] font-black text-zinc-500 uppercase mb-1">{data.month}</p>
+                                        <p className={`text-sm font-mono font-black ${data.value >= 0 ? 'text-[#10b981]' : 'text-red-500'}`}>
+                                          {data.value >= 0 ? '+' : ''}{data.value.toFixed(1)}%
+                                        </p>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                }}
+                                cursor={{ fill: 'white', opacity: 0.05 }}
+                              />
+                              <ReferenceLine y={0} stroke="#333" strokeWidth={1} />
+                              <Bar dataKey="value">
+                                {mockMonthlyReturns.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.value >= 0 ? '#10b981' : '#ef4444'} opacity={0.8} />
+                                ))}
+                              </Bar>
+                            </RechartsBarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* --- 2. HERO GRID: RISK-ADJUSTED RATIOS (POSISI DI BAWAH HISTOGRAM) --- */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
+                      <div className="w-1 h-3 bg-orange-500"></div>
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Risk-Adjusted Ratios</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 border border-white/5 rounded-sm overflow-hidden">
+                      {[
+                        { label: 'Sharpe Ratio', value: profileStats?.sharpe.toFixed(2) || '0.00', sub: 'Annualized', color: 'text-white' },
+                        { label: 'Sortino Ratio', value: '3.12', sub: 'Downside Risk', color: 'text-[#10b981]' },
+                        { label: 'Calmar Ratio', value: '1.85', sub: 'vs Max DD', color: 'text-white' },
+                        { label: 'Profit Factor', value: '1.64', sub: 'Gross W/L', color: 'text-white' }
+                      ].map((m, i) => (
+                        <div key={i} className="bg-[#080808] p-5 hover:bg-white/[0.02] transition-colors">
+                          <div className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest mb-1">{m.label}</div>
+                          <div className={`text-2xl font-mono font-bold tracking-tighter ${m.color}`}>{m.value}</div>
+                          <div className="text-[7px] font-bold text-zinc-800 uppercase mt-1 tracking-tighter">{m.sub}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* --- 3. DETAILED STATS TABLES --- */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    {/* Drawdown Analysis */}
                     <div>
                       <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
-                        <div className="w-1 h-3 bg-orange-500"></div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Risk-Adjusted Ratios</h3>
+                        <div className="w-1 h-3 bg-red-500"></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Drawdown Analysis</h3>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 border border-white/5 rounded-sm overflow-hidden">
+                      <div className="space-y-4">
                         {[
-                          { label: 'Sharpe Ratio', value: profileStats?.sharpe.toFixed(2) || '0.00', sub: 'Annualized', color: 'text-white' },
-                          { label: 'Sortino Ratio', value: '3.12', sub: 'Downside Risk', color: 'text-[#10b981]' },
-                          { label: 'Calmar Ratio', value: '1.85', sub: 'vs Max DD', color: 'text-white' },
-                          { label: 'Profit Factor', value: '1.64', sub: 'Gross W/L', color: 'text-white' }
-                        ].map((m, i) => (
-                          <div key={i} className="bg-[#080808] p-5 hover:bg-white/[0.02] transition-colors">
-                            <div className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest mb-1">{m.label}</div>
-                            <div className={`text-2xl font-mono font-bold tracking-tighter ${m.color}`}>{m.value}</div>
-                            <div className="text-[7px] font-bold text-zinc-800 uppercase mt-1 tracking-tighter">{m.sub}</div>
+                          { l: 'Maximum Drawdown', v: `${profileStats?.maxDrawdown.toFixed(2)}%`, c: 'text-red-500' },
+                          { l: 'Average Drawdown', v: '-1.15%', c: 'text-zinc-300' },
+                          { l: 'Recovery Period', v: '14 Days', c: 'text-zinc-300' },
+                          { l: 'Current Drawdown', v: '-0.24%', c: 'text-zinc-500' }
+                        ].map((item, i) => (
+                          <div key={i} className="flex justify-between items-end border-b border-white/[0.02] pb-1">
+                            <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">{item.l}</span>
+                            <span className={`text-xs font-mono font-bold ${item.c}`}>{item.v}</span>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                      <div>
-                        <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
-                          <div className="w-1 h-3 bg-red-500"></div>
-                          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Drawdown Analysis</h3>
-                        </div>
-                        <div className="space-y-4">
-                          {[
-                            { l: 'Maximum Drawdown', v: `${profileStats?.maxDrawdown.toFixed(2)}%`, c: 'text-red-500' },
-                            { l: 'Average Drawdown', v: '-1.15%', c: 'text-zinc-300' },
-                            { l: 'Recovery Period', v: '14 Days', c: 'text-zinc-300' },
-                            { l: 'Current Drawdown', v: '-0.24%', c: 'text-zinc-500' }
-                          ].map((item, i) => (
-                            <div key={i} className="flex justify-between items-end border-b border-white/[0.02] pb-1">
-                              <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">{item.l}</span>
-                              <span className={`text-xs font-mono font-bold ${item.c}`}>{item.v}</span>
-                            </div>
-                          ))}
-                        </div>
+                    {/* Execution Quality */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
+                        <div className="w-1 h-3 bg-[#10b981]"></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Execution Quality</h3>
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
-                          <div className="w-1 h-3 bg-[#10b981]"></div>
-                          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Execution Quality</h3>
-                        </div>
-                        <div className="space-y-4">
-                          {[
-                            { l: 'Win Rate', v: `${profileStats?.winRate}%`, c: 'text-[#10b981]' },
-                            { l: 'Avg Win / Avg Loss', v: '1.45x', c: 'text-zinc-300' },
-                            { l: 'Expectancy', v: '0.28%', c: 'text-zinc-300' },
-                            { l: 'Tail Risk (VaR)', v: '1.82%', c: 'text-zinc-500' }
-                          ].map((item, i) => (
-                            <div key={i} className="flex justify-between items-end border-b border-white/[0.02] pb-1">
-                              <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">{item.l}</span>
-                              <span className={`text-xs font-mono font-bold ${item.c}`}>{item.v}</span>
-                            </div>
-                          ))}
-                        </div>
+                      <div className="space-y-4">
+                        {[
+                          { l: 'Win Rate', v: `${profileStats?.winRate}%`, c: 'text-[#10b981]' },
+                          { l: 'Avg Win / Avg Loss', v: '1.45x', c: 'text-zinc-300' },
+                          { l: 'Expectancy', v: '0.28%', c: 'text-zinc-300' },
+                          { l: 'Tail Risk (VaR)', v: '1.82%', c: 'text-zinc-500' }
+                        ].map((item, i) => (
+                          <div key={i} className="flex justify-between items-end border-b border-white/[0.02] pb-1">
+                            <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">{item.l}</span>
+                            <span className={`text-xs font-mono font-bold ${item.c}`}>{item.v}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
-                )}
-
+                </div>
+              )}
                 {/* B. TAB OVERVIEW: TIKTOK STYLE GRID */}
                 {activeProfileTab === 'Overview' && (
                   <div className="grid grid-cols-2 gap-px bg-white/5 min-h-[500px]">
