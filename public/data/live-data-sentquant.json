@@ -25559,9 +25559,18 @@
         "collateral": 5.319716,
         "pnl": 0.0,
         "drawdown": -74.7
+      },
+      {
+        "date": "2026-05-17",
+        "timestamp": "2026-05-17 21:55:49",
+        "year": 2026,
+        "value": 252.34,
+        "collateral": 5.305819,
+        "pnl": 0.0,
+        "drawdown": -74.766
       }
     ],
-    "tvl": 5.319716,
+    "tvl": 5.305819,
     "status": "Live"
   }
 }
